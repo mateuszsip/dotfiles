@@ -1,0 +1,7 @@
+{{- $email := promptString "email" -}}
+
+[data]
+  email = {{ $email | quote }}
+
+[data.php.composer]
+  auth = ""

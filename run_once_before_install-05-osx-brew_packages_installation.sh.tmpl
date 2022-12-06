@@ -27,12 +27,13 @@ brew 'git'
 brew 'gnupg'
 brew 'neovim'
 brew 'grep'
+brew 'z'
 
 # Amazon Web Services
 brew "awscli"
 
 # docker
-brew "docker", args: ["HEAD"]
+cask "docker"
 
 # Kubernetes
 brew "kubernetes-cli"
@@ -59,12 +60,17 @@ cask "raindropio"
 cask "telegram"
 cask "warp", args: { appdir: "/Applications" }
 
-## Web Browser
+cask 'maccy'
+cask 'rectangle'
+cask 'middle'
+
 cask "google-chrome", args: { appdir: "/Applications" }
 
-# Fonts
-cask "font-hack-nerd-font"
+cask "thunderbird", args: { appdir: "/Applications" }
 
+# Fonts
+tap "homebrew/cask-fonts"
+cask "font-hack-nerd-font"
 
 #########################
 # Brewfile contents end #

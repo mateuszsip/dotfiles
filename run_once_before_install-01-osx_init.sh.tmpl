@@ -3,7 +3,16 @@
 
 set -eufo pipefail
 
-sudo xcode-select --install
-sudo softwareupdate --install-rosetta --agree-to-license
+#sudo xcode-select --install
+#sudo softwareupdate --install-rosetta --agree-to-license
+
+# Show hidden files
+defaults write com.apple.Finder AppleShowAllFiles true
+
+# Set the icon size of Dock items to 32 pixels
+defaults write com.apple.dock tilesize -int 32
+
+# Tap to click
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
 
 {{ end }}
