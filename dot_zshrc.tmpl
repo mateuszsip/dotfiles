@@ -1,0 +1,13 @@
+export PATH="$(brew --prefix coreutils)/libexec/gnubin:/usr/local/bin:$PATH"
+
+{{ if .php.composer.auth }}
+export COMPOSER_AUTH={{- .php.composer.auth }}
+{{ end }}
+
+source /opt/homebrew/etc/profile.d/z.sh
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+eval "$(starship init zsh)"

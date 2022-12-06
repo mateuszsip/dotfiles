@@ -1,0 +1,9 @@
+{{- if (eq .chezmoi.os "darwin") -}}
+#!/bin/bash
+
+set -eufo pipefail
+
+sudo xcode-select --install
+sudo softwareupdate --install-rosetta --agree-to-license
+
+{{ end }}

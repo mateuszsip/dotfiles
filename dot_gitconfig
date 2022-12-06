@@ -1,0 +1,7 @@
+[core]
+	excludesFile = ~/.gitignore
+[user]
+	email = {{ .email | quote }}
+	name = Mateusz Sip
+[push]
+	autoSetupRemote = true

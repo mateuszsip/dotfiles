@@ -1,0 +1,75 @@
+{{- if (eq .chezmoi.os "darwin") -}}
+#!/bin/bash
+
+brew bundle --no-lock --file=/dev/stdin <<EOF
+#####################
+# Brewfile contents #
+#####################
+
+# GNU utils
+brew 'coreutils' # Those that come with macOS are outdated
+brew 'findutils'
+
+# Bash ZSH fish
+brew 'zsh'
+brew 'chezmoi'
+brew 'starship'
+
+brew 'mas' # Mac App Store manager
+
+brew 'httpie'
+
+brew "bat"
+brew "bat-extras"
+brew 'curl'
+brew 'jq'
+brew 'git'
+brew 'gnupg'
+brew 'neovim'
+brew 'grep'
+
+# Amazon Web Services
+brew "awscli"
+
+# docker
+brew "docker", args: ["HEAD"]
+
+# Kubernetes
+brew "kubernetes-cli"
+brew "kustomize"
+brew "helm"
+brew "k9s"
+brew "yq"
+
+#####################
+# Casks             #
+#####################
+
+cask "1password"
+cask "1password-cli"
+#cask 'gpg-suite'
+cask "github"
+cask "jetbrains-toolbox"
+cask "postman", args: { appdir: "/Applications" }
+cask "keka"
+cask "kekaexternalhelper"
+cask "slack"
+cask "spotify"
+cask "raindropio"
+cask "telegram"
+cask "warp", args: { appdir: "/Applications" }
+
+## Web Browser
+cask "google-chrome", args: { appdir: "/Applications" }
+
+# Fonts
+cask "font-hack-nerd-font"
+
+
+#########################
+# Brewfile contents end #
+#########################
+EOF
+
+{{ end -}}
+
