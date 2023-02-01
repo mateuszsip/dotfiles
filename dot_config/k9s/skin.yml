@@ -1,0 +1,78 @@
+foreground: &foreground black
+background: &background "default"
+backgroundOpaque: &backgroundOpaque "#f8f8f8"
+grey: &grey "#737373"
+red: &red "#b5407b"
+green: &green "#7bb540"
+yellow: &yellow "#b57b40"
+blue: &blue "#407bb5"
+magenta: &magenta "#7b40b5"
+cyan: &cyan "#40b57b"
+
+#Preserve your terminal session background color
+k9s:
+  body:
+    bgColor: default
+    fgColor: black
+    logoColor: black
+  info:
+    fgColor: *blue
+    sectionColor: *grey
+  prompt:
+    bgColor: default
+    suggestColor: black
+  dialog:
+    bgColor: default
+    fgColor: *grey
+    buttonFocusBgColor: white
+    butttonFocusFgColor: black
+    labelFgColor: *grey
+    fieldFgColor: black
+  frame:
+    border:
+      fgColor: black
+      focusColor: *grey
+    crumbs:
+      bgColor: *grey
+      fgColor: '#f8f8f8'
+      activeColor: black
+    title:
+      fgColor: black
+      highlightColor: *grey
+      counterColor: *blue
+      bgColor: default
+    menu:
+      fgColor: default
+      keyColor: *grey
+      numKeyColor: *blue
+    status:
+      newColor: black
+      modifyColor: *blue
+      addColor: *green
+      errorColor: *red
+      killColor: *grey
+      completedColor: *green
+  views:
+    charts:
+      bgColor: default
+    table:
+      fgColor: black
+      bgColor: default
+      cursorFgColor: white
+      cursorBgColor: black
+      header:
+        bgColor: default
+        fgColor: black
+        sorterColor: '#407bb5'
+    xray:
+      bgColor: default
+    logs:
+      bgColor: default
+      fgColor: black
+      indicator:
+        bgColor: white
+        fgColor: black
+    yaml:
+      keyColor: '#407bb5'
+      colonColor: '#737373'
+      valueColor: black

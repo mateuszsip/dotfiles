@@ -42,14 +42,25 @@ brew "helm"
 brew "k9s"
 brew "yq"
 
+brew 'terraform'
+brew 'terragrunt'
+
+brew 'php'
+brew 'composer'
+brew 'node'
+
 #####################
 # Casks             #
 #####################
+
+tap 'homebrew/cask-drivers'
+cask 'kensingtonworks'
 
 cask "1password"
 cask "1password-cli"
 #cask 'gpg-suite'
 cask "github"
+brew 'gh'
 cask "jetbrains-toolbox"
 cask "postman", args: { appdir: "/Applications" }
 cask "keka"
@@ -59,18 +70,24 @@ cask "spotify"
 cask "raindropio"
 cask "telegram"
 cask "warp", args: { appdir: "/Applications" }
+brew 'openvpn'
+cask 'tunnelblick'
 
 cask 'maccy'
 cask 'rectangle'
 cask 'middle'
+cask 'via'
 
 cask "google-chrome", args: { appdir: "/Applications" }
-
 cask "thunderbird", args: { appdir: "/Applications" }
+
+cask "zoom"
 
 # Fonts
 tap "homebrew/cask-fonts"
 cask "font-hack-nerd-font"
+
+cask "mactex"
 
 #########################
 # Brewfile contents end #
