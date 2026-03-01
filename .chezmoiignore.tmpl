@@ -1,0 +1,12 @@
+.config/nvim/lazy-lock.json
+
+{{- if eq .chezmoi.os "darwin" }}
+.config/omarchy
+.config/nvim/lua/plugins/symlink_theme.lua
+.config/nvim/lua/plugins/omarchy-theme-hotreload.lua
+.config/nvim/lua/plugins/all-themes.lua
+.config/nvim/lua/plugins/theme.lua
+{{ else }}
+.config/nvim/lua/plugins/mac_theme.lua
+{{- end }}
+
