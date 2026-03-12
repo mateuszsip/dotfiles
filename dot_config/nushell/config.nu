@@ -21,7 +21,12 @@ use ~/nu_scripts/aliases/git/git-aliases.nu *
 use ~/nu_scripts/aliases/bat/bat-aliases.nu *
 use ~/nu_scripts/aliases/eza/eza-aliases.nu *
 
+use std "path add"
+path add "/opt/homebrew/bin"
+
 source ~/.zoxide.nu
 
 export alias n = nvim
+
+$env.EDITOR = 'nvim'
 

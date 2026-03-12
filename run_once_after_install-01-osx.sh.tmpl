@@ -1,0 +1,21 @@
+{{- if (eq .chezmoi.os "darwin") -}}
+#!/bin/bash
+
+set -eufo pipefail
+
+#sudo xcode-select --install
+#sudo softwareupdate --install-rosetta --agree-to-license
+
+# Show hidden files
+defaults write com.apple.Finder AppleShowAllFiles true
+
+# Set the icon size of Dock items to 32 pixels
+defaults write com.apple.dock tilesize -int 64
+
+# Tap to click
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+
+ln -s ~/.config/nushell/config.nu ~"/Library/Application Support/nushell"
+ln -s ~/.config/nushell/env.nu ~"/Library/Application Support/nushell"
+
+{{ end }}
