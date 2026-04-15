@@ -33,5 +33,8 @@ map("i", "<A-l>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move Up" })
 map("v", "<A-k>", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv", { desc = "Move Down" })
 map("v", "<A-l>", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv", { desc = "Move Up" })
 
-map("n", "<S-j>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
-map("n", "<S-;>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
+map("n", "<A-S-j>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
+map("n", "<A-S-;>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
+
+map("n", "<leader>sf", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
+map("n", "<leader>sF", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
