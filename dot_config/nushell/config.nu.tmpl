@@ -1,0 +1,52 @@
+# config.nu
+#
+# Installed by:
+# version = "0.110.0"
+#
+# This file is used to override default Nushell settings, define
+# (or import) custom commands, or run any other startup tasks.
+# See https://www.nushell.sh/book/configuration.html
+#
+# Nushell sets "sensible defaults" for most configuration settings, 
+# so your `config.nu` only needs to override these defaults if desired.
+#
+# You can open this file in your default editor using:
+#     config nu
+#
+# You can also pretty-print and page through the documentation for configuration
+# options using:
+#     config nu --doc | nu-highlight | less -R
+
+use ~/nu_scripts/aliases/git/git-aliases.nu *
+use ~/nu_scripts/aliases/bat/bat-aliases.nu *
+use ~/nu_scripts/aliases/eza/eza-aliases.nu *
+
+source ~/.zoxide.nu
+
+export alias n = nvim
+export alias files = yazi
+
+def ll [] { ls -al | reject inode num_links readonly }
+
+$env.PATH ++= ['~/.local/bin']
+$env.PATH ++= [ $"(npm config --global get prefix)/bin"]
+
+{{- if eq .chezmoi.os "darwin" }}
+{{ else }}
+$env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"`
+{{- end }}
+
+$env.PAGER = "bat"
+#$env.BAT_PAGER = "moor"
+
+$env.K9S_SKIN = 'solarized-light'
+
+def packages-by-size [] {expac -H M "%m|%n"
+  | lines
+  | split column "|" size name
+  | upsert size { |row| $row.size | str trim | into filesize }
+  | sort-by -r size 
+  | explore
+}
+
+source lendable.nu
