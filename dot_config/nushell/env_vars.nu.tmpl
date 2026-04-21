@@ -1,0 +1,17 @@
+$env.PATH ++= ['~/.local/bin']
+$env.PATH ++= ['/usr/local/bin']
+$env.PATH ++= [ $"(npm config --global get prefix)/bin"]
+
+$env.PAGER = "bat"
+
+$env.K9S_SKIN = 'solarized-light'
+
+{{- if eq .chezmoi.os "darwin" }}
+use std "path add"
+path add "/opt/homebrew/bin"
+
+$env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"
+{{ else }}
+$env.SSH_AUTH_SOCK = "/Users/sip/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
+{{- end }}
+
