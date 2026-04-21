@@ -21,6 +21,18 @@ use ~/nu_scripts/aliases/git/git-aliases.nu *
 use ~/nu_scripts/aliases/bat/bat-aliases.nu *
 use ~/nu_scripts/aliases/eza/eza-aliases.nu *
 
+use ~/nu_scripts/custom-completions/git/git-completions.nu *
+use ~/nu_scripts/custom-completions/gh/gh-completions.nu *
+use ~/nu_scripts/custom-completions/aws/aws-completions.nu *
+use ~/nu_scripts/custom-completions/bat/bat-completions.nu *
+use ~/nu_scripts/custom-completions/auto-generate/completions/yaourt.nu *
+use ~/nu_scripts/custom-completions/bitwarden-cli/bitwarden-cli-completions.nu *
+use ~/nu_scripts/custom-completions/composer/composer-completions.nu *
+use ~/nu_scripts/custom-completions/curl/curl-completions.nu *
+use ~/nu_scripts/custom-completions/docker/docker-completions.nu *
+use ~/nu_scripts/custom-completions/make/make-completions.nu *
+use ~/nu_scripts/custom-completions/zoxide/zoxide-completions.nu *
+
 source ~/.zoxide.nu
 
 export alias n = nvim
@@ -29,11 +41,16 @@ export alias files = yazi
 def ll [] { ls -al | reject inode num_links readonly }
 
 $env.PATH ++= ['~/.local/bin']
+$env.PATH ++= ['/usr/local/bin']
 $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
 
 {{- if eq .chezmoi.os "darwin" }}
+use std "path add"
+path add "/opt/homebrew/bin"
+
+$env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"
 {{ else }}
-$env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"`
+$env.SSH_AUTH_SOCK = "/Users/sip/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
 {{- end }}
 
 $env.PAGER = "bat"
@@ -50,3 +67,6 @@ def packages-by-size [] {expac -H M "%m|%n"
 }
 
 source lendable.nu
+
+mkdir ($nu.data-dir | path join "vendor/autoload")
+starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
