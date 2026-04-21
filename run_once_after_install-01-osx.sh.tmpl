@@ -15,7 +15,6 @@ defaults write com.apple.dock tilesize -int 64
 # Tap to click
 defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
 
-ln -s ~/.config/nushell/config.nu ~"/Library/Application Support/nushell"
-ln -s ~/.config/nushell/env.nu ~"/Library/Application Support/nushell"
+ln -s ~/.config/nushell "$HOME/Library/Application Support"
 
 {{ end }}

@@ -17,13 +17,12 @@
 # options using:
 #     config nu --doc | nu-highlight | less -R
 
-source ~/.zoxide.nu
-
-source lendable.nu
 source aliases.nu
-source completions.nu
 source env_vars.nu
+source completions.nu
+source lendable.nu
 
 mkdir ($nu.data-dir | path join "vendor/autoload")
 starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
 
+source ~/.zoxide.nu
