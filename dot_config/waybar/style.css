@@ -69,7 +69,12 @@ mpris.empty {
 
 tooltip {
   padding: 2px;
+  border-radius: 8px;
   background-color: @background;
+}
+
+tooltip * {
+  border-radius: 8px;
 }
 
 #custom-update {
@@ -129,6 +134,10 @@ tooltip {
 tooltip {
   border-radius: 10px;
   text-shadow: none;
+}
+
+tooltip * {
+  border-radius: 8px;
 }
 
 #custom-voxtype {
