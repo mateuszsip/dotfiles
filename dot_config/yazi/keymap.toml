@@ -1,0 +1,77 @@
+# Navigation: jkl; instead of hjkl
+[[mgr.prepend_keymap]]
+on  = "j"
+run = "leave"
+desc = "Go back to the parent directory"
+
+[[mgr.prepend_keymap]]
+on  = "k"
+run = "arrow 1"
+desc = "Move down 1 step"
+
+[[mgr.prepend_keymap]]
+on  = "l"
+run = "arrow -1"
+desc = "Move up 1 step"
+
+[[mgr.prepend_keymap]]
+on  = ";"
+run = "enter"
+desc = "Enter the child directory"
+
+[[mgr.prepend_keymap]]
+on  = "'"
+run = "shell --interactive"
+desc = "Run a shell command"
+
+# Shadow original hjkl
+[[mgr.prepend_keymap]]
+on  = "h"
+run = "noop"
+
+# Navigation: JKL: instead of HJKL
+[[mgr.prepend_keymap]]
+on  = "J"
+run = "leave"
+desc = "Go back to the parent directory"
+
+[[mgr.prepend_keymap]]
+on  = "K"
+run = "seek 5"
+desc = "Seek down 5 steps"
+
+[[mgr.prepend_keymap]]
+on  = "L"
+run = "seek -5"
+desc = "Seek up 5 steps"
+
+[[mgr.prepend_keymap]]
+on  = ":"
+run = "enter"
+desc = "Enter the child directory"
+
+# Shadow original HJKL
+[[mgr.prepend_keymap]]
+on  = "H"
+run = "noop"
+
+[[mgr.prepend_keymap]]
+on   = [ "c", "m" ]
+run  = "plugin chmod"
+desc = "Chmod on selected files"
+
+[[mgr.prepend_keymap]]
+on = [ "m" ]
+run = "plugin relative-motions"
+desc = "Trigger a new relative motion"
+
+[[mgr.prepend_keymap]]
+on = [ ".", "s" ]
+run  = "plugin what-size"
+desc = "Calc size of selection or cwd" 
+
+[[mgr.prepend_keymap]]
+on = "<C-y>"
+run = ["plugin wl-clipboard"]
+
+
