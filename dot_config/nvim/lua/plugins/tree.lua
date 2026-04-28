@@ -24,6 +24,10 @@ return {
     },
     window = {
       mappings = {
+        [";"] = "open",        -- ; = open (right/l equivalent)
+        ["j"] = "close_node",  -- j = close/collapse (left/h equivalent)
+        ["l"] = false,         -- unmap l=open so global l→k (move up) takes effect
+        ["h"] = false,         -- unmap h=close_node since j now handles this
         ["<leader>sf"] = {
           function(state)
             local node = state.tree:get_node()
