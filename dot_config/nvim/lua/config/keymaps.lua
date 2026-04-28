@@ -58,3 +58,6 @@ map("n", "<leader>sf", LazyVim.pick("files", { root = false }), { desc = "Find F
 map("n", "<leader>sF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
 map("n", "<leader>sg", LazyVim.pick("live_grep", { root = false }), { desc = "Grep (cwd)" })
 map("n", "<leader>sG", LazyVim.pick("live_grep"), { desc = "Grep (Root Dir)" })
+
+map("n", "<leader>ss", LazyVim.pick("lsp_document_symbols"), { desc = "Document Symbols" })
+map("n", "<leader>sS", LazyVim.pick("lsp_workspace_symbols"), { desc = "Workspace Symbols" })
