@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(omarchy-font-list)",
+      "Bash(omarchy-font-current)",
+      "Bash(fc-list)",
+      "Bash(fc-list : family)",
+      "Bash(omarchy-restart-waybar *)",
+      "Bash(omarchy-pkg-aur-add *)"
+    ]
+  }
+}

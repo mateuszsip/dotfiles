@@ -3,3 +3,6 @@ prepend_previewers = [
     { mime = "audio/*",   run = "exifaudio"}
 ]
 
+[mgr]
+show_hidden = true
+
