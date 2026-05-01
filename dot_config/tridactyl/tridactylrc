@@ -1,0 +1,16 @@
+" Unbind to clear the slate
+unbind j
+unbind k
+unbind l
+unbind ;
+
+unbind <C-f>
+
+" Map jkl; to Left, Down, Up, Right
+bind j scrollpx -50 0
+bind k scrollline 10
+bind l scrollline -10
+bind ; scrollpx 50 0
+
+" Important: Move the command prefix from ; to h
+bind h fillcmdline
