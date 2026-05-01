@@ -5,6 +5,21 @@
       "enabled": true,
       "type": "remote",
       "url": "http://mcp.smart.local.sipex.cloud/mcp"
+    },
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "jira": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/sse"
+    },
+    "datadog": {
+      "type": "remote",
+      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp?toolsets=core,alerting,dashboards,dbm,ddsql,error-tracking,kubernetes,networks,apm"
     }
   },
   "plugin": [
