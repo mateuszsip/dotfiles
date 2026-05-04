@@ -24,6 +24,5 @@
   },
   "plugin": [
     "@mohak34/opencode-notifier@latest",
-    "oh-my-openagent@latest"
   ]
 }
