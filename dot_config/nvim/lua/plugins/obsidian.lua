@@ -10,6 +10,7 @@ return {
     -- Quick access
     { "<leader>os", "<cmd>Obsidian search<CR>", desc = "Obsidian: Search" },
     { "<leader>oq", "<cmd>Obsidian quick_switch<CR>", desc = "Obsidian: Quick switch" },
+    { "<leader>ow", "<cmd>Obsidian workspace<CR>", desc = "Obsidian: Switch workspace" },
   },
   opts = {
     legacy_commands = false,
@@ -17,10 +18,12 @@ return {
       {
         name = "personal",
         path = "~/.notes/personal",
+        strict = true,
       },
       {
         name = "work",
         path = "~/.notes/work",
+        strict = true,
       },
     },
 
@@ -45,14 +48,6 @@ return {
           buffer = true,
           desc = "Obsidian: Toggle checkbox",
         })
-
-        -- Link navigation (replaces default ]o / [o)
-        vim.keymap.set("n", "<Tab>", function()
-          actions.nav_link("next")
-        end, { buffer = true, desc = "Obsidian: Next link" })
-        vim.keymap.set("n", "<S-Tab>", function()
-          actions.nav_link("prev")
-        end, { buffer = true, desc = "Obsidian: Prev link" })
       end,
     },
   },
