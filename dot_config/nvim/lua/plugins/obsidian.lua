@@ -28,8 +28,12 @@ return {
     },
 
     daily_notes = {
-      folder = ".notes/daily",
+      folder = "_daily",
     },
+
+    note_id_func = function(title)
+      return require("obsidian.builtin").title_id(title)
+    end,
 
     -- Disable footer to prevent rg running outside workspace on BufEnter
     -- footer = { enabled = false },
