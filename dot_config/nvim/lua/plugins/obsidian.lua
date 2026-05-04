@@ -46,6 +46,28 @@ return {
           buffer = true,
           desc = "Obsidian: Toggle checkbox",
         })
+        -- Set specific checkbox state directly
+        local actions = require("obsidian.actions")
+        vim.keymap.set("n", "<leader>o<space>", function() actions.set_checkbox(" ") end, {
+          buffer = true,
+          desc = "Obsidian: Checkbox unchecked [ ]",
+        })
+        vim.keymap.set("n", "<leader>ox", function() actions.set_checkbox("x") end, {
+          buffer = true,
+          desc = "Obsidian: Checkbox done [x]",
+        })
+        vim.keymap.set("n", "<leader>o~", function() actions.set_checkbox("~") end, {
+          buffer = true,
+          desc = "Obsidian: Checkbox in progress [~]",
+        })
+        vim.keymap.set("n", "<leader>o!", function() actions.set_checkbox("!") end, {
+          buffer = true,
+          desc = "Obsidian: Checkbox important [!]",
+        })
+        vim.keymap.set("n", "<leader>o>", function() actions.set_checkbox(">") end, {
+          buffer = true,
+          desc = "Obsidian: Checkbox forwarded [>]",
+        })
         vim.keymap.set("n", "<leader>on", "<cmd>Obsidian toc<CR>", {
           buffer = true,
           desc = "Obsidian: Table of contents",
