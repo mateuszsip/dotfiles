@@ -1,6 +1,15 @@
 return {
   {
     "mfussenegger/nvim-lint",
+    keys = {
+      {
+        "<leader>cl",
+        function()
+          require("lint").try_lint()
+        end,
+        desc = "Lint",
+      },
+    },
     opts = {
       linters_by_ft = {
         php = { "phpstan" },
@@ -19,6 +28,12 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
+        ["*"] = {
+          keys = {
+            { "<leader>cl", false },
+            { "<leader>cL", function() Snacks.picker.lsp_config() end, desc = "Lsp Info" },
+          },
+        },
         lua_ls = {
           settings = {
             Lua = {
