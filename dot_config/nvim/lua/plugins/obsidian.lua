@@ -32,7 +32,7 @@ return {
     },
 
     -- Disable footer to prevent rg running outside workspace on BufEnter
-    footer = { enabled = false },
+    -- footer = { enabled = false },
     -- Or if you want footer but not the full UI rendering:
     -- ui = { enable = false },
 
