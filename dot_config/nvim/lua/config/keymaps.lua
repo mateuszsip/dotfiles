@@ -13,6 +13,7 @@ map({ "n", "x" }, "j", "h", { desc = "Left" })
 map({ "n", "x" }, "k", "j", { desc = "Down" })
 map({ "n", "x" }, "l", "k", { desc = "Up" })
 map({ "n", "x" }, ";", "l", { desc = "Right" })
+map({ "n", "x", "o" }, "h", function() require("flash.plugins.char").jump(";") end, { desc = "Repeat f/t forward" })
 
 map({ "n", "x" }, "k", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
 map({ "n", "x" }, "<Down>", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
