@@ -35,6 +35,8 @@ return {
         local ok, source = pcall(require, mod)
         if not ok then
           vim.notify("Failed to load DB source " .. mod .. ": " .. source, vim.log.levels.ERROR)
+        elseif type(source) ~= "table" then
+          -- empty file or module returns non-table; skip silently
         else
           for _, entry in ipairs(source) do
             local ok_url, url
