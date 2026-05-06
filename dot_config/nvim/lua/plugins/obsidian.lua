@@ -90,6 +90,14 @@ return {
           buffer = true,
           desc = "Obsidian: Links",
         })
+        vim.keymap.set("v", "<leader>ol", "<cmd>Obsidian link<CR>", {
+          buffer = true,
+          desc = "Obsidian: Link selection to existing note",
+        })
+        vim.keymap.set("v", "<leader>oL", "<cmd>Obsidian link_new<CR>", {
+          buffer = true,
+          desc = "Obsidian: Link new note from selection",
+        })
       end,
     },
   },
