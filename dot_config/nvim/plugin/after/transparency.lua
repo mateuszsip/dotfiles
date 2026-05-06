@@ -16,7 +16,6 @@ local groups = {
 	"Terminal",
 	"EndOfBuffer",
 	"FoldColumn",
-	"Folded",
 	"SignColumn",
 	"LineNr",
 	"CursorLineNr",
@@ -57,3 +56,9 @@ local groups = {
 for _, name in ipairs(groups) do
 	make_transparent(name)
 end
+
+-- Folded line: subtle warm background + muted text to dim collapsed code
+vim.api.nvim_set_hl(0, "Folded", { fg = "#6F6E69", bg = "#F2F0E5" })
+
+-- Fold line count decoration (used by nvim-origami foldtext)
+vim.api.nvim_set_hl(0, "OrigamiFold", { fg = "#4385BE", bold = true })
