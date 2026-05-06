@@ -4,6 +4,9 @@ return {
     "kristijanhusak/vim-dadbod-ui",
   },
   lazy = true,
+  keys = {
+    { "<leader>DD", "<cmd>DBUIToggle<CR>", desc = "Toggle DB UI" },
+  },
   config = function()
     local function vault_db_url(vault_path, scheme, host, port, dbname)
       local raw = vim.fn.system("vault read -format=json " .. vault_path)
