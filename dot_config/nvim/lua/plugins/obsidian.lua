@@ -4,11 +4,13 @@ return {
   ft = "markdown",
   keys = {
     -- Daily notes (global, work from any buffer)
-    { "<leader>ot", "<cmd>Obsidian today<CR>", desc = "Obsidian: Today's note" },
-    { "<leader>or", "<cmd>Obsidian yesterday<CR>", desc = "Obsidian: Yesterday's note" },
-    { "<leader>oy", "<cmd>Obsidian tomorrow<CR>", desc = "Obsidian: Tomorrow's note" },
-    { "<leader>od", "<cmd>Obsidian dailies -2 1<CR>", desc = "Obsidian: Browse daily notes" },
+    { "<leader>odt", "<cmd>Obsidian today<CR>", desc = "Obsidian: Today's note" },
+    { "<leader>odr", "<cmd>Obsidian yesterday<CR>", desc = "Obsidian: Yesterday's note" },
+    { "<leader>ody", "<cmd>Obsidian tomorrow<CR>", desc = "Obsidian: Tomorrow's note" },
+    { "<leader>od", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
+    { "<leader>ode", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
     -- Quick access
+    { "<leader>ot", "<cmd>Obsidian tags<CR>", desc = "Obsidian: Tags" },
     { "<leader>os", "<cmd>Obsidian search<CR>", desc = "Obsidian: Search" },
     { "<leader>oq", "<cmd>Obsidian quick_switch<CR>", desc = "Obsidian: Quick switch" },
     { "<leader>ow", "<cmd>Obsidian workspace<CR>", desc = "Obsidian: Switch workspace" },
