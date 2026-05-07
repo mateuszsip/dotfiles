@@ -44,6 +44,12 @@ return {
                         utils.info(msg)
                       end
                       vim.schedule(function()
+                        for i, it in ipairs(picker.opts.items) do
+                          if it == item then
+                            table.remove(picker.opts.items, i)
+                            break
+                          end
+                        end
                         picker:refresh()
                       end)
                     end,
@@ -75,6 +81,7 @@ return {
                         utils.info(msg)
                       end
                       vim.schedule(function()
+                        item.isDraft = not item.isDraft
                         picker:refresh()
                       end)
                     end,
