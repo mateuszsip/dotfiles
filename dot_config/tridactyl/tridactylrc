@@ -3,6 +3,8 @@ unbind j
 unbind k
 unbind l
 unbind ;
+unbind K
+unbind L
 
 unbind <C-f>
 
@@ -12,5 +14,15 @@ bind k scrollline 10
 bind l scrollline -10
 bind ; scrollpx 50 0
 
+" Tab switching
+bind K tabprev
+bind L tabnext
+
 " Important: Move the command prefix from ; to h
 bind h fillcmdline
+
+" Hint operations (, replaces ; prefix which is now scroll right)
+bind ,f hint
+bind ,t hint -t
+bind ,b hint -b
+bind Y hint -y
