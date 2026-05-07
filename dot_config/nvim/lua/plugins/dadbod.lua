@@ -6,7 +6,8 @@ return {
     },
     lazy = true,
     keys = {
-      { "<leader>DD", "<cmd>DBUIToggle<CR>", desc = "Toggle DB UI" },
+      { "<leader>DD", desc = "Toggle DB UI" },
+      { "<leader>Dr", desc = "Refresh DB credentials from Vault" },
     },
     config = function()
       local function vault_db_url(vault_path, scheme, host, port, dbname)
@@ -67,7 +68,10 @@ return {
         vim.g.dbs = dbs
       end
 
-      refresh_db_credentials()
+      vim.keymap.set("n", "<leader>DD", function()
+        refresh_db_credentials()
+        vim.cmd("DBUIToggle")
+      end, { desc = "Toggle DB UI" })
 
       vim.keymap.set("n", "<leader>Dr", function()
         refresh_db_credentials()
