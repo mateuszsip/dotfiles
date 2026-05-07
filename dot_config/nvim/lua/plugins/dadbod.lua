@@ -69,7 +69,12 @@ return {
       end
 
       vim.keymap.set("n", "<leader>DD", function()
-        refresh_db_credentials()
+        local is_open = vim.iter(vim.api.nvim_list_wins()):any(function(w)
+          return vim.bo[vim.api.nvim_win_get_buf(w)].filetype == "dbui"
+        end)
+        if not is_open then
+          refresh_db_credentials()
+        end
         vim.cmd("DBUIToggle")
       end, { desc = "Toggle DB UI" })
 
