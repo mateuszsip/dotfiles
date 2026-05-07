@@ -75,7 +75,7 @@ map("n", "<leader>fd", function()
       picker:close()
       if item then
         vim.schedule(function()
-          vim.fn.chdir(item.file)
+          vim.fn.chdir(vim.fn.expand("~") .. "/" .. item.file)
           vim.notify("cd " .. item.file)
         end)
       end
