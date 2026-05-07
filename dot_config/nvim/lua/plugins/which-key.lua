@@ -4,6 +4,7 @@ return {
     spec = {
       { "<leader>C", group = "chezmoi" },
       { "<leader>o", group = "obsidian" },
+      { "<leader>ow", group = "workspace" },
       { "<leader>m", group = "markdown" },
     },
   },

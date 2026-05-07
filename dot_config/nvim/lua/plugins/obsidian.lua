@@ -13,7 +13,9 @@ return {
     { "<leader>ot", "<cmd>Obsidian tags<CR>", desc = "Obsidian: Tags" },
     { "<leader>os", "<cmd>Obsidian search<CR>", desc = "Obsidian: Search" },
     { "<leader>oq", "<cmd>Obsidian quick_switch<CR>", desc = "Obsidian: Quick switch" },
-    { "<leader>ow", "<cmd>Obsidian workspace<CR>", desc = "Obsidian: Switch workspace" },
+    { "<leader>oww", "<cmd>Obsidian workspace work<CR>", desc = "Obsidian: Work workspace" },
+    { "<leader>owp", "<cmd>Obsidian workspace personal<CR>", desc = "Obsidian: Personal workspace" },
+    { "<leader>owW", "<cmd>Obsidian workspace<CR>", desc = "Obsidian: Pick workspace" },
   },
   opts = {
     legacy_commands = false,
