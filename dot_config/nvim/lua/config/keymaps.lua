@@ -75,8 +75,9 @@ map("n", "<leader>fd", function()
       picker:close()
       if item then
         vim.schedule(function()
-          vim.fn.chdir(vim.fn.expand("~") .. "/" .. item.file)
-          vim.notify("cd " .. item.file)
+          local dir = vim.fn.expand("~") .. "/" .. item.file
+          vim.fn.chdir(dir)
+          vim.cmd("Neotree focus dir=" .. dir)
         end)
       end
     end,
