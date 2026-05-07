@@ -71,6 +71,15 @@ map("n", "<leader>fd", function()
         end,
       }), ctx)
     end,
+    confirm = function(picker, item)
+      picker:close()
+      if item then
+        vim.schedule(function()
+          vim.fn.chdir(item.file)
+          vim.notify("cd " .. item.file)
+        end)
+      end
+    end,
   })
 end, { desc = "Find Directories (home)" })
 map("n", "<leader>fF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
