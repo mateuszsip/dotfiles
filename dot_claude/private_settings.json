@@ -1,0 +1,83 @@
+{
+  "enabledPlugins": {
+    "github@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [],
+        "matcher": "*"
+      },
+      {
+        "hooks": [
+          {
+            "command": "atuin hook claude-code",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "command": "atuin hook claude-code",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "/home/sip/.claude/hooks/rtk-rewrite.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [],
+        "matcher": "*"
+      },
+      {
+        "hooks": [
+          {
+            "command": "atuin hook claude-code",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Read(/home/sip/.config/**)",
+      "Edit(/home/sip/.config/**)",
+      "Read(/home/sip/.local/share/chezmoi/**)",
+      "Edit(/home/sip/.local/share/chezmoi/**)"
+    ],
+    "ask": [
+      "Bash(gh pr create:*)",
+      "Bash(git commit:*)"
+    ],
+    "defaultMode": "acceptEdits",
+    "deny": [
+      "Read(*.env)",
+      "Bash(rm:*)",
+      "Bash(curl:*)"
+    ]
+  },
+  "statusLine": {
+    "command": "bash /home/sip/.claude/statusline-command.sh",
+    "type": "command"
+  },
+  "theme": "light"
+}
