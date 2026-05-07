@@ -10,7 +10,7 @@ return {
       { "<leader>Cf", desc = "Find chezmoi managed files" },
     },
     config = function()
-      require("chezmoi").setup()
+      require("chezmoi").setup({})
 
       local commands = require("chezmoi.commands")
       local map = vim.keymap.set
