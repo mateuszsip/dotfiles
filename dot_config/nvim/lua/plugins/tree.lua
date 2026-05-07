@@ -46,7 +46,7 @@ return {
           end,
           desc = "grep in node dir",
         },
-        ["<leader>sR"] = {
+        ["<leader>RF"] = {
           function(state)
             local node = state.tree:get_node()
             local dir = node.type == "directory" and node.path
