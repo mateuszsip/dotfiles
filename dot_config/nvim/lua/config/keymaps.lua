@@ -56,7 +56,23 @@ map("n", "<A-S-;>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 
 map("n", "<leader>ff", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>fh", function() Snacks.picker.files({ cwd = vim.fn.expand("~") }) end, { desc = "Find Files (home)" })
-map("n", "<leader>fd", function() Snacks.picker.files({ cwd = vim.fn.expand("~"), cmd = "fd", args = { "--type", "d", "--hidden", "--exclude", ".git" } }) end, { desc = "Find Directories (home)" })
+map("n", "<leader>fd", function()
+  Snacks.picker({
+    title = "Find Directories",
+    cwd = vim.fn.expand("~"),
+    format = "file",
+    finder = function(opts, ctx)
+      return require("snacks.picker.source.proc").proc(ctx:opts({
+        cmd = "fd",
+        args = { "--type", "d", "--hidden", "--exclude", ".git", "." },
+        transform = function(item)
+          item.file = item.text
+          item.dir = true
+        end,
+      }), ctx)
+    end,
+  })
+end, { desc = "Find Directories (home)" })
 map("n", "<leader>fF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
 map("n", "<leader>fw", function() Snacks.picker.files({ root = false, pattern = vim.fn.expand("<cword>") }) end, { desc = "Find Files (word, cwd)" })
 map("n", "<leader>fW", function() Snacks.picker.files({ pattern = vim.fn.expand("<cword>") }) end, { desc = "Find Files (word, Root Dir)" })
