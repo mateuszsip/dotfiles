@@ -46,6 +46,15 @@ return {
           end,
           desc = "grep in node dir",
         },
+        ["<leader>sR"] = {
+          function(state)
+            local node = state.tree:get_node()
+            local dir = node.type == "directory" and node.path
+              or vim.fn.fnamemodify(node.path, ":h")
+            require("utils.kulala").search_requests_in_dir(dir)
+          end,
+          desc = "find HTTP requests in node dir",
+        },
       },
     },
   },
