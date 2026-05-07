@@ -26,6 +26,7 @@ return {
               name = "close_pr",
               lhs = "<C-x>",
               desc = "close pull request",
+              mode = { "n", "i" },
               fn = function(_, item)
                 if item.kind ~= "pull_request" then
                   return
@@ -51,6 +52,7 @@ return {
               name = "toggle_draft",
               lhs = "<C-d>",
               desc = "toggle draft / ready for review",
+              mode = { "n", "i" },
               fn = function(_, item)
                 if item.kind ~= "pull_request" then
                   return
