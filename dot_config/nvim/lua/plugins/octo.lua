@@ -27,7 +27,7 @@ return {
               lhs = "<C-x>",
               desc = "close pull request",
               mode = { "n", "i" },
-              fn = function(_, item)
+              fn = function(picker, item)
                 if item.kind ~= "pull_request" then
                   return
                 end
@@ -43,6 +43,9 @@ return {
                       if msg then
                         utils.info(msg)
                       end
+                      vim.schedule(function()
+                        picker:refresh()
+                      end)
                     end,
                   },
                 }
@@ -53,7 +56,7 @@ return {
               lhs = "<C-d>",
               desc = "toggle draft / ready for review",
               mode = { "n", "i" },
-              fn = function(_, item)
+              fn = function(picker, item)
                 if item.kind ~= "pull_request" then
                   return
                 end
@@ -71,6 +74,9 @@ return {
                       if msg then
                         utils.info(msg)
                       end
+                      vim.schedule(function()
+                        picker:refresh()
+                      end)
                     end,
                   },
                 }
