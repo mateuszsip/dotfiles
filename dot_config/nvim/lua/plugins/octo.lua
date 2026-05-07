@@ -17,6 +17,67 @@ return {
     enable_builtin = true,
     default_to_projects_v2 = true,
     default_merge_method = "squash",
+    picker = "snacks",
+    picker_config = {
+      snacks = {
+        actions = {
+          search = {
+            {
+              name = "close_pr",
+              lhs = "<C-x>",
+              desc = "close pull request",
+              fn = function(_, item)
+                if item.kind ~= "pull_request" then
+                  return
+                end
+                local gh = require "octo.gh"
+                local utils = require "octo.utils"
+                gh.pr.close {
+                  item.number,
+                  repo = item.repository.nameWithOwner,
+                  opts = {
+                    cb = function(output, stderr)
+                      local msg = (not utils.is_blank(output) and output)
+                        or (not utils.is_blank(stderr) and stderr)
+                      if msg then
+                        utils.info(msg)
+                      end
+                    end,
+                  },
+                }
+              end,
+            },
+            {
+              name = "toggle_draft",
+              lhs = "<C-d>",
+              desc = "toggle draft / ready for review",
+              fn = function(_, item)
+                if item.kind ~= "pull_request" then
+                  return
+                end
+                local gh = require "octo.gh"
+                local utils = require "octo.utils"
+                -- gh pr ready outputs success to stderr (known quirk), so show both
+                gh.pr.ready {
+                  item.number,
+                  repo = item.repository.nameWithOwner,
+                  undo = not item.isDraft,
+                  opts = {
+                    cb = function(output, stderr)
+                      local msg = (not utils.is_blank(stderr) and stderr)
+                        or (not utils.is_blank(output) and output)
+                      if msg then
+                        utils.info(msg)
+                      end
+                    end,
+                  },
+                }
+              end,
+            },
+          },
+        },
+      },
+    },
   },
   keys = {
     -- Fix: `Octo pr search` is broken, use `Octo search` instead.
