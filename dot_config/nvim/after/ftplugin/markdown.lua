@@ -31,11 +31,12 @@ vim.schedule(function()
     yaml.enabled = false
   end
 
-  -- Verify the patch landed (writes to Neovim messages on first open).
+  -- Verify the patch landed.
   local wiki_icon = link and link.wiki and vim.inspect(link.wiki.icon) or "n/a"
   local hyper     = link and vim.inspect(link.hyperlink)              or "n/a"
+  local custom    = link and vim.inspect(link.custom)                 or "n/a"
   vim.notify(
-    ("render-markdown patch: hyperlink=%s wiki.icon=%s"):format(hyper, wiki_icon),
+    ("render-markdown patch: hyperlink=%s wiki.icon=%s\ncustom=%s"):format(hyper, wiki_icon, custom),
     vim.log.levels.DEBUG
   )
 
