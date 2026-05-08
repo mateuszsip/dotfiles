@@ -1,67 +1,51 @@
--- Remove render-markdown link icons after the plugin has configured itself.
+-- Remove render-markdown link icons.
 --
--- We modify state.config directly (not through a deep-copy + state.setup)
--- to avoid state.setup() calling core.ts.setup(), which re-registers FileType
--- autocmds and may have unintended interactions. We only clear the parts we
--- need: the per-buffer config cache and the rendered extmarks.
-vim.schedule(function()
+-- Problem: Updater.new() captures self.config = state.get(buf) at construction
+-- time (deep copy of state.config). The initial render on BufEnter creates
+-- Updater A with the original config (wiki.icon = '󱗖 '). If we patch
+-- state.config immediately and force a re-render (Updater B), both updaters
+-- run concurrently via the decorator:schedule debounce (100ms). Updater A's
+-- async parse callback fires last for some rows and overwrites B's 'X' marks
+-- with the original '⊕' marks.
+--
+-- Fix: defer the patch past the debounce window (>100ms). By the time our
+-- patch and forced re-render run, Updater A's render has already completed.
+-- Our forced Updater B is then the last writer and wins for all rows.
+vim.defer_fn(function()
   local ok, state = pcall(require, "render-markdown.state")
   if not ok or not state.config then
     return
   end
 
-  -- Patch link config.
+  -- Patch link icons directly on state.config.
   local link = state.config.link
   if link then
-    -- Direct fields.
     link.image = ""
     link.email = ""
     link.hyperlink = ""
-
-    -- Nested wiki config - initialise if somehow absent.
     if not link.wiki then
       link.wiki = {}
     end
-    link.wiki.icon = "X"  -- temporary: confirm render path before using ""
+    link.wiki.icon = ""
   end
 
-  -- Disable YAML bullet rendering (overlay mode baked in, no config fix).
+  -- Disable YAML bullet rendering (overlay mode, no overflow fallback).
   local yaml = state.config.yaml
   if yaml then
     yaml.enabled = false
   end
 
-  -- After a delay, dump all non-empty virt_text extmarks from every namespace.
-  vim.defer_fn(function()
-    local buf = vim.api.nvim_get_current_buf()
-    if vim.bo[buf].filetype ~= "markdown" then return end
-    local out = {}
-    for ns_name, ns_id in pairs(vim.api.nvim_get_namespaces()) do
-      local marks = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, { details = true })
-      for _, m in ipairs(marks) do
-        local opts = m[4]
-        if opts.virt_text then
-          for _, vt in ipairs(opts.virt_text) do
-            if vt[1] and vt[1] ~= "" then
-              table.insert(out, ns_name .. " row=" .. m[2] .. " " .. vim.inspect(vt[1]))
-            end
-          end
-        end
-      end
-    end
-    vim.notify(table.concat(out, "\n"), vim.log.levels.DEBUG)
-  end, 800)
-
   -- Wipe the per-buffer config cache so Config.new() re-reads state.config.
   state.cache = {}
 
-  -- Clear all rendered extmarks and the decorator cache without going through
-  -- state.setup() (which would call core.ts.setup() and re-register autocmds).
+  -- Clear all rendered extmarks and the decorator cache.
   local ok_ui, ui = pcall(require, "render-markdown.core.ui")
   if ok_ui then
-    ui.setup()  -- clears M.ns extmarks in all bufs + resets M.cache
+    ui.setup()
 
-    -- Trigger immediate re-render for every visible markdown buffer.
+    -- Force a fresh Updater (with the patched config) for every visible
+    -- markdown buffer. This runs after Updater A has already completed, so
+    -- our Updater B will be the last writer for all rows.
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
       if vim.bo[buf].filetype == "markdown" then
         local win = vim.fn.bufwinid(buf)
@@ -71,4 +55,4 @@ vim.schedule(function()
       end
     end
   end
-end)
+end, 250)  -- 250ms > 100ms debounce; Updater A has completed by then
