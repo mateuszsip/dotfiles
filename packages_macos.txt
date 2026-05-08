@@ -17,10 +17,13 @@ k9s
 kubectl
 lazydocker
 lazygit
+luarocks
 mise
+mysql-client
 neovim
 nushell
 opencode
+pngpaste
 ripgrep
 shellcheck
 starship

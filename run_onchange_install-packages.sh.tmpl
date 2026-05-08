@@ -30,4 +30,18 @@ fi
 
 brew install \
 {{ include "packages_macos.txt" | trim | splitList "\n" | join " \\\n  " }}
+
+expected=$(sort <<'EOF'
+{{ include "packages_macos.txt" | trim }}
+EOF
+)
+extras=$(comm -23 <(brew list --installed-on-request | sort) <(echo "$expected"))
+if [ -n "$extras" ]; then
+  echo "Uninstalling on-request packages not in packages_macos.txt:"
+  echo "$extras" | sed 's/^/  /'
+  while IFS= read -r pkg; do
+    [ -z "$pkg" ] && continue
+    brew uninstall "$pkg" || echo "  skipped $pkg (still required by another formula)"
+  done <<< "$extras"
+fi
 {{- end }}
