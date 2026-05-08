@@ -1,49 +1,54 @@
--- Patch render-markdown link icons after the plugin has been configured.
+-- Remove render-markdown link icons after the plugin has configured itself.
 --
--- render-markdown has two caches (state.cache for buf configs, core/ui cache
--- for decorators) plus live extmarks. The only safe way to clear all three
--- and trigger a fresh render is to call state.setup() with the patched config:
--- it resets both caches, clears all namespace extmarks via core/ui.setup(),
--- and resets the treesitter integration via core/ts.setup().
---
--- We deep-copy the *current* state.config so all LazyVim settings (code,
--- heading, checkbox…) are preserved and only the link icons are zeroed.
+-- We modify state.config directly (not through a deep-copy + state.setup)
+-- to avoid state.setup() calling core.ts.setup(), which re-registers FileType
+-- autocmds and may have unintended interactions. We only clear the parts we
+-- need: the per-buffer config cache and the rendered extmarks.
 vim.schedule(function()
   local ok, state = pcall(require, "render-markdown.state")
   if not ok or not state.config then
     return
   end
 
-  -- Preserve all existing config; only patch what we need.
-  local config = vim.deepcopy(state.config)
-
-  -- Remove all inline link icons.
-  local link = config.link
+  -- Patch link config.
+  local link = state.config.link
   if link then
+    -- Direct fields.
     link.image = ""
     link.email = ""
     link.hyperlink = ""
-    if link.wiki then
-      link.wiki.icon = ""
+
+    -- Nested wiki config - initialise if somehow absent.
+    if not link.wiki then
+      link.wiki = {}
     end
+    link.wiki.icon = ""
   end
 
-  -- Disable YAML bullet rendering (overlay mode, no overflow fallback).
-  if config.yaml then
-    config.yaml.enabled = false
+  -- Disable YAML bullet rendering (overlay mode baked in, no config fix).
+  local yaml = state.config.yaml
+  if yaml then
+    yaml.enabled = false
   end
 
-  -- Re-setup with patched config:
-  --   • Updates state.config
-  --   • Resets state.cache (per-buf config objects)
-  --   • Calls core/ui.setup() → clears all extmarks + decorator cache
-  --   • Calls core/ts.setup() → resets treesitter integration
-  state.setup(config)
+  -- Verify the patch landed (writes to Neovim messages on first open).
+  local wiki_icon = link and link.wiki and vim.inspect(link.wiki.icon) or "n/a"
+  local hyper     = link and vim.inspect(link.hyperlink)              or "n/a"
+  vim.notify(
+    ("render-markdown patch: hyperlink=%s wiki.icon=%s"):format(hyper, wiki_icon),
+    vim.log.levels.DEBUG
+  )
 
-  -- Force an immediate re-render for every visible markdown buffer so the
-  -- icons disappear without waiting for the next cursor movement.
-  local ui_ok, ui = pcall(require, "render-markdown.core.ui")
-  if ui_ok then
+  -- Wipe the per-buffer config cache so Config.new() re-reads state.config.
+  state.cache = {}
+
+  -- Clear all rendered extmarks and the decorator cache without going through
+  -- state.setup() (which would call core.ts.setup() and re-register autocmds).
+  local ok_ui, ui = pcall(require, "render-markdown.core.ui")
+  if ok_ui then
+    ui.setup()  -- clears M.ns extmarks in all bufs + resets M.cache
+
+    -- Trigger immediate re-render for every visible markdown buffer.
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
       if vim.bo[buf].filetype == "markdown" then
         local win = vim.fn.bufwinid(buf)
