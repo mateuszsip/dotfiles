@@ -16,6 +16,18 @@ return {
     { "<leader>oww", "<cmd>Obsidian workspace work<CR>", desc = "Obsidian: Work workspace" },
     { "<leader>owp", "<cmd>Obsidian workspace personal<CR>", desc = "Obsidian: Personal workspace" },
     { "<leader>owW", "<cmd>Obsidian workspace<CR>", desc = "Obsidian: Pick workspace" },
+    {
+      "<leader>oT",
+      function()
+        local ws = Obsidian.workspace
+        if ws then
+          vim.cmd("e " .. tostring(ws.path) .. "/_todo.md")
+        else
+          vim.notify("No active Obsidian workspace", vim.log.levels.WARN)
+        end
+      end,
+      desc = "Obsidian: Todo",
+    },
   },
   opts = {
     legacy_commands = false,

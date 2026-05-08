@@ -8,6 +8,7 @@ $env.K9S_SKIN = 'solarized-light'
 
 {{- if eq .chezmoi.os "darwin" }}
 $env.PATH ++= ['/opt/homebrew/bin']
+$env.PATH ++= ['/usr/local/opt/mysql-client/bin']
 
 $env.SSH_AUTH_SOCK = "/Users/sip/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
 {{ else }}
