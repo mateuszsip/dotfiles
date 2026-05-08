@@ -8,5 +8,10 @@ return {
         icon = "",
       },
     },
+    -- Disable bullet rendering in YAML frontmatter. The overlay icon
+    -- stacks visually with indent guides and doesn't suit frontmatter context.
+    yaml = {
+      enabled = false,
+    },
   },
 }
