@@ -22,7 +22,7 @@ vim.schedule(function()
     if not link.wiki then
       link.wiki = {}
     end
-    link.wiki.icon = ""
+    link.wiki.icon = "X"  -- temporary: confirm render path before using ""
   end
 
   -- Disable YAML bullet rendering (overlay mode baked in, no config fix).
