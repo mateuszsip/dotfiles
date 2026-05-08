@@ -31,14 +31,26 @@ vim.schedule(function()
     yaml.enabled = false
   end
 
-  -- Verify the patch landed.
-  local wiki_icon = link and link.wiki and vim.inspect(link.wiki.icon) or "n/a"
-  local hyper     = link and vim.inspect(link.hyperlink)              or "n/a"
-  local custom    = link and vim.inspect(link.custom)                 or "n/a"
-  vim.notify(
-    ("render-markdown patch: hyperlink=%s wiki.icon=%s\ncustom=%s"):format(hyper, wiki_icon, custom),
-    vim.log.levels.DEBUG
-  )
+  -- After a delay, dump all non-empty virt_text extmarks from every namespace.
+  vim.defer_fn(function()
+    local buf = vim.api.nvim_get_current_buf()
+    if vim.bo[buf].filetype ~= "markdown" then return end
+    local out = {}
+    for ns_name, ns_id in pairs(vim.api.nvim_get_namespaces()) do
+      local marks = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, { details = true })
+      for _, m in ipairs(marks) do
+        local opts = m[4]
+        if opts.virt_text then
+          for _, vt in ipairs(opts.virt_text) do
+            if vt[1] and vt[1] ~= "" then
+              table.insert(out, ns_name .. " row=" .. m[2] .. " " .. vim.inspect(vt[1]))
+            end
+          end
+        end
+      end
+    end
+    vim.notify(table.concat(out, "\n"), vim.log.levels.DEBUG)
+  end, 800)
 
   -- Wipe the per-buffer config cache so Config.new() re-reads state.config.
   state.cache = {}
