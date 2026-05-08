@@ -1,0 +1,33 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# pacman: {{ include "packages_arch.txt" | sha256sum }}
+# aur:    {{ include "packages_arch_aur.txt" | sha256sum }}
+set -eufo pipefail
+
+sudo pacman -S --needed --noconfirm \
+{{ include "packages_arch.txt" | trim | splitList "\n" | join " \\\n  " }}
+
+if ! command -v paru &>/dev/null && ! command -v yay &>/dev/null; then
+  sudo pacman -S --needed --noconfirm base-devel git
+  tmp=$(mktemp -d)
+  git clone https://aur.archlinux.org/paru.git "$tmp/paru"
+  (cd "$tmp/paru" && makepkg -si --noconfirm)
+  rm -rf "$tmp"
+fi
+
+aur_helper=$(command -v paru || command -v yay)
+
+$aur_helper -S --needed --noconfirm \
+{{ include "packages_arch_aur.txt" | trim | splitList "\n" | join " \\\n  " }}
+{{- else if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# brew: {{ include "packages_macos.txt" | sha256sum }}
+set -eufo pipefail
+
+if ! command -v brew &>/dev/null; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+brew install \
+{{ include "packages_macos.txt" | trim | splitList "\n" | join " \\\n  " }}
+{{- end }}
