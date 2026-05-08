@@ -15,9 +15,6 @@ nextmeeting
 pacsea-bin
 pcsx2
 phpactor
-phpstorm
-phpstorm-jre
-qmk-git
 slack-desktop
 spotifatius
 subtui-git
