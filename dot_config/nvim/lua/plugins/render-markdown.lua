@@ -1,20 +1,22 @@
 return {
   "MeanderingProgrammer/render-markdown.nvim",
-  -- Use opts function so our overrides are applied AFTER the LazyVim extra's
-  -- table opts (which set code/heading/checkbox). Table opts from multiple
-  -- specs are merged in loading order; a function receives the final merged
-  -- result and can override anything.
+  -- Use opts function so our overrides apply after the LazyVim extra's
+  -- table opts (code/heading/checkbox). A function receives the already-merged
+  -- opts and has the final say.
   opts = function(_, opts)
-    -- Bullet icons: ambiguous-width Unicode (●, ○) causes visual issues when
-    -- the terminal renders them wider than Neovim's strdisplaywidth count.
-    -- With ambiwidth=double (set in options.lua), Neovim now agrees these are
-    -- 2-cell wide, triggering overflow → inline+conceal mode in the markdown
-    -- renderer, which correctly handles wide icons.
+    -- Disable bullet icon rendering. The terminal renders ambiguous-width
+    -- Unicode (●, ○, •, ◦, …) as 2 cells but Neovim's strdisplaywidth()
+    -- returns 1 for them without ambiwidth=double, which conflicts with
+    -- fillchars. The YAML renderer always uses overlay mode (no overflow
+    -- fallback), so any icon wider than 1 cell visually consumes the space
+    -- after the '-' marker. Disabling leaves the raw '-'/'*'/'+' markers,
+    -- which always have correct spacing.
     opts.bullet = opts.bullet or {}
-    opts.bullet.icons = { "•", "◦", "‣", "·" }
+    opts.bullet.enabled = false
 
-    -- Link icons: remove all inline link icons. They add visual clutter and
-    -- misalign sub-list indentation when combined with bullet markers.
+    -- Remove all inline link icons. They misalign sub-list indentation and
+    -- add visual clutter. Wiki links still render with bracket concealing
+    -- and link highlighting; only the prepended icon is removed.
     opts.link = opts.link or {}
     opts.link.image = ""
     opts.link.email = ""
@@ -22,10 +24,8 @@ return {
     opts.link.wiki = opts.link.wiki or {}
     opts.link.wiki.icon = ""
 
-    -- Disable YAML frontmatter bullet rendering. The YAML renderer always uses
-    -- virt_text_pos='overlay' with no overflow fallback, so even with
-    -- ambiwidth=double the icon width doesn't match the '-' marker, producing
-    -- "•daily-notes" with no space. Raw "- tag" is cleaner.
+    -- YAML bullet renderer hardcodes overlay mode with no overflow fallback,
+    -- so it can't be fixed at the config level. Raw "- tag" is cleaner.
     opts.yaml = { enabled = false }
 
     return opts
