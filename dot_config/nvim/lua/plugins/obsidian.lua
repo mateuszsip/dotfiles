@@ -120,5 +120,12 @@ return {
         })
       end,
     },
+
+    -- obsidian.nvim checks nvim_list_runtime_paths() to detect render-markdown,
+    -- but there's a timing race on ft=markdown: obsidian may initialize before
+    -- lazy.nvim has added render-markdown to the runtimepath, causing it to
+    -- incorrectly enable its own UI (bullets, link icons) on top of render-markdown.
+    -- Disable explicitly so render-markdown has sole responsibility for rendering.
+    ui = { enable = false },
   },
 }
