@@ -2,6 +2,25 @@ return {
   {
     "xvzc/chezmoi.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
+    event = "BufWritePost",
+    init = function()
+      local chezmoi_bin = vim.fn.exepath("chezmoi")
+      if chezmoi_bin ~= "" then
+        vim.api.nvim_create_autocmd("BufWritePost", {
+          desc = "Auto chezmoi add on save for managed files",
+          callback = function()
+            local file = vim.fn.expand("%:p")
+            vim.fn.jobstart({ chezmoi_bin, "source-path", file }, {
+              on_exit = function(_, code)
+                if code == 0 then
+                  vim.fn.jobstart({ chezmoi_bin, "add", file })
+                end
+              end,
+            })
+          end,
+        })
+      end
+    end,
     keys = {
       { "<leader>Ca", desc = "Chezmoi add current file" },
       { "<leader>Ce", desc = "Chezmoi edit source file" },
@@ -45,20 +64,6 @@ return {
       map("n", "<leader>Cf", function()
         require("chezmoi.pick").snacks()
       end, { desc = "Find chezmoi managed files" })
-
-      vim.api.nvim_create_autocmd("BufWritePost", {
-        desc = "Auto chezmoi add on save for managed files",
-        callback = function()
-          local file = vim.fn.expand("%:p")
-          vim.fn.jobstart({ "chezmoi", "source-path", file }, {
-            on_exit = function(_, code)
-              if code == 0 then
-                vim.fn.jobstart({ "chezmoi", "add", file })
-              end
-            end,
-          })
-        end,
-      })
     end,
   },
   {
