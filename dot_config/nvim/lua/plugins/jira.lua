@@ -72,7 +72,10 @@ return {
             issue.parent = nil
           end
           table.sort(issues, function(a, b)
-            return (status_index[a.status] or 999) < (status_index[b.status] or 999)
+            local sa = status_index[a.status] or 999
+            local sb = status_index[b.status] or 999
+            if sa ~= sb then return sa < sb end
+            return (a.assignee or "") < (b.assignee or "")
           end)
         end
         callback(issues, err)
