@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(keybindings-help)",
+      "Bash(chezmoi source-path *)",
+      "Bash(chezmoi source-dir *)",
+      "Bash(chezmoi add *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [ -n \"$f\" ] && chezmoi add \"$f\"; } 2>/dev/null || true",
+            "statusMessage": "Syncing to chezmoi..."
+          }
+        ]
+      }
+    ]
+  }
+}
