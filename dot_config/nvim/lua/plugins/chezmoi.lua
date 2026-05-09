@@ -35,25 +35,30 @@ return {
       end, { desc = "Chezmoi edit source file (watch)" })
 
       map("n", "<leader>Cp", function()
-        commands.apply({ targets = { vim.fn.expand("%:p") } })
+        Snacks.terminal({ "chezmoi", "apply", vim.fn.expand("%:p") }, { auto_close = true })
       end, { desc = "Chezmoi apply current file" })
 
       map("n", "<leader>CA", function()
-        commands.apply({
-          on_stderr = function(_, data)
-            vim.notify("chezmoi apply failed: " .. data, vim.log.levels.ERROR)
-          end,
-          on_exit = function(_, code)
-            if code == 0 then
-              vim.notify("chezmoi apply: done")
-            end
-          end,
-        })
+        Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
       end, { desc = "Chezmoi apply all" })
 
       map("n", "<leader>Cf", function()
         require("chezmoi.pick").snacks()
       end, { desc = "Find chezmoi managed files" })
+
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        desc = "Auto chezmoi add on save for managed files",
+        callback = function()
+          local file = vim.fn.expand("%:p")
+          vim.fn.jobstart({ "chezmoi", "source-path", file }, {
+            on_exit = function(_, code)
+              if code == 0 then
+                vim.fn.jobstart({ "chezmoi", "add", file })
+              end
+            end,
+          })
+        end,
+      })
     end,
   },
   {
