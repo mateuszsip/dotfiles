@@ -1,7 +1,5 @@
 local M = {}
 
--- Scan dir recursively for named requests (### NAME) across all .http/.rest files
--- and open a picker to jump to them.
 function M.search_requests_in_dir(dir)
   dir = dir or vim.fn.getcwd()
 
@@ -45,64 +43,17 @@ function M.search_requests_in_dir(dir)
     vim.cmd("normal! zz")
   end
 
-  -- snacks.picker
-  local has_snacks, snacks_picker = pcall(require, "snacks.picker")
-  if has_snacks then
-    local items = vim.tbl_map(function(r)
-      return { text = r.display, file = r.file, lnum = r.lnum }
-    end, results)
-    snacks_picker({
-      title = "HTTP Requests",
-      items = items,
-      confirm = function(ctx, item)
-        ctx:close()
-        jump({ file = item.file, lnum = item.lnum })
-      end,
-    })
-    return
-  end
-
-  -- telescope fallback
-  local has_telescope = pcall(require, "telescope")
-  if has_telescope then
-    local action_state = require("telescope.actions.state")
-    local actions = require("telescope.actions")
-    local finders = require("telescope.finders")
-    local pickers = require("telescope.pickers")
-    local conf = require("telescope.config").values
-
-    pickers
-      .new({}, {
-        prompt_title = "HTTP Requests",
-        finder = finders.new_table({
-          results = results,
-          entry_maker = function(r)
-            return { value = r, display = r.display, ordinal = r.display }
-          end,
-        }),
-        attach_mappings = function(prompt_bufnr)
-          actions.select_default:replace(function()
-            local sel = action_state.get_selected_entry()
-            actions.close(prompt_bufnr)
-            jump(sel.value)
-          end)
-          return true
-        end,
-        sorter = conf.generic_sorter({}),
-      })
-      :find()
-    return
-  end
-
-  -- vim.ui.select fallback
-  local labels = vim.tbl_map(function(r) return r.display end, results)
-  local by_label = {}
-  for _, r in ipairs(results) do
-    by_label[r.display] = r
-  end
-  vim.ui.select(labels, { prompt = "HTTP Requests" }, function(choice)
-    if choice then jump(by_label[choice]) end
-  end)
+  local items = vim.tbl_map(function(r)
+    return { text = r.display, file = r.file, lnum = r.lnum }
+  end, results)
+  require("snacks.picker")({
+    title = "HTTP Requests",
+    items = items,
+    confirm = function(ctx, item)
+      ctx:close()
+      jump({ file = item.file, lnum = item.lnum })
+    end,
+  })
 end
 
 return M
