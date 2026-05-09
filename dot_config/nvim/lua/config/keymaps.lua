@@ -101,6 +101,25 @@ map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
+-- Chezmoi (dotfiles)
+map("n", "<leader>Da", function()
+  vim.notify("Running chezmoi apply…", vim.log.levels.INFO)
+  vim.fn.jobstart("chezmoi apply", {
+    on_stderr = function(_, data)
+      if data and #data > 0 and data[1] ~= "" then
+        vim.notify(table.concat(data, "\n"), vim.log.levels.WARN)
+      end
+    end,
+    on_exit = function(_, code)
+      if code == 0 then
+        vim.notify("chezmoi apply: done", vim.log.levels.INFO)
+      else
+        vim.notify("chezmoi apply: failed (exit " .. code .. ")", vim.log.levels.ERROR)
+      end
+    end,
+  })
+end, { desc = "Chezmoi Apply" })
+
 -- Fold keymaps (overrides movement mappings above; require() is lazy so safe before origami loads)
 map("n", "j", function() require("origami").h() end, { desc = "Left / fold" })
 map("n", ";", function() require("origami").l() end, { desc = "Right / unfold" })
