@@ -4,7 +4,12 @@ return {
     jira = {
       limit = 200,
     },
-    active_sprint_query = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY created DESC, Rank ASC",
+    active_sprint_query = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY Rank ASC",
+    active_sprint_status_order = { "QA", "Review", "In Progress", "Pending", "Blocked", "To Do", "Signed off" },
+    -- Maps board column names to actual Jira API status names
+    active_sprint_status_map = {
+      ["Review"] = "Awaiting review",
+    },
     queries = {
       ["All platform"] = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) ORDER BY created DESC, Rank ASC",
       ["All cards"] = "project = '%s' ORDER BY created DESC, Rank ASC",
@@ -19,6 +24,28 @@ return {
       },
     },
   },
+  config = function(_, opts)
+    require("jira").setup(opts)
+
+    local status_index = {}
+    local status_map = opts.active_sprint_status_map or {}
+    for i, s in ipairs(opts.active_sprint_status_order or {}) do
+      status_index[status_map[s] or s] = i
+    end
+
+    local sprint = require("jira.jira-api.sprint")
+    local orig = sprint.get_active_sprint_issues
+    sprint.get_active_sprint_issues = function(project, callback)
+      orig(project, function(issues, err)
+        if issues and not err then
+          table.sort(issues, function(a, b)
+            return (status_index[a.status] or 999) < (status_index[b.status] or 999)
+          end)
+        end
+        callback(issues, err)
+      end)
+    end
+  end,
   keys = {
     { "<leader>jj", "<cmd>Jira CARD<CR>", desc = "Jira: Open CARD board" },
     {
