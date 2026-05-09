@@ -4,7 +4,7 @@ return {
     jira = {
       limit = 200,
     },
-    active_sprint_query = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done ORDER BY created DESC, Rank ASC",
+    active_sprint_query = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY created DESC, Rank ASC",
     queries = {
       ["All platform"] = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) ORDER BY created DESC, Rank ASC",
       ["All cards"] = "project = '%s' ORDER BY created DESC, Rank ASC",
