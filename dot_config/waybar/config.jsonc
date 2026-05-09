@@ -12,6 +12,7 @@
   ],
   "modules-center": [
     "clock",
+    "custom/gcal",
     "custom/weather",
     "custom/media#music",
     "custom/media#browser",
@@ -84,6 +85,12 @@
     "format-alt": "{:L%d %B W%V %Y}",
     "tooltip": false,
     "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select"
+  },
+  "custom/gcal": {
+    "exec": "$HOME/.config/waybar/gcal-next-meeting.sh",
+    "return-type": "json",
+    "interval": 600,
+    "tooltip": true
   },
   "custom/weather": {
     "format": " {}°",

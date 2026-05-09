@@ -13,7 +13,6 @@ lazytailscale-bin
 moor-bin
 nextmeeting
 pacsea-bin
-pcsx2
 phpactor
 slack-desktop
 spotifatius
