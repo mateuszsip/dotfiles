@@ -26,7 +26,6 @@ return {
       { "<leader>Ce", desc = "Chezmoi edit source file" },
       { "<leader>Cw", desc = "Chezmoi edit source file (watch)" },
       { "<leader>Cp", desc = "Chezmoi apply current file" },
-      { "<leader>CA", desc = "Chezmoi apply all" },
       { "<leader>Cf", desc = "Find chezmoi managed files" },
     },
     config = function()
@@ -56,10 +55,6 @@ return {
       map("n", "<leader>Cp", function()
         Snacks.terminal({ "chezmoi", "apply", vim.fn.expand("%:p") }, { auto_close = true })
       end, { desc = "Chezmoi apply current file" })
-
-      map("n", "<leader>CA", function()
-        Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
-      end, { desc = "Chezmoi apply all" })
 
       map("n", "<leader>Cf", function()
         require("chezmoi.pick").snacks()

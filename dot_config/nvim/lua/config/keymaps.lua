@@ -101,6 +101,10 @@ map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
+map("n", "<leader>CA", function()
+  Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
+end, { desc = "Chezmoi Apply All" })
+
 -- Fold keymaps (overrides movement mappings above; require() is lazy so safe before origami loads)
 map("n", "j", function() require("origami").h() end, { desc = "Left / fold" })
 map("n", ";", function() require("origami").l() end, { desc = "Right / unfold" })
