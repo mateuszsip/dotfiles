@@ -38,6 +38,9 @@ return {
     sprint.get_active_sprint_issues = function(project, callback)
       orig(project, function(issues, err)
         if issues and not err then
+          for _, issue in ipairs(issues) do
+            issue.parent = nil
+          end
           table.sort(issues, function(a, b)
             return (status_index[a.status] or 999) < (status_index[b.status] or 999)
           end)
