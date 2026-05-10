@@ -15,7 +15,7 @@ return {
         },
         autoFold = {
           enabled = true,
-          kinds = { "comment", "imports" },
+          kinds = { "imports" },
         },
         foldKeymaps = {
           setup = false, -- mapped in keymaps.lua to match j=left, ;=right layout

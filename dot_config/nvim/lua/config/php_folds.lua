@@ -6,7 +6,7 @@ function M.foldexpr(lnum)
   if vim.fn.getline(lnum):match("^use ") then
     return "1"
   end
-  return vim.treesitter.foldexpr(lnum)
+  return "0"
 end
 
 --- Close the import fold and restore cursor position.
