@@ -17,46 +17,88 @@ return {
       adapters = {
         require("neotest-phpunit")({
           phpunit_cmd = function()
-            -- Get the current buffer's file path
             local current_file = vim.api.nvim_buf_get_name(0)
-
             if string.find(current_file, "creditcard") then
-              -- Extract service name from path like /path/to/creditcard/services/myservice/...
-              local service = current_file:match("/services/([^/]+)")
-
-              if not service then
-                vim.notify("Could not detect service from path: " .. current_file, vim.log.levels.ERROR)
-                error("Service detection failed - path must contain /services/[service-name]/")
-              end
-
-              -- Extract service directory path (e.g., /path/to/creditcard/services/billing)
-              local service_dir = current_file:match("(.*/services/" .. service .. ")")
-              if not service_dir then
-                vim.notify("Could not find service directory", vim.log.levels.ERROR)
-                error("Failed to detect service directory")
-              end
-
-              vim.notify("Service: " .. service, vim.log.levels.INFO)
-
-              return {
-                "docker",
-                "compose",
-                "-f",
-                service_dir .. "/build/local/docker-compose.full.yaml",
-                "exec",
-                "--user",
-                "app",
-                service .. "-php-fpm",
-                "php",
-                "vendor/bin/phpunit",
-              }
-            else
-              return "vendor/bin/phpunit"
+              return vim.fn.stdpath("config") .. "/bin/phpunit-neotest-creditcard"
             end
+            return "vendor/bin/phpunit"
           end,
           filter_dirs = { "vendor" },
         }),
       },
     })
   end,
+  keys = {
+    { "<leader>t", "", desc = "+test" },
+    {
+      "<leader>ta",
+      function()
+        require("neotest").run.attach()
+      end,
+      desc = "Attach to Test (Neotest)",
+    },
+    {
+      "<leader>tt",
+      function()
+        require("neotest").run.run(vim.fn.expand("%"))
+      end,
+      desc = "Run File (Neotest)",
+    },
+    {
+      "<leader>tT",
+      function()
+        require("neotest").run.run(vim.uv.cwd())
+      end,
+      desc = "Run All Test Files (Neotest)",
+    },
+    {
+      "<leader>tr",
+      function()
+        require("neotest").run.run()
+      end,
+      desc = "Run Nearest (Neotest)",
+    },
+    {
+      "<leader>tl",
+      function()
+        require("neotest").run.run_last()
+      end,
+      desc = "Run Last (Neotest)",
+    },
+    {
+      "<leader>ts",
+      function()
+        require("neotest").summary.toggle()
+      end,
+      desc = "Toggle Summary (Neotest)",
+    },
+    {
+      "<leader>to",
+      function()
+        require("neotest").output.open({ enter = true, auto_close = true })
+      end,
+      desc = "Show Output (Neotest)",
+    },
+    {
+      "<leader>tO",
+      function()
+        require("neotest").output_panel.toggle()
+      end,
+      desc = "Toggle Output Panel (Neotest)",
+    },
+    {
+      "<leader>tS",
+      function()
+        require("neotest").run.stop()
+      end,
+      desc = "Stop (Neotest)",
+    },
+    {
+      "<leader>tw",
+      function()
+        require("neotest").watch.toggle(vim.fn.expand("%"))
+      end,
+      desc = "Toggle Watch (Neotest)",
+    },
+  },
 }

@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -e
+
+# Wrapper for neotest-phpunit when running PHPUnit inside Docker via docker compose.
+#
+# neotest-phpunit calls phpunit_cmd like:
+#   <this-script> /local/path/Test.php --log-junit=/tmp/neotest-xxx [--filter ...]
+#
+# We need to:
+#   1. Translate local paths -> container paths (/app/...)
+#   2. Run phpunit inside the container writing junit XML to a path inside the mounted volume
+#   3. Copy the XML back to the local temp path neotest expects
+#   4. Replace container paths in the XML with local paths so neotest can match results
+
+CONTAINER_ROOT="/app"
+TEST_FILE=""
+JUNIT_FILE=""
+REMAINING_ARGS=()
+
+for arg in "$@"; do
+  if [[ "$arg" == --log-junit=* ]]; then
+    JUNIT_FILE="${arg#--log-junit=}"
+  elif [[ "$arg" == *.php && "$arg" != --* ]]; then
+    TEST_FILE="$arg"
+  else
+    REMAINING_ARGS+=("$arg")
+  fi
+done
+
+# Detect service and its local root from the test file path
+SERVICE=$(echo "$TEST_FILE" | sed 's|.*/services/\([^/]*\)/.*|\1|')
+SERVICE_DIR=$(echo "$TEST_FILE" | sed "s|\(.*\/services\/$SERVICE\).*|\1|")
+
+if [[ -z "$SERVICE" || -z "$SERVICE_DIR" ]]; then
+  echo "phpunit-neotest-docker: could not detect service from path: $TEST_FILE" >&2
+  exit 1
+fi
+
+# Translate local test file path -> container path
+CONTAINER_TEST_FILE="${TEST_FILE/$SERVICE_DIR/$CONTAINER_ROOT}"
+
+# Use a temp file inside the mounted volume so PHPUnit can write it and we can read it
+CONTAINER_JUNIT="$CONTAINER_ROOT/.neotest-junit-$$.xml"
+LOCAL_JUNIT="$SERVICE_DIR/.neotest-junit-$$.xml"
+
+trap 'rm -f "$LOCAL_JUNIT"' EXIT
+
+docker compose \
+  --project-directory "$SERVICE_DIR" \
+  -p "zable-uk-cards-$SERVICE" \
+  -f "$SERVICE_DIR/build/local/docker-compose.full.yaml" \
+  exec --user app "$SERVICE-php-fpm" \
+  php vendor/bin/phpunit \
+  "$CONTAINER_TEST_FILE" \
+  "--log-junit=$CONTAINER_JUNIT" \
+  "${REMAINING_ARGS[@]}"
+
+# Replace container paths with local paths so neotest can match results to files
+sed "s|$CONTAINER_ROOT/|$SERVICE_DIR/|g" "$LOCAL_JUNIT" > "$JUNIT_FILE"
