@@ -26,6 +26,7 @@ return {
       { "<leader>Ce", desc = "Chezmoi edit source file" },
       { "<leader>Cw", desc = "Chezmoi edit source file (watch)" },
       { "<leader>Cp", desc = "Chezmoi apply current file" },
+      { "<leader>CA", desc = "Chezmoi apply all" },
       { "<leader>Cf", desc = "Find chezmoi managed files" },
     },
     config = function()
@@ -44,17 +45,35 @@ return {
         end
       end, { desc = "Chezmoi add current file" })
 
+      local function chezmoi_source_dir()
+        return vim.fn.trim(vim.fn.system("chezmoi source-path"))
+      end
+
       map("n", "<leader>Ce", function()
-        commands.edit({ targets = { vim.fn.expand("%:p") }, args = {} })
+        local file = vim.fn.expand("%:p")
+        if vim.startswith(file, chezmoi_source_dir()) then
+          vim.notify("Already editing chezmoi source file", vim.log.levels.INFO)
+          return
+        end
+        commands.edit({ targets = { file }, args = {} })
       end, { desc = "Chezmoi edit source file" })
 
       map("n", "<leader>Cw", function()
-        commands.edit({ targets = { vim.fn.expand("%:p") }, args = { "--watch" } })
+        local file = vim.fn.expand("%:p")
+        if vim.startswith(file, chezmoi_source_dir()) then
+          vim.notify("Already editing chezmoi source file", vim.log.levels.INFO)
+          return
+        end
+        commands.edit({ targets = { file }, args = { "--watch" } })
       end, { desc = "Chezmoi edit source file (watch)" })
 
       map("n", "<leader>Cp", function()
         Snacks.terminal({ "chezmoi", "apply", vim.fn.expand("%:p") }, { auto_close = true })
       end, { desc = "Chezmoi apply current file" })
+
+      map("n", "<leader>CA", function()
+        Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
+      end, { desc = "Chezmoi apply all" })
 
       map("n", "<leader>Cf", function()
         require("chezmoi.pick").snacks()
