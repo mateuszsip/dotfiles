@@ -4,6 +4,17 @@ return {
     opts = function()
       local dap = require("dap")
 
+      -- Guard against nil command in malformed DAP responses (e.g. some Xdebug versions)
+      local safe_mt = {
+        __index = function(tbl, key)
+          if key == nil then return nil end
+          rawset(tbl, key, {})
+          return rawget(tbl, key)
+        end,
+      }
+      setmetatable(dap.listeners.before, safe_mt)
+      setmetatable(dap.listeners.after, safe_mt)
+
       dap.configurations.php = {
         {
           type = "php",

@@ -11,6 +11,9 @@ set -e
 #   2. Run phpunit inside the container writing junit XML to a path inside the mounted volume
 #   3. Copy the XML back to the local temp path neotest expects
 #   4. Replace container paths in the XML with local paths so neotest can match results
+#
+# Set XDEBUG_DEBUG=1 to enable Xdebug inside the container (for DAP debugging).
+# Requires Xdebug installed in the container and the host DAP listener running on port 9003.
 
 CONTAINER_ROOT="/app"
 TEST_FILE=""
@@ -45,11 +48,20 @@ LOCAL_JUNIT="$SERVICE_DIR/.neotest-junit-$$.xml"
 
 trap 'rm -f "$LOCAL_JUNIT"' EXIT
 
+XDEBUG_OPTS=()
+if [[ -n "$XDEBUG_DEBUG" ]]; then
+  XDEBUG_OPTS+=(
+    "-e" "XDEBUG_MODE=debug"
+    "-e" "XDEBUG_SESSION=1"
+    "-e" "XDEBUG_CONFIG=client_host=host.docker.internal client_port=9003"
+  )
+fi
+
 docker compose \
   --project-directory "$SERVICE_DIR" \
   -p "zable-uk-cards-$SERVICE" \
   -f "$SERVICE_DIR/build/local/docker-compose.full.yaml" \
-  exec --user app "$SERVICE-php-fpm" \
+  exec --user app "${XDEBUG_OPTS[@]}" "$SERVICE-php-fpm" \
   php vendor/bin/phpunit \
   "$CONTAINER_TEST_FILE" \
   "--log-junit=$CONTAINER_JUNIT" \

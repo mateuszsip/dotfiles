@@ -24,6 +24,7 @@ return {
             return "vendor/bin/phpunit"
           end,
           filter_dirs = { "vendor" },
+          dap = { port = 9003 },
         }),
       },
     })
@@ -57,6 +58,41 @@ return {
         require("neotest").run.run()
       end,
       desc = "Run Nearest (Neotest)",
+    },
+    {
+      "<leader>tD",
+      function()
+        require("neotest").run.run({ strategy = "dap" })
+      end,
+      desc = "Debug Nearest (Neotest)",
+    },
+    {
+      "<leader>td",
+      function()
+        local file = vim.api.nvim_buf_get_name(0)
+        local service_dir = file:match("(.*services/[^/]+)/")
+        if not service_dir then
+          vim.notify("Could not detect service directory from current file", vim.log.levels.ERROR)
+          return
+        end
+        local dap = require("dap")
+        -- Fire once when the adapter is initialized and ready to accept Xdebug connections
+        dap.listeners.after.event_initialized["neotest_docker_debug"] = function()
+          dap.listeners.after.event_initialized["neotest_docker_debug"] = nil
+          vim.notify("Xdebug listener ready — running test", vim.log.levels.INFO)
+          vim.schedule(function()
+            require("neotest").run.run({ env = { XDEBUG_DEBUG = "1" } })
+          end)
+        end
+        dap.run({
+          type = "php",
+          request = "launch",
+          name = "Neotest Docker Debugger",
+          port = 9003,
+          pathMappings = { ["/app"] = service_dir },
+        })
+      end,
+      desc = "Debug Nearest in Docker (Neotest)",
     },
     {
       "<leader>tl",
