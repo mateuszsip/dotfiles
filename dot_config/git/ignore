@@ -1,0 +1,5 @@
+**/.claude/settings.local.json
+.idea
+.DS_Store
+session.vim
+.phpactor.json
