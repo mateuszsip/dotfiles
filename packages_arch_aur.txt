@@ -15,7 +15,6 @@ nextmeeting
 pacsea-bin
 phpactor
 slack-desktop
-spotifatius
 subtui-git
 tidal-hifi-bin
 vial-appimage

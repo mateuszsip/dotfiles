@@ -78,7 +78,6 @@ noto-fonts-extra
 nss-mdns
 nushell
 nwg-displays
-obsidian
 omarchy-keyring
 omarchy-nvim
 omarchy-walker
@@ -111,7 +110,6 @@ signal-desktop
 slurp
 snapper
 socat
-spotify
 starship
 steam
 sushi
