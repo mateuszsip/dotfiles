@@ -107,6 +107,18 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "*",
+  callback = function()
+    vim.api.nvim_set_hl(0, "NeotestPassed",  { fg = "#22863a" })
+    vim.api.nvim_set_hl(0, "NeotestRunning", { fg = "#b59f0a" })
+    vim.api.nvim_set_hl(0, "NeotestDir",       { fg = "#6b9ab8" })
+    vim.api.nvim_set_hl(0, "NeotestFile",      { fg = "#6b9ab8" })
+    vim.api.nvim_set_hl(0, "NeotestSkipped",   { fg = "#6b9ab8" })
+    vim.api.nvim_set_hl(0, "NeotestNamespace", { fg = "#8ab4cc" })
+  end,
+})
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
   callback = function()
