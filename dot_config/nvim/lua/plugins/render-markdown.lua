@@ -8,16 +8,9 @@ return {
       left_pad = 6,
       right_pad = 8,
       sign = false,
-      border = "thin",
+      border = "none",
+      background_inset = 0,
       highlight_language = "RenderMarkdownCodeLang",
-    },
-    heading = {
-      width = "block",
-      left_margin = 2,
-      left_pad = 4,
-      right_pad = 6,
-      sign = false,
-      border = true,
     },
     overrides = {
       filetype = {
