@@ -35,8 +35,4 @@ return {
     },
   },
   ft = { "markdown", "octo" },
-  config = function(_, opts)
-    require("render-markdown").setup(opts)
-    _G._rm_patch_bullets()
-  end,
 }
