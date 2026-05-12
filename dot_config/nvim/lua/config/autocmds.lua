@@ -116,6 +116,12 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     vim.api.nvim_set_hl(0, "NeotestFile",      { fg = "#6b9ab8" })
     vim.api.nvim_set_hl(0, "NeotestSkipped",   { fg = "#6b9ab8" })
     vim.api.nvim_set_hl(0, "NeotestNamespace", { fg = "#8ab4cc" })
+    -- Subtle diff backgrounds that let syntax highlighting show through
+    -- (flexoki overrides fg with the paper color, washing out all syntax colors)
+    vim.api.nvim_set_hl(0, "DiffAdd",    { bg = "#e6edcc" })
+    vim.api.nvim_set_hl(0, "DiffDelete", { bg = "#f7dbd9" })
+    vim.api.nvim_set_hl(0, "DiffChange", { bg = "#e8e0f0" })
+    vim.api.nvim_set_hl(0, "DiffText",   { bg = "#d5e5f5", bold = true })
   end,
 })
 
