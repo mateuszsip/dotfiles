@@ -9,12 +9,15 @@
 
 -- Thin window separators: flexoki sets fg=bg on WinSeparator making a solid filled block.
 -- Override to bg=NONE so only the thin │ glyph is visible as a subtle line.
-vim.api.nvim_create_autocmd("ColorScheme", {
-  callback = function()
-    vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#CECDC3", bg = "NONE" })
-  end,
-})
-vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#CECDC3", bg = "NONE" })
+local function apply_hl_overrides()
+  -- Thin window separators (flexoki sets fg=bg, making a solid block)
+  vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#CECDC3", bg = "NONE" })
+  -- Code blocks: subtle warm tint instead of the prominent grey
+  vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#F2F0E5" })
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", { callback = apply_hl_overrides })
+apply_hl_overrides()
 
 -- Markdown editing helpers: wrap word (normal) or selection (visual) with syntax markers
 -- Keys are fed as one sequence so mode transitions happen naturally:
