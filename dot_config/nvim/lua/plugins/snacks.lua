@@ -11,7 +11,7 @@ return {
     picker = {
       sources = {
         projects = {
-          dev = { "~/dev/work" },
+          dev = { "~/dev/work", "~/Work/" },
           projects = {
             "~/.local/share/chezmoi",
             "~/.config/nvim",
