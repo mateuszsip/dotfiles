@@ -208,6 +208,38 @@ vim.api.nvim_create_autocmd("ColorScheme", {
   end,
 })
 
+-- Patch render-markdown's list renderer to suppress false-positive bullet icons
+-- that tree-sitter-markdown creates for '-' lines inside fenced code blocks.
+-- Exposed as a global so render-markdown's config function can call it directly;
+-- the FileType autocmd acts as a fallback if config runs after the first render.
+_G._rm_patch_bullets = function()
+  local ok_list, List = pcall(require, "render-markdown.render.markdown.list")
+  if not ok_list or List._rm_patched then return end
+  List._rm_patched = true
+
+  local function in_code_fence(buf, row)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, row, false)
+    local n = 0
+    for _, l in ipairs(lines) do
+      if l:match("^%s*```") then n = n + 1 end
+    end
+    return n % 2 == 1
+  end
+
+  local orig_run = List.run
+  List.run = function(self)
+    if in_code_fence(self.context.buf, self.node.start_row) then return end
+    return orig_run(self)
+  end
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "markdown", "octo" },
+  callback = function()
+    vim.schedule(_G._rm_patch_bullets)
+  end,
+})
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
   callback = function()

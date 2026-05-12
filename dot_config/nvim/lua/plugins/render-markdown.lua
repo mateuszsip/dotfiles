@@ -37,34 +37,6 @@ return {
   ft = { "markdown", "octo" },
   config = function(_, opts)
     require("render-markdown").setup(opts)
-
-    -- tree-sitter-markdown bug: phantom list_item siblings appear for '-' lines
-    -- inside fenced code blocks. Count ``` fence markers in the buffer before the
-    -- bullet's row; an odd count means we're inside an unclosed fence.
-    local function in_code_fence(buf, row)
-      local lines = vim.api.nvim_buf_get_lines(buf, 0, row, false)
-      local count = 0
-      for _, line in ipairs(lines) do
-        if line:match("^%s*```") then count = count + 1 end
-      end
-      return count % 2 == 1
-    end
-
-    local Bullet = require("render-markdown.render.markdown.bullet")
-    local str = require("render-markdown.lib.str")
-    Bullet.marker = function(self)
-      if in_code_fence(self.context.buf, self.node.start_row) then return end
-      local icon = self.data.icon
-      local highlight = self.data.highlight
-      if not icon or not highlight then return end
-      local node = self.data.marker
-      local text = str.pad(str.spaces("start", node.text)) .. icon
-      local overflow = str.width(text) > str.width(node.text)
-      self.marks:over(self.config, "bullet", node, {
-        virt_text = { { text, highlight } },
-        virt_text_pos = overflow and "inline" or "overlay",
-        conceal = overflow and "" or nil,
-      })
-    end
+    _G._rm_patch_bullets()
   end,
 }
