@@ -37,15 +37,31 @@ return {
   ft = { "markdown", "octo" },
   config = function(_, opts)
     require("render-markdown").setup(opts)
-    -- bullet.lua uses virt_text_pos='overlay' without hl_mode, so bg=NONE falls back
-    -- to Normal.bg (paper white) instead of inheriting the line's bg (code block beige).
-    -- Replace Bullet.marker with an identical version that adds hl_mode='combine'.
+
+    -- tree-sitter-markdown bug: creates phantom list_item siblings (NOT children)
+    -- of fenced_code_block for any '-' line inside a code fence. The parent()
+    -- walk can't find fenced_code_block because the nodes are siblings, not nested.
+    -- Instead, run a position check: skip any bullet whose row falls inside a
+    -- fenced_code_block range in the markdown tree.
+    local _code_query = nil
+    local function in_code_fence(buf, row)
+      local parser = vim.treesitter.get_parser(buf, "markdown")
+      if not parser then return false end
+      _code_query = _code_query
+        or vim.treesitter.query.parse("markdown", "(fenced_code_block) @block")
+      for _, tree in ipairs(parser:parse(false) or {}) do
+        for _, node in _code_query:iter_captures(tree:root(), buf) do
+          local sr, _, er = node:range()
+          if row > sr and row < er then return true end
+        end
+      end
+      return false
+    end
+
     local Bullet = require("render-markdown.render.markdown.bullet")
     local str = require("render-markdown.lib.str")
     Bullet.marker = function(self)
-      -- tree-sitter-markdown creates list_item nodes for '-' inside fenced code
-      -- blocks (upstream bug). Skip rendering them so the raw '-' shows instead.
-      if self.node:parent("fenced_code_block") then return end
+      if in_code_fence(self.context.buf, self.node.start_row) then return end
       local icon = self.data.icon
       local highlight = self.data.highlight
       if not icon or not highlight then return end
