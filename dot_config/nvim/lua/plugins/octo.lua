@@ -11,19 +11,12 @@ local function get_repo()
   return repo
 end
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "octo",
+vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function(ev)
-    local buf = ev.buf
-    -- defer past after/syntax/octo.vim which runs runtime! syntax/markdown.vim (clears syntax)
-    vim.schedule(function()
-      if not vim.api.nvim_buf_is_valid(buf) then return end
-      vim.api.nvim_buf_call(buf, function()
-        -- conceal <h1>…<h6> and </h1>…</h6> tags from GitHub Actions check-run output
-        vim.cmd([[syntax match OctoHtmlTag /<\/\?h[1-6]>/ conceal]])
-        vim.cmd("setlocal conceallevel=2")
-      end)
-    end)
+    if vim.bo[ev.buf].filetype ~= "octo" then return end
+    -- matchadd() is window-local and NOT cleared by :syntax clear / runtime! syntax/markdown.vim
+    -- (unlike `syntax match`). Octo itself uses the same pattern for emoji conceal.
+    vim.fn.matchadd("Conceal", "<[/]\\?h[1-6]>", 10, -1, { conceal = "" })
   end,
 })
 
