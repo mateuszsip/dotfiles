@@ -11,6 +11,15 @@ local function get_repo()
   return repo
 end
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "octo",
+  callback = function()
+    -- conceal <h1>…<h6> and </h1>…</h6> tags from GitHub Actions check-run output
+    vim.cmd([[syntax match OctoHtmlTag /<\/\?h[1-6]>/ conceal]])
+    vim.wo.conceallevel = 2
+  end,
+})
+
 return {
   "pwntester/octo.nvim",
   opts = {
