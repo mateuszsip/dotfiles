@@ -13,7 +13,7 @@ return {
       highlight_language = "RenderMarkdownCodeLang",
     },
     heading = {
-      backgrounds = {},
+      left_pad = 2,
     },
     overrides = {
       filetype = {
