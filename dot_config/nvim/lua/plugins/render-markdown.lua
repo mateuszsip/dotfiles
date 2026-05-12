@@ -38,24 +38,16 @@ return {
   config = function(_, opts)
     require("render-markdown").setup(opts)
 
-    -- tree-sitter-markdown bug: creates phantom list_item siblings (NOT children)
-    -- of fenced_code_block for any '-' line inside a code fence. The parent()
-    -- walk can't find fenced_code_block because the nodes are siblings, not nested.
-    -- Instead, run a position check: skip any bullet whose row falls inside a
-    -- fenced_code_block range in the markdown tree.
-    local _code_query = nil
+    -- tree-sitter-markdown bug: phantom list_item siblings appear for '-' lines
+    -- inside fenced code blocks. Count ``` fence markers in the buffer before the
+    -- bullet's row; an odd count means we're inside an unclosed fence.
     local function in_code_fence(buf, row)
-      local parser = vim.treesitter.get_parser(buf, "markdown")
-      if not parser then return false end
-      _code_query = _code_query
-        or vim.treesitter.query.parse("markdown", "(fenced_code_block) @block")
-      for _, tree in ipairs(parser:parse(false) or {}) do
-        for _, node in _code_query:iter_captures(tree:root(), buf) do
-          local sr, _, er = node:range()
-          if row > sr and row < er then return true end
-        end
+      local lines = vim.api.nvim_buf_get_lines(buf, 0, row, false)
+      local count = 0
+      for _, line in ipairs(lines) do
+        if line:match("^%s*```") then count = count + 1 end
       end
-      return false
+      return count % 2 == 1
     end
 
     local Bullet = require("render-markdown.render.markdown.bullet")
