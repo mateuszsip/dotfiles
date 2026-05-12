@@ -11,9 +11,8 @@
     "hyprland/workspaces"
   ],
   "modules-center": [
-    "clock",
+    "group/datetime",
     "custom/gcal",
-    "custom/weather",
     "custom/media#music",
     "custom/media#browser",
     "custom/update",
@@ -22,13 +21,32 @@
   ],
   "modules-right": [
     "group/tray-expander",
-    "bluetooth",
-    "network",
+    "group/connectivity",
     "pulseaudio",
-    "cpu",
-    "memory",
+    "group/system",
     "battery"
   ],
+  "group/datetime": {
+    "orientation": "horizontal",
+    "modules": [
+      "custom/weather",
+      "clock"
+    ]
+  },
+  "group/connectivity": {
+    "orientation": "horizontal",
+    "modules": [
+      "bluetooth",
+      "network"
+    ]
+  },
+  "group/system": {
+    "orientation": "horizontal",
+    "modules": [
+      "cpu",
+      "memory"
+    ]
+  },
   "hyprland/workspaces": {
     "on-click": "activate",
     "format": "{icon}",
@@ -76,13 +94,12 @@
   },
   "memory": {
     "interval": 5,
-    "format": "{avail:0.1f}GB  ",
+    "format": "{avail:0.1f}GB ",
     "tooltip-format": "{used:0.1f}GB used\n{total:0.1f}GB total",
     "on-click": "omarchy-launch-or-focus-tui btop"
   },
   "clock": {
     "format": "{:L%d.%m %A %H:%M}",
-    "format-alt": "{:L%d %B W%V %Y}",
     "tooltip": false,
     "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select"
   },
@@ -93,7 +110,7 @@
     "tooltip": true
   },
   "custom/weather": {
-    "format": " {}°",
+    "format": "{}°",
     "tooltip": true,
     "interval": 3600,
     "exec": "wttrbar --nerd --location Swarzedz --lang pl --hide-conditions",

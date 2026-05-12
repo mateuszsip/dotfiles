@@ -83,7 +83,10 @@ mpris.empty {
 #pulseaudio,
 #custom-omarchy,
 #custom-media,
-#custom-update {
+#custom-update,
+#connectivity,
+#system,
+#datetime {
   background-color: #DEDBD0;
   color: @foreground;
   min-width: 12px;
@@ -95,6 +98,24 @@ mpris.empty {
   transition: background-color 0.15s;
 }
 
+/* Modules inside groups — strip individual pill styling */
+#connectivity #bluetooth,
+#connectivity #network,
+#system #cpu,
+#system #memory,
+#datetime #custom-weather,
+#datetime #clock {
+  background: none;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 0 6px;
+}
+
+#datetime {
+  margin: 0;
+}
+
 /* Hover on clickable modules */
 #battery:hover,
 #cpu:hover,
@@ -104,7 +125,10 @@ mpris.empty {
 #pulseaudio:hover,
 #custom-weather:hover,
 #custom-update:hover,
-#custom-media:hover {
+#custom-media:hover,
+#datetime:hover,
+#connectivity:hover,
+#system:hover {
   background-color: #CECDC3;
 }
 
