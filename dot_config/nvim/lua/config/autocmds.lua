@@ -25,10 +25,10 @@ local function apply_bufferline_bg()
   local sep = 0xCECDC3
 
   -- Native Vim tabline groups (bufferline delegates fill colour here).
-  -- Underline on TabLineFill draws a thin separator at the bottom of the tab bar.
+  -- Underline only on TabLineFill (the empty fill area), not on tab buttons.
   vim.api.nvim_set_hl(0, "TabLineFill", { bg = bg, underline = true, sp = 0xCECDC3 })
-  vim.api.nvim_set_hl(0, "TabLine",     { bg = bg, underline = true, sp = 0xCECDC3 })
-  vim.api.nvim_set_hl(0, "TabLineSel",  { bg = bg, underline = true, sp = 0xCECDC3 })
+  vim.api.nvim_set_hl(0, "TabLine",     { bg = bg })
+  vim.api.nvim_set_hl(0, "TabLineSel",  { bg = bg })
 
   local groups = {
     "BufferLineFill", "BufferLineBackground", "BufferLineBuffer",
