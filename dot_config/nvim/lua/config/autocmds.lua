@@ -61,8 +61,6 @@ local function apply_bufferline_bg()
   local sel = vim.api.nvim_get_hl(0, { name = "BufferLineBufferSelected" })
   sel.bg = bg
   sel.bold = true
-  sel.underline = true
-  sel.sp = 0x24837B  -- flexoki teal
   vim.api.nvim_set_hl(0, "BufferLineBufferSelected", sel)
 
   vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
