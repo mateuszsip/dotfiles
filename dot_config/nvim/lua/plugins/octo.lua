@@ -91,6 +91,18 @@ return {
               end,
             },
             {
+              name = "merge_pr",
+              lhs = "<C-m>",
+              desc = "merge pull request",
+              mode = { "n", "i" },
+              fn = function(_, item)
+                if item.kind ~= "pull_request" then
+                  return
+                end
+                require("octo.utils").merge_pr(item.number)
+              end,
+            },
+            {
               name = "toggle_draft",
               lhs = "<C-d>",
               desc = "toggle draft / ready for review",
