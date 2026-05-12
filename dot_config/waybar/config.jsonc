@@ -13,7 +13,8 @@
   "modules-center": [
     "group/datetime",
     "custom/gcal",
-    "custom/media#music",
+    "custom/media#feishin",
+    "custom/media#tidal",
     "custom/media#browser",
     "custom/update",
     "custom/voxtype",
@@ -116,36 +117,50 @@
     "exec": "wttrbar --nerd --location Swarzedz --lang pl --hide-conditions",
     "return-type": "json"
   },
-  "custom/media#music": {
-    "format": "{text}",
+  "custom/media#feishin": {
+    "format": "{icon} {text}",
     "return-type": "json",
-    "max-length": 40,
     "format-icons": {
-      "spotify": "",
-      "default": "🎜"
+      "Feishin": "",
+      "default": ""
     },
     "escape": true,
     "tooltip": true,
-    "tooltip-format": "{}",
     "on-click": "playerctl --player Feishin play-pause",
     "on-click-right": "playerctl --player Feishin next",
     "on-click-middle": "playerctl --player Feishin previous",
-    "exec": "$HOME/.config/waybar/mediaplayer.py --player Feishin 2> /dev/null" // Script in resources folder
+    "exec": "$HOME/.config/waybar/mediaplayer.py --player Feishin 2> /dev/null"
   },
-  "custom/media#browser": {
-    "format": "{text}",
+  "custom/media#tidal": {
+    "format": "{icon} {text}",
     "return-type": "json",
-    "max-length": 40,
     "format-icons": {
-      "default": ""
+      "typhoon": "",
+      "default": ""
     },
     "escape": true,
     "tooltip": true,
-    "tooltip-format": "{}",
-    "on-click": "playerctl --ignore-player Feishin play-pause",
-    "on-click-right": "playerctl --ignore-player Feishin next",
-    "on-click-middle": "playerctl --ignore-player Feishin previous",
-    "exec": "$HOME/.config/waybar/mediaplayer.py --exclude Feishin 2> /dev/null" // Script in resources folder
+    "on-click": "playerctl --player typhoon play-pause",
+    "on-click-right": "playerctl --player typhoon next",
+    "on-click-middle": "playerctl --player typhoon previous",
+    "exec": "$HOME/.config/waybar/mediaplayer.py --player typhoon 2> /dev/null"
+  },
+  "custom/media#browser": {
+    "format": "{icon} {text}",
+    "return-type": "json",
+    "format-icons": {
+      "firefox": "󰖟",
+      "zen": "",
+      "zen-browser": "",
+      "chromium": "",
+      "default": "󰖟"
+    },
+    "escape": true,
+    "tooltip": true,
+    "on-click": "playerctl --ignore-player Feishin,typhoon play-pause",
+    "on-click-right": "playerctl --ignore-player Feishin,typhoon next",
+    "on-click-middle": "playerctl --ignore-player Feishin,typhoon previous",
+    "exec": "$HOME/.config/waybar/mediaplayer.py --exclude Feishin,typhoon 2> /dev/null"
   },
   "network": {
     "format-icons": [
