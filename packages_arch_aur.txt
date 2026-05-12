@@ -14,6 +14,7 @@ moor-bin
 nextmeeting
 pacsea-bin
 phpactor
+riptide
 slack-desktop
 subtui-git
 tidal-hifi-bin
