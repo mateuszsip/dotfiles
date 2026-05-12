@@ -135,8 +135,8 @@
     "format": "{icon} {text}",
     "return-type": "json",
     "format-icons": {
-      "typhoon": "",
-      "default": ""
+      "typhoon": "",
+      "default": ""
     },
     "escape": true,
     "tooltip": true,
