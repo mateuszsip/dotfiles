@@ -10,6 +10,14 @@ return {
     },
     picker = {
       sources = {
+        projects = {
+          dev = { "~/dev/work" },
+          projects = {
+            "~/.local/share/chezmoi",
+            "~/.config/nvim",
+            "~/.config/hypr",
+          },
+        },
         marks = {
           actions = {
             delete_mark = function(picker, item)
