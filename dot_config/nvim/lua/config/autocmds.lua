@@ -24,10 +24,11 @@ local function apply_bufferline_bg()
   local bg = normal.bg or 0xFFFCF0  -- fallback: flexoki-light paper
   local sep = 0xCECDC3
 
-  -- Native Vim tabline groups (bufferline delegates fill colour here)
-  vim.api.nvim_set_hl(0, "TabLineFill", { bg = bg })
-  vim.api.nvim_set_hl(0, "TabLine",     { bg = bg })
-  vim.api.nvim_set_hl(0, "TabLineSel",  { bg = bg })
+  -- Native Vim tabline groups (bufferline delegates fill colour here).
+  -- Underline on TabLineFill draws a thin separator at the bottom of the tab bar.
+  vim.api.nvim_set_hl(0, "TabLineFill", { bg = bg, underline = true, sp = 0xCECDC3 })
+  vim.api.nvim_set_hl(0, "TabLine",     { bg = bg, underline = true, sp = 0xCECDC3 })
+  vim.api.nvim_set_hl(0, "TabLineSel",  { bg = bg, underline = true, sp = 0xCECDC3 })
 
   local groups = {
     "BufferLineFill", "BufferLineBackground", "BufferLineBuffer",
