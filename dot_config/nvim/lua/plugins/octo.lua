@@ -11,13 +11,36 @@ local function get_repo()
   return repo
 end
 
--- Conceal <h4>…</h4> HTML tags from GitHub Actions check-run output.
--- matchadd() is window-local and immune to :syntax clear (unlike syntax match).
--- FileType fires inside nvim_buf_call so the current window IS the display window.
+-- Strip <h4>…</h4> HTML tags from Octo's details-fold virtual text.
+-- These tags come from GitHub Actions <details><summary><h4>name</h4></summary> blocks.
+-- Octo renders fold summaries as overlay extmarks — matchadd/syntax can't touch them.
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "octo",
-  callback = function()
-    vim.fn.matchadd("Conceal", "<[/]\\?h[1-6]>", 10, -1, { conceal = "" })
+  callback = function(ev)
+    local buf = ev.buf
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(buf) then return end
+      local details_ns = vim.api.nvim_create_namespace("octo_details_folds")
+      local extmarks = vim.api.nvim_buf_get_extmarks(buf, details_ns, 0, -1, { details = true })
+      for _, extmark in ipairs(extmarks) do
+        local id, row, details = extmark[1], extmark[2], extmark[4]
+        if not (details and details.virt_text) then goto continue end
+        local changed = false
+        for _, chunk in ipairs(details.virt_text) do
+          local cleaned = chunk[1]:gsub("</?h%d>", "")
+          if cleaned ~= chunk[1] then chunk[1] = cleaned; changed = true end
+        end
+        if changed then
+          vim.api.nvim_buf_set_extmark(buf, details_ns, row, 0, {
+            id = id,
+            virt_text = details.virt_text,
+            virt_text_pos = details.virt_text_pos,
+            line_hl_group = details.line_hl_group,
+          })
+        end
+        ::continue::
+      end
+    end)
   end,
 })
 
