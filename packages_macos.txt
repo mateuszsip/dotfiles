@@ -32,7 +32,7 @@ tailscale
 tldr
 tmux
 tree-sitter
-vault
+vault-cli
 yazi
 yq
 zoxide

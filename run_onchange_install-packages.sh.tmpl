@@ -22,6 +22,7 @@ $aur_helper -S --needed --noconfirm \
 {{- else if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 # brew: {{ include "packages_macos.txt" | sha256sum }}
+# taps: {{ include "packages_macos_taps.txt" | sha256sum }}
 set -eufo pipefail
 
 if ! command -v brew &>/dev/null; then
@@ -31,10 +32,26 @@ fi
 brew install \
 {{ include "packages_macos.txt" | trim | splitList "\n" | join " \\\n  " }}
 
-expected=$(sort <<'EOF'
+while IFS= read -r formula; do
+  [ -z "$formula" ] && continue
+  brew tap "${formula%/*}"
+  brew install "$formula"
+done <<'TAPS'
+{{ include "packages_macos_taps.txt" | trim }}
+TAPS
+
+tapped_short=$(cat <<'TAPS' | sed 's|.*/||'
+{{ include "packages_macos_taps.txt" | trim }}
+TAPS
+)
+
+expected=$(printf '%s\n%s' \
+  "$(sort <<'EOF'
 {{ include "packages_macos.txt" | trim }}
 EOF
-)
+)" \
+  "$tapped_short" | sort)
+
 extras=$(comm -23 <(brew list --installed-on-request | sort) <(echo "$expected"))
 if [ -n "$extras" ]; then
   echo "Uninstalling on-request packages not in packages_macos.txt:"
