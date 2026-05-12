@@ -16,8 +16,53 @@ local function apply_hl_overrides()
   vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#F2F0E5" })
 end
 
-vim.api.nvim_create_autocmd("ColorScheme", { callback = apply_hl_overrides })
+-- Bufferline re-applies its own highlights on ColorScheme, overriding anything
+-- set in opts.highlights. Override the actual BufferLine* groups after it runs.
+local function apply_bufferline_bg()
+  local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
+  local bg = normal.bg
+  if not bg then return end
+  local sep = 0xCECDC3
+
+  local groups = {
+    "BufferLineFill", "BufferLineBackground", "BufferLineBuffer",
+    "BufferLineBufferVisible", "BufferLineBufferSelected",
+    "BufferLineTab", "BufferLineTabSelected", "BufferLineTabClose",
+    "BufferLineCloseButton", "BufferLineCloseButtonVisible", "BufferLineCloseButtonSelected",
+    "BufferLineNumbers", "BufferLineNumbersVisible", "BufferLineNumbersSelected",
+    "BufferLineModified", "BufferLineModifiedVisible", "BufferLineModifiedSelected",
+    "BufferLineDuplicate", "BufferLineDuplicateVisible", "BufferLineDuplicateSelected",
+    "BufferLinePick", "BufferLinePickVisible", "BufferLinePickSelected",
+    "BufferLineIndicatorVisible", "BufferLineIndicatorSelected",
+    "BufferLineTruncMarker",
+    "BufferLineDiagnostic", "BufferLineDiagnosticVisible", "BufferLineDiagnosticSelected",
+    "BufferLineHint", "BufferLineHintVisible", "BufferLineHintSelected",
+    "BufferLineHintDiagnostic", "BufferLineHintDiagnosticVisible", "BufferLineHintDiagnosticSelected",
+    "BufferLineInfo", "BufferLineInfoVisible", "BufferLineInfoSelected",
+    "BufferLineInfoDiagnostic", "BufferLineInfoDiagnosticVisible", "BufferLineInfoDiagnosticSelected",
+    "BufferLineWarning", "BufferLineWarningVisible", "BufferLineWarningSelected",
+    "BufferLineWarningDiagnostic", "BufferLineWarningDiagnosticVisible", "BufferLineWarningDiagnosticSelected",
+    "BufferLineError", "BufferLineErrorVisible", "BufferLineErrorSelected",
+    "BufferLineErrorDiagnostic", "BufferLineErrorDiagnosticVisible", "BufferLineErrorDiagnosticSelected",
+  }
+  for _, group in ipairs(groups) do
+    local hl = vim.api.nvim_get_hl(0, { name = group })
+    hl.bg = bg
+    vim.api.nvim_set_hl(0, group, hl)
+  end
+  vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
+  vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible",  { fg = sep, bg = bg })
+  vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = bg })
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    apply_hl_overrides()
+    vim.schedule(apply_bufferline_bg)  -- deferred so bufferline's own handler runs first
+  end,
+})
 apply_hl_overrides()
+vim.schedule(apply_bufferline_bg)
 
 -- Markdown editing helpers: wrap word (normal) or selection (visual) with syntax markers
 -- Keys are fed as one sequence so mode transitions happen naturally:
