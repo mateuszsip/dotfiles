@@ -50,33 +50,29 @@ local function apply_bufferline_bg()
     "BufferLineError", "BufferLineErrorVisible", "BufferLineErrorSelected",
     "BufferLineErrorDiagnostic", "BufferLineErrorDiagnosticVisible", "BufferLineErrorDiagnosticSelected",
   }
-  for _, group in ipairs(groups) do
+  -- Put BufferLineBufferSelected back in so bulk loop sets its bg cleanly first
+  local all_groups = vim.list_extend({ "BufferLineBufferSelected" }, groups)
+  for _, group in ipairs(all_groups) do
     local hl = vim.api.nvim_get_hl(0, { name = group })
     hl.bg = bg
     vim.api.nvim_set_hl(0, group, hl)
   end
-  -- Selected tab: slightly warmer bg tint — same character widths so separators don't shift
-  local sel_bg = 0xECE6D9
+  -- Active tab: bold + underline in flexoki teal; no bg change keeps icons clean
   local sel = vim.api.nvim_get_hl(0, { name = "BufferLineBufferSelected" })
-  sel.bg = sel_bg
-  sel.bold = false
+  sel.bg = bg
+  sel.bold = true
+  sel.underline = true
+  sel.sp = 0x24837B  -- flexoki teal
   vim.api.nvim_set_hl(0, "BufferLineBufferSelected", sel)
-  -- Close button and numbers on the selected tab must match its bg
-  for _, g in ipairs({ "BufferLineCloseButtonSelected", "BufferLineNumbersSelected",
-                       "BufferLineModifiedSelected", "BufferLinePickSelected",
-                       "BufferLineDuplicateSelected" }) do
-    local h = vim.api.nvim_get_hl(0, { name = g })
-    h.bg = sel_bg
-    vim.api.nvim_set_hl(0, g, h)
-  end
+
   vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible",  { fg = sep, bg = bg })
-  vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = sel_bg })
+  vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = bg })
 
-  -- DevIcon groups are dynamically named per filetype; single sweep picks correct bg.
+  -- DevIcon groups are dynamically named per filetype; all get Normal bg.
   for name, hl in pairs(vim.api.nvim_get_hl(0, {})) do
     if name:match("^BufferLineDevIcon") then
-      hl.bg = name:match("Selected$") and sel_bg or bg
+      hl.bg = bg
       vim.api.nvim_set_hl(0, name, hl)
     end
   end
