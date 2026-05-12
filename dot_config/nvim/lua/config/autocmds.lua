@@ -59,6 +59,14 @@ local function apply_bufferline_bg()
   vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible",  { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = bg })
+
+  -- DevIcon groups are dynamically named per filetype; sweep all of them.
+  for name, hl in pairs(vim.api.nvim_get_hl(0, {})) do
+    if name:match("^BufferLineDevIcon") then
+      hl.bg = bg
+      vim.api.nvim_set_hl(0, name, hl)
+    end
+  end
 end
 
 vim.api.nvim_create_autocmd("ColorScheme", {
