@@ -53,7 +53,7 @@ return {
         virt_text = { { text, highlight } },
         virt_text_pos = overflow and "inline" or "overlay",
         conceal = overflow and "" or nil,
-        hl_mode = "combine",
+        hl_mode = "blend",
       })
     end
   end,
