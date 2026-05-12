@@ -43,6 +43,9 @@ return {
     local Bullet = require("render-markdown.render.markdown.bullet")
     local str = require("render-markdown.lib.str")
     Bullet.marker = function(self)
+      -- tree-sitter-markdown creates list_item nodes for '-' inside fenced code
+      -- blocks (upstream bug). Skip rendering them so the raw '-' shows instead.
+      if self.node:parent("fenced_code_block") then return end
       local icon = self.data.icon
       local highlight = self.data.highlight
       if not icon or not highlight then return end
@@ -53,7 +56,6 @@ return {
         virt_text = { { text, highlight } },
         virt_text_pos = overflow and "inline" or "overlay",
         conceal = overflow and "" or nil,
-        hl_mode = "blend",
       })
     end
   end,
