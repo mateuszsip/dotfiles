@@ -68,14 +68,32 @@ local function apply_bufferline_bg()
   end
 end
 
+local function apply_lualine_bg()
+  local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
+  local bg = normal.bg or 0xFFFCF0
+  local modes = { "normal", "insert", "visual", "replace", "command", "inactive" }
+  for _, mode in ipairs(modes) do
+    for _, section in ipairs({ "b", "c", "x", "y", "z" }) do
+      local name = "lualine_" .. section .. "_" .. mode
+      local hl = vim.api.nvim_get_hl(0, { name = name })
+      if next(hl) then
+        hl.bg = bg
+        vim.api.nvim_set_hl(0, name, hl)
+      end
+    end
+  end
+end
+
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = function()
     apply_hl_overrides()
     vim.defer_fn(apply_bufferline_bg, 50)
+    vim.defer_fn(apply_lualine_bg, 50)
   end,
 })
 apply_hl_overrides()
 vim.defer_fn(apply_bufferline_bg, 50)
+vim.defer_fn(apply_lualine_bg, 50)
 
 -- Markdown editing helpers: wrap word (normal) or selection (visual) with syntax markers
 -- Keys are fed as one sequence so mode transitions happen naturally:
