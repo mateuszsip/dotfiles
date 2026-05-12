@@ -13,7 +13,10 @@ return {
       highlight_language = "RenderMarkdownCodeLang",
     },
     heading = {
-      left_pad = 2,
+      left_pad = 1,
+      -- LazyVim clears icons to {}, which leaves ## markers visible (nothing to overlay them).
+      -- Restore defaults so the # markers are concealed.
+      icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
     },
     overrides = {
       filetype = {
