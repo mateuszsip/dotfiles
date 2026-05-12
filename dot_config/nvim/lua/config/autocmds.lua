@@ -12,6 +12,8 @@
 local function apply_hl_overrides()
   -- Thin window separators (flexoki sets fg=bg, making a solid block)
   vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#CECDC3", bg = "NONE" })
+  -- Bullet markers: transparent bg so they don't paint paper-white onto code block beige.
+  vim.api.nvim_set_hl(0, "RenderMarkdownBullet", { bg = "NONE" })
   -- Code blocks: warm parchment beige (warmer than flexoki-50, cooler than paper).
   local code_bg = "#EBE7D2"
   vim.api.nvim_set_hl(0, "RenderMarkdownCode",     { bg = code_bg })
