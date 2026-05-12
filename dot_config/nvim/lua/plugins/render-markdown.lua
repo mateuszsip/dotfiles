@@ -11,8 +11,4 @@ return {
     },
   },
   ft = { "markdown", "octo" },
-  init = function()
-    -- no octo treesitter parser exists; use markdown parser for octo buffers
-    vim.treesitter.language.register("markdown", "octo")
-  end,
 }
