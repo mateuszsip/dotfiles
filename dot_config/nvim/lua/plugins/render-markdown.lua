@@ -13,6 +13,7 @@ return {
       background_inset = 0,
       highlight_language = "RenderMarkdownCodeLang",
     },
+    bullet = { enabled = false },
     heading = {
       icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
     },
