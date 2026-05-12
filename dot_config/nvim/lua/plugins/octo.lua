@@ -13,10 +13,17 @@ end
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "octo",
-  callback = function()
-    -- conceal <h1>…<h6> and </h1>…</h6> tags from GitHub Actions check-run output
-    vim.cmd([[syntax match OctoHtmlTag /<\/\?h[1-6]>/ conceal]])
-    vim.wo.conceallevel = 2
+  callback = function(ev)
+    local buf = ev.buf
+    -- defer past after/syntax/octo.vim which runs runtime! syntax/markdown.vim (clears syntax)
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(buf) then return end
+      vim.api.nvim_buf_call(buf, function()
+        -- conceal <h1>…<h6> and </h1>…</h6> tags from GitHub Actions check-run output
+        vim.cmd([[syntax match OctoHtmlTag /<\/\?h[1-6]>/ conceal]])
+        vim.cmd("setlocal conceallevel=2")
+      end)
+    end)
   end,
 })
 
