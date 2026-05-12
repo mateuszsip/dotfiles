@@ -3,11 +3,11 @@ return {
   opts = {
     file_types = { "markdown", "octo" },
     code = {
-      left_pad = 2,
-      right_pad = 2,
+      width = "block",
+      left_margin = 2,
+      left_pad = 4,
+      right_pad = 6,
       sign = false,
-      -- Use a single neutral highlight for the language label instead of
-      -- the icon-provider's per-language color (often bright/garish).
       highlight_language = "RenderMarkdownCodeLang",
     },
     overrides = {
