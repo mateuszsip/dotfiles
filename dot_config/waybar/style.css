@@ -28,7 +28,7 @@ mpris.empty {
 
 #workspaces button {
   all: initial;
-  padding: 0 6px;
+  padding: 0 9px;
   margin: 0 1.5px;
   min-width: 9px;
   opacity: 0.2;
@@ -40,6 +40,19 @@ mpris.empty {
 
 #workspaces button.active {
   opacity: 1;
+  background-color: alpha(@foreground, 0.10);
+}
+
+#workspaces button.active:first-child {
+  border-radius: 9px 0 0 9px;
+}
+
+#workspaces button.active:last-child {
+  border-radius: 0 9px 9px 0;
+}
+
+#workspaces button.active:first-child:last-child {
+  border-radius: 9px;
 }
 
 #workspaces button.empty {
@@ -48,6 +61,16 @@ mpris.empty {
 
 #workspaces button:hover {
   opacity: 0.7;
+}
+
+#workspaces button:first-child {
+  margin-left: 0;
+  padding-left: 11px;
+}
+
+#workspaces button:last-child {
+  margin-right: 0;
+  padding-right: 11px;
 }
 
 /* Shared pill style */
@@ -64,7 +87,7 @@ mpris.empty {
   background-color: @background;
   min-width: 12px;
   border-radius: 8px;
-  border: 1px solid alpha(@foreground, 0.08);
+  border: 2px solid alpha(@foreground, 0.35);
   box-shadow: 0 1px 4px alpha(@foreground, 0.07), 0 0 0 0.5px alpha(@foreground, 0.04);
   padding: 0 10px;
   margin: 0 0 0 5px;
@@ -85,14 +108,14 @@ mpris.empty {
 }
 
 #custom-expand-icon {
-  margin-right: 11px;
+  margin-right: 2px;
 }
 
 tooltip {
   padding: 4px 6px;
   border-radius: 10px;
   background-color: @background;
-  border: 1px solid alpha(@foreground, 0.08);
+  border: 2px solid alpha(@foreground, 0.35);
   box-shadow: 0 2px 8px alpha(@foreground, 0.1);
   text-shadow: none;
 }
@@ -108,7 +131,7 @@ tooltip * {
 #clock {
   background-color: @background;
   border-radius: 10px;
-  border: 1px solid alpha(@foreground, 0.08);
+  border: 2px solid alpha(@foreground, 0.35);
   box-shadow: 0 1px 4px alpha(@foreground, 0.07), 0 0 0 0.5px alpha(@foreground, 0.04);
   padding: 0 10px;
   transition: background-color 0.15s;
@@ -139,22 +162,18 @@ tooltip * {
 #workspaces {
   background-color: @background;
   border-radius: 10px;
-  border: 1px solid alpha(@foreground, 0.08);
+  border: 2px solid alpha(@foreground, 0.35);
   box-shadow: 0 1px 4px alpha(@foreground, 0.07), 0 0 0 0.5px alpha(@foreground, 0.04);
-  margin-left: 5px;
-  padding: 0 5px;
+  margin-left: 0;
+  padding: 0;
 }
 
 #tray-expander {
   background-color: @background;
   border-radius: 10px;
-  border: 1px solid alpha(@foreground, 0.08);
+  border: 2px solid alpha(@foreground, 0.35);
   box-shadow: 0 1px 4px alpha(@foreground, 0.07), 0 0 0 0.5px alpha(@foreground, 0.04);
-  padding: 0 0 0 10px;
-}
-
-#pulseaudio {
-  padding: 0 15px 0 10px;
+  padding: 0 10px;
 }
 
 #tray {
@@ -163,10 +182,6 @@ tooltip * {
 
 #mpris {
   margin-right: 5px;
-}
-
-#network.icon {
-  padding: 0 13px 0 9px;
 }
 
 #custom-voxtype {
