@@ -2,6 +2,10 @@ return {
   "MeanderingProgrammer/render-markdown.nvim",
   opts = {
     file_types = { "markdown", "octo" },
+    code = {
+      left_pad = 2,
+      right_pad = 2,
+    },
     html = {
       enabled = true,
       tag = {
