@@ -208,29 +208,6 @@ vim.api.nvim_create_autocmd("ColorScheme", {
   end,
 })
 
--- render-markdown bullet.lua uses virt_text_pos='overlay' without hl_mode, so
--- bg=NONE falls back to Normal.bg (paper white) instead of the line's bg (code beige).
--- Patch Bullet.marker at runtime to inject hl_mode='combine' on every bullet extmark.
-vim.api.nvim_create_autocmd("User", {
-  pattern = "LazyDone",
-  once = true,
-  callback = function()
-    local ok, Bullet = pcall(require, "render-markdown.render.markdown.bullet")
-    if not ok then return end
-    local orig_marker = Bullet.marker
-    Bullet.marker = function(self, ...)
-      local orig_over = self.marks.over
-      self.marks.over = function(m, config, typ, node, opts)
-        if typ == "bullet" then opts.hl_mode = "combine" end
-        return orig_over(m, config, typ, node, opts)
-      end
-      local result = orig_marker(self, ...)
-      self.marks.over = orig_over
-      return result
-    end
-  end,
-})
-
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
   callback = function()

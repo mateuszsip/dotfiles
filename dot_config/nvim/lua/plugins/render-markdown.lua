@@ -35,4 +35,26 @@ return {
     },
   },
   ft = { "markdown", "octo" },
+  config = function(_, opts)
+    require("render-markdown").setup(opts)
+    -- bullet.lua uses virt_text_pos='overlay' without hl_mode, so bg=NONE falls back
+    -- to Normal.bg (paper white) instead of inheriting the line's bg (code block beige).
+    -- Replace Bullet.marker with an identical version that adds hl_mode='combine'.
+    local Bullet = require("render-markdown.render.markdown.bullet")
+    local str = require("render-markdown.lib.str")
+    Bullet.marker = function(self)
+      local icon = self.data.icon
+      local highlight = self.data.highlight
+      if not icon or not highlight then return end
+      local node = self.data.marker
+      local text = str.pad(str.spaces("start", node.text)) .. icon
+      local overflow = str.width(text) > str.width(node.text)
+      self.marks:over(self.config, "bullet", node, {
+        virt_text = { { text, highlight } },
+        virt_text_pos = overflow and "inline" or "overlay",
+        conceal = overflow and "" or nil,
+        hl_mode = "combine",
+      })
+    end
+  end,
 }
