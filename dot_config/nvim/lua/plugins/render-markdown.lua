@@ -5,6 +5,10 @@ return {
     code = {
       left_pad = 2,
       right_pad = 2,
+      sign = false,
+      -- Use a single neutral highlight for the language label instead of
+      -- the icon-provider's per-language color (often bright/garish).
+      highlight_language = "RenderMarkdownCodeLang",
     },
     overrides = {
       filetype = {

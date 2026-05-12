@@ -12,9 +12,11 @@
 local function apply_hl_overrides()
   -- Thin window separators (flexoki sets fg=bg, making a solid block)
   vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#CECDC3", bg = "NONE" })
-  -- Code blocks: flexoki-100 (ui surface) — same stone render-markdown reads from
-  -- ColorColumn, set explicitly so it's unambiguous regardless of autocmd order.
-  vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#E6E4D9" })
+  -- Code blocks: flexoki-100 (ui surface).
+  vim.api.nvim_set_hl(0, "RenderMarkdownCode",     { bg = "#E6E4D9" })
+  -- Language label + info: flexoki-600 (tx-2) neutral stone, not @label orange.
+  vim.api.nvim_set_hl(0, "RenderMarkdownCodeLang", { fg = "#6F6E69", bg = "#E6E4D9" })
+  vim.api.nvim_set_hl(0, "RenderMarkdownCodeInfo", { fg = "#6F6E69", bg = "#E6E4D9" })
 end
 
 -- Bufferline re-applies its own highlights on ColorScheme, overriding anything
