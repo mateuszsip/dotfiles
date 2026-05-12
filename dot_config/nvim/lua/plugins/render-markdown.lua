@@ -5,10 +5,19 @@ return {
     code = {
       width = "block",
       left_margin = 2,
+      left_pad = 6,
+      right_pad = 8,
+      sign = false,
+      border = "thin",
+      highlight_language = "RenderMarkdownCodeLang",
+    },
+    heading = {
+      width = "block",
+      left_margin = 2,
       left_pad = 4,
       right_pad = 6,
       sign = false,
-      highlight_language = "RenderMarkdownCodeLang",
+      border = true,
     },
     overrides = {
       filetype = {
