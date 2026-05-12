@@ -85,8 +85,7 @@ mpris.empty {
 #custom-media,
 #custom-update,
 #connectivity,
-#system,
-#datetime {
+#system {
   background-color: #DEDBD0;
   color: @foreground;
   min-width: 12px;
@@ -102,18 +101,12 @@ mpris.empty {
 #connectivity #bluetooth,
 #connectivity #network,
 #system #cpu,
-#system #memory,
-#datetime #custom-weather,
-#datetime #clock {
+#system #memory {
   background: none;
   border: none;
   box-shadow: none;
   margin: 0;
   padding: 0 6px;
-}
-
-#datetime {
-  margin: 0;
 }
 
 /* Hover on clickable modules */
