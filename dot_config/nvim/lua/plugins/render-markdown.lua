@@ -7,6 +7,7 @@ return {
       left_margin = 2,
       left_pad = 6,
       right_pad = 8,
+      language_pad = 2,
       sign = false,
       border = "none",
       background_inset = 0,
