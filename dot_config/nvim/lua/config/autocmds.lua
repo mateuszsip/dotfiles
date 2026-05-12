@@ -17,12 +17,17 @@ local function apply_hl_overrides()
 end
 
 -- Bufferline re-applies its own highlights on ColorScheme, overriding anything
--- set in opts.highlights. Override the actual BufferLine* groups after it runs.
+-- set in opts.highlights. Override BOTH BufferLine* AND native TabLine* groups
+-- via defer_fn so we run well after bufferline's own scheduled setup.
 local function apply_bufferline_bg()
   local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
-  local bg = normal.bg
-  if not bg then return end
+  local bg = normal.bg or 0xFFFCF0  -- fallback: flexoki-light paper
   local sep = 0xCECDC3
+
+  -- Native Vim tabline groups (bufferline delegates fill colour here)
+  vim.api.nvim_set_hl(0, "TabLineFill", { bg = bg })
+  vim.api.nvim_set_hl(0, "TabLine",     { bg = bg })
+  vim.api.nvim_set_hl(0, "TabLineSel",  { bg = bg })
 
   local groups = {
     "BufferLineFill", "BufferLineBackground", "BufferLineBuffer",
@@ -58,11 +63,11 @@ end
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = function()
     apply_hl_overrides()
-    vim.schedule(apply_bufferline_bg)  -- deferred so bufferline's own handler runs first
+    vim.defer_fn(apply_bufferline_bg, 50)
   end,
 })
 apply_hl_overrides()
-vim.schedule(apply_bufferline_bg)
+vim.defer_fn(apply_bufferline_bg, 50)
 
 -- Markdown editing helpers: wrap word (normal) or selection (visual) with syntax markers
 -- Keys are fed as one sequence so mode transitions happen naturally:
