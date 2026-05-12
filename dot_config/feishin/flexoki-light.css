@@ -1,0 +1,67 @@
+/* ═══════════════════════════════════════════════════════════
+   Flexoki Light — Feishin custom theme
+   Flexoki palette by Steph Ango (stephango.com/flexoki)
+
+   Apply with: feishin-theme-sync
+   ═══════════════════════════════════════════════════════════ */
+
+[data-mantine-color-scheme="light"],
+:root {
+
+  /* ── Core ─────────────────────────────────────────────── */
+  --mantine-color-body:                  #FFFCF0;
+  --mantine-color-text:                  #100F0F;
+
+  /* ── Neutral scale → Flexoki base palette ────────────── */
+  --mantine-color-gray-0:                #F2F0E5;
+  --mantine-color-gray-1:                #E6E4D9;
+  --mantine-color-gray-2:                #DAD8CE;
+  --mantine-color-gray-3:                #CECDC3;
+  --mantine-color-gray-4:                #B7B5AC;
+  --mantine-color-gray-5:                #878580;
+  --mantine-color-gray-6:                #6F6E69;
+  --mantine-color-gray-7:                #575653;
+  --mantine-color-gray-8:                #403E3C;
+  --mantine-color-gray-9:                #282726;
+
+  /* ── UI element defaults ─────────────────────────────── */
+  --mantine-color-default:               #F2F0E5;
+  --mantine-color-default-hover:         #E6E4D9;
+  --mantine-color-default-border:        #CECDC3;
+  --mantine-color-dimmed:                #6F6E69;
+  --mantine-color-placeholder:           #878580;
+  --mantine-color-disabled:              #DAD8CE;
+  --mantine-color-disabled-color:        #878580;
+  --mantine-color-disabled-border:       #CECDC3;
+
+  /* ── Accent → Flexoki Blue ───────────────────────────── */
+  --mantine-color-blue-0:                #EDF2F9;
+  --mantine-color-blue-1:                #D0DEF0;
+  --mantine-color-blue-2:                #A8C2E3;
+  --mantine-color-blue-3:                #7EA7D6;
+  --mantine-color-blue-4:                #4385BE;
+  --mantine-color-blue-5:                #205EA6;
+  --mantine-color-blue-6:                #1A4F8C;
+  --mantine-color-blue-7:                #143F72;
+  --mantine-color-blue-8:                #0E2F58;
+  --mantine-color-blue-9:                #08203E;
+
+  --mantine-primary-color-filled:        #205EA6;
+  --mantine-primary-color-filled-hover:  #1A4F8C;
+  --mantine-primary-color-light:         rgba(32, 94, 166, 0.10);
+  --mantine-primary-color-light-hover:   rgba(32, 94, 166, 0.14);
+  --mantine-primary-color-light-color:   #205EA6;
+  --mantine-primary-color-contrast:      #FFFCF0;
+
+  /* ── Feishin-specific ────────────────────────────────── */
+  --theme-colors-surface:                #F2F0E5;
+  --theme-colors-border:                 rgba(16, 15, 15, 0.07);
+}
+
+/* ── Scrollbars ───────────────────────────────────────────── */
+::-webkit-scrollbar-track       { background: #F2F0E5; }
+::-webkit-scrollbar-thumb       { background: #CECDC3; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #B7B5AC; }
+
+/* ── Selection ────────────────────────────────────────────── */
+::selection { background: rgba(32, 94, 166, 0.18); }

@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Sync ~/.config/feishin/flexoki-light.css into Feishin's Local Storage."""
+
+import json
+import os
+import sys
+import subprocess
+
+CSS_FILE   = os.path.expanduser("~/.config/feishin/flexoki-light.css")
+LDB_PATH   = os.path.expanduser("~/.config/feishin/Local Storage/leveldb")
+ORIGIN_KEY = b"_https://feishin\x00\x01feishin-store"
+
+try:
+    import plyvel
+except ImportError:
+    sys.exit("plyvel not installed — run: omarchy pkg add python-plyvel")
+
+if not os.path.exists(CSS_FILE):
+    sys.exit(f"CSS file not found: {CSS_FILE}")
+
+css = open(CSS_FILE).read()
+
+# Make sure Feishin is not running (LevelDB allows only one writer)
+result = subprocess.run(["pgrep", "-x", "feishin"], capture_output=True)
+if result.returncode == 0:
+    sys.exit("Feishin is running — close it first, then re-run this script.")
+
+db = plyvel.DB(LDB_PATH)
+
+# The LevelDB key format Chromium uses for Local Storage:
+# _<origin>\x00\x01<key>
+# We need to find the actual store key Feishin uses
+found_key = None
+current_value = None
+for key, value in db:
+    if b"feishin" in key and b"customCss" in (value or b""):
+        found_key = key
+        current_value = value
+        break
+
+if found_key is None:
+    # Try to find the main store key
+    for key, value in db:
+        if b"feishin-store" in key or (b"feishin" in key and value and value.startswith(b"\x01")):
+            found_key = key
+            current_value = value
+            print(f"Found store key: {found_key!r}")
+            break
+
+if found_key is None:
+    db.close()
+    sys.exit("Could not find Feishin store in LevelDB. Open Feishin, enable Custom CSS once, close it, then re-run.")
+
+# Parse the JSON value (Chromium LevelDB values start with a version byte)
+raw = current_value
+prefix = raw[:1]  # version byte
+try:
+    state = json.loads(raw[1:].decode("utf-16-le"))
+except Exception:
+    try:
+        state = json.loads(raw[1:].decode("utf-8"))
+    except Exception as e:
+        db.close()
+        sys.exit(f"Failed to parse store JSON: {e}")
+
+# Navigate to the customCss field
+# Zustand persist wraps state: {"state": {...}, "version": N}
+store = state.get("state", state)
+
+if "customCss" not in store and "general" in store:
+    store = store["general"]
+
+store["customCssEnable"] = True
+store["customCss"] = css
+
+# Re-encode
+try:
+    new_json = json.dumps(state, ensure_ascii=False)
+    new_value = prefix + new_json.encode("utf-16-le")
+except Exception:
+    new_json = json.dumps(state, ensure_ascii=False)
+    new_value = prefix + new_json.encode("utf-8")
+
+db.put(found_key, new_value)
+db.close()
+print(f"✓ Custom CSS synced ({len(css)} chars) — restart Feishin to apply.")
