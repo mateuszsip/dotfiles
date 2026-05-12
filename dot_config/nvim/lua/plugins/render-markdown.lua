@@ -12,6 +12,9 @@ return {
       background_inset = 0,
       highlight_language = "RenderMarkdownCodeLang",
     },
+    heading = {
+      backgrounds = {},
+    },
     overrides = {
       filetype = {
         -- Octo buffers often contain GitHub-bot tables with mismatched column counts
