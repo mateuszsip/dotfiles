@@ -3,7 +3,7 @@ return {
   opts = {
     options = {
       separator_style = "thin",
-      indicator = { style = "underline" },
+      indicator = { style = "none" },
       name_formatter = function(buf)
         return " " .. buf.name .. " "
       end,

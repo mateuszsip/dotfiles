@@ -31,7 +31,7 @@ local function apply_bufferline_bg()
 
   local groups = {
     "BufferLineFill", "BufferLineBackground", "BufferLineBuffer",
-    "BufferLineBufferVisible", "BufferLineBufferSelected",
+    "BufferLineBufferVisible",
     "BufferLineTab", "BufferLineTabSelected", "BufferLineTabClose",
     "BufferLineCloseButton", "BufferLineCloseButtonVisible", "BufferLineCloseButtonSelected",
     "BufferLineNumbers", "BufferLineNumbersVisible", "BufferLineNumbersSelected",
@@ -55,6 +55,12 @@ local function apply_bufferline_bg()
     hl.bg = bg
     vim.api.nvim_set_hl(0, group, hl)
   end
+  -- Selected tab: bold text to distinguish without changing bg or causing separator shift
+  local sel = vim.api.nvim_get_hl(0, { name = "BufferLineBufferSelected" })
+  sel.bg = bg
+  sel.bold = true
+  vim.api.nvim_set_hl(0, "BufferLineBufferSelected", sel)
+
   vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible",  { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = bg })
