@@ -55,15 +55,32 @@ local function apply_bufferline_bg()
     hl.bg = bg
     vim.api.nvim_set_hl(0, group, hl)
   end
-  -- Selected tab: bold text to distinguish without changing bg or causing separator shift
+  -- Selected tab: slightly warmer bg tint — same character widths so separators don't shift
+  local sel_bg = 0xECE6D9
   local sel = vim.api.nvim_get_hl(0, { name = "BufferLineBufferSelected" })
-  sel.bg = bg
-  sel.bold = true
+  sel.bg = sel_bg
+  sel.bold = false
   vim.api.nvim_set_hl(0, "BufferLineBufferSelected", sel)
+  -- Close button and numbers on the selected tab must match its bg
+  for _, g in ipairs({ "BufferLineCloseButtonSelected", "BufferLineNumbersSelected",
+                       "BufferLineModifiedSelected", "BufferLinePickSelected",
+                       "BufferLineDuplicateSelected" }) do
+    local h = vim.api.nvim_get_hl(0, { name = g })
+    h.bg = sel_bg
+    vim.api.nvim_set_hl(0, g, h)
+  end
+  -- DevIcon selected groups need the tint too
+  for name, h in pairs(vim.api.nvim_get_hl(0, {})) do
+    if name:match("^BufferLineDevIcon.*Selected$") then
+      h.bg = sel_bg
+      vim.api.nvim_set_hl(0, name, h)
+    end
+  end
+  -- Separator adjacent to active tab should still be visible
+  vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = sel_bg })
 
-  vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
-  vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible",  { fg = sep, bg = bg })
-  vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = bg })
+  vim.api.nvim_set_hl(0, "BufferLineSeparator",        { fg = sep, bg = bg })
+  vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible", { fg = sep, bg = bg })
 
   -- DevIcon groups are dynamically named per filetype; sweep all of them.
   for name, hl in pairs(vim.api.nvim_get_hl(0, {})) do
