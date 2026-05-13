@@ -1,7 +1,3 @@
-$env.PATH ++= ['~/.local/bin']
-$env.PATH ++= ['/usr/local/bin']
-$env.PATH ++= ['~/.atuin/bin']
-
 $env.PAGER = "bat"
 
 $env.K9S_SKIN = 'solarized-light'
@@ -16,3 +12,8 @@ $env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"
 {{- end }}
 
 $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
+
+$env.PATH ++= ['~/.local/bin']
+$env.PATH ++= ['/usr/local/bin']
+$env.PATH ++= ['~/.atuin/bin']
+
