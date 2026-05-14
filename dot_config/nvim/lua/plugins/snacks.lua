@@ -6,7 +6,10 @@ return {
   },
   opts = {
     scroll = {
-      enabled = false, -- Disable scrolling animations
+      enabled = true, -- Disable scrolling animations
+    },
+    image = {
+      enabled = true,
     },
     picker = {
       sources = {
