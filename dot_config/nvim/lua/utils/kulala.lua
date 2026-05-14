@@ -49,6 +49,9 @@ function M.search_requests_in_dir(dir)
   require("snacks.picker")({
     title = "HTTP Requests",
     items = items,
+    format = function(item, _picker)
+      return { { item.text, "SnacksPickerLabel" } }
+    end,
     confirm = function(ctx, item)
       ctx:close()
       jump({ file = item.file, lnum = item.lnum })
