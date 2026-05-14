@@ -1,6 +1,10 @@
+argocd
 atuin
+awscli
+aws-sso-cli
 bat
 chezmoi
+coreutils
 dust
 eza
 fastfetch
@@ -14,6 +18,7 @@ helm
 htop
 imagemagick
 jq
+k6
 k9s
 kubectl
 lazydocker
@@ -25,7 +30,7 @@ mysql-client
 neovim
 nushell
 opencode
-pgcli
+postgresql
 pngpaste
 ripgrep
 shellcheck

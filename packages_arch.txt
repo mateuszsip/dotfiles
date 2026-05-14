@@ -92,6 +92,7 @@ playerctl
 plocate
 plymouth
 polkit-gnome
+postgresql
 postgresql-libs
 power-profiles-daemon
 powertop
