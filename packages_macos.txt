@@ -12,12 +12,14 @@ git-delta
 gum
 helm
 htop
+imagemagick
 jq
 k9s
 kubectl
 lazydocker
 lazygit
 luarocks
+mermaid-cli
 mise
 mysql-client
 neovim
