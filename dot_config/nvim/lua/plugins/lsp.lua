@@ -44,6 +44,9 @@ return {
       end
     end,
     opts = {
+      diagnostics = {
+        virtual_text = false,
+      },
       servers = {
         ["*"] = {
           keys = {

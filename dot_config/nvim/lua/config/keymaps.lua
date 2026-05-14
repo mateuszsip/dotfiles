@@ -105,6 +105,13 @@ map("n", "<leader>CA", function()
   Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
 end, { desc = "Chezmoi Apply All" })
 
+-- Toggle diagnostic virtual text (inline messages); <leader>ud toggles all diagnostics
+local _vt_on = { spacing = 4, source = "if_many", prefix = "●" }
+map("n", "<leader>uv", function()
+  local off = vim.diagnostic.config().virtual_text == false
+  vim.diagnostic.config({ virtual_text = off and _vt_on or false })
+end, { desc = "Toggle Virtual Text" })
+
 -- Fold keymaps (overrides movement mappings above; require() is lazy so safe before origami loads)
 map("n", "j", function() require("origami").h() end, { desc = "Left / fold" })
 map("n", ";", function() require("origami").l() end, { desc = "Right / unfold" })
