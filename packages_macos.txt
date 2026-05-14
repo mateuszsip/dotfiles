@@ -25,6 +25,7 @@ mysql-client
 neovim
 nushell
 opencode
+pgcli
 pngpaste
 ripgrep
 shellcheck
