@@ -10,8 +10,10 @@ return {
       local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
       if #shown > 0 then
         for _, t in ipairs(shown) do t:hide() end
-      else
+      elseif #terms > 0 then
         for _, t in ipairs(terms) do t:show() end
+      else
+        Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } })
       end
     end, desc = "Toggle All Terminals" },
   },
