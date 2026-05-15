@@ -3,10 +3,18 @@ return {
   keys = {
     -- Disable <C-f> for file search to allow terminal passthrough
     { "<C-f>", false, mode = { "n", "i", "v" } },
-    { "<leader>ft1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 1" },
-    { "<leader>ft2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 2" },
-    { "<leader>ft3", function() Snacks.terminal.toggle(nil, { id = 3, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 3" },
-    { "<leader>ft4", function() Snacks.terminal.toggle(nil, { id = 4, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 4" },
+    { "<leader>ftq", function() Snacks.terminal.toggle(nil, { count = 1, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 1" },
+    { "<leader>ftw", function() Snacks.terminal.toggle(nil, { count = 2, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 2" },
+    { "<leader>fte", function() Snacks.terminal.toggle(nil, { count = 3, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 3" },
+    { "<leader>fta", function() Snacks.terminal.toggle(nil, { count = 4, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 4" },
+    { "<leader>fts", function() Snacks.terminal.toggle(nil, { count = 5, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 5" },
+    { "<leader>ftd", function() Snacks.terminal.toggle(nil, { count = 6, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 6" },
+    { "<leader>fTq", function() Snacks.terminal.toggle(nil, { count = 1, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 1" },
+    { "<leader>fTw", function() Snacks.terminal.toggle(nil, { count = 2, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 2" },
+    { "<leader>fTe", function() Snacks.terminal.toggle(nil, { count = 3, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 3" },
+    { "<leader>fTa", function() Snacks.terminal.toggle(nil, { count = 4, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 4" },
+    { "<leader>fTs", function() Snacks.terminal.toggle(nil, { count = 5, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 5" },
+    { "<leader>fTd", function() Snacks.terminal.toggle(nil, { count = 6, win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 6" },
     { "<leader>ftt", function()
       local terms = Snacks.terminal.list()
       local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
@@ -15,7 +23,18 @@ return {
       elseif #terms > 0 then
         for _, t in ipairs(terms) do t:show() end
       else
-        Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom", height = 0.3 } })
+        Snacks.terminal.toggle(nil, { count = 1, win = { position = "bottom", height = 0.3, stack = true } })
+      end
+    end, desc = "Toggle All Terminals" },
+    { "<leader>fT", function()
+      local terms = Snacks.terminal.list()
+      local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
+      if #shown > 0 then
+        for _, t in ipairs(shown) do t:hide() end
+      elseif #terms > 0 then
+        for _, t in ipairs(terms) do t:show() end
+      else
+        Snacks.terminal.toggle(nil, { count = 1, win = { position = "bottom", height = 0.3, stack = true } })
       end
     end, desc = "Toggle All Terminals" },
   },

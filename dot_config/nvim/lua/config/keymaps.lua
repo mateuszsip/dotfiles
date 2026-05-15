@@ -101,24 +101,6 @@ map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
-local bottom_term = { position = "bottom", height = 0.3 }
-map("n", "<leader>fT1", function() Snacks.terminal.toggle(nil, { id = 1, win = bottom_term }) end, { desc = "Terminal 1" })
-map("n", "<leader>fT2", function() Snacks.terminal.toggle(nil, { id = 2, win = bottom_term }) end, { desc = "Terminal 2" })
-map("n", "<leader>fT3", function() Snacks.terminal.toggle(nil, { id = 3, win = bottom_term }) end, { desc = "Terminal 3" })
-map("n", "<leader>fT4", function() Snacks.terminal.toggle(nil, { id = 4, win = bottom_term }) end, { desc = "Terminal 4" })
-
-map("n", "<leader>fT", function()
-  local terms = Snacks.terminal.list()
-  local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
-  if #shown > 0 then
-    for _, t in ipairs(shown) do t:hide() end
-  elseif #terms > 0 then
-    for _, t in ipairs(terms) do t:show() end
-  else
-    Snacks.terminal.toggle(nil, { id = 1, win = bottom_term })
-  end
-end, { desc = "Toggle All Terminals" })
-
 map("n", "<leader>CA", function()
   Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
 end, { desc = "Chezmoi Apply All" })
