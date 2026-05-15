@@ -64,6 +64,11 @@ mpris.empty {
   color: #DA702C;
 }
 
+#custom-claude {
+  color: #DA702C;
+  margin-right: 4px;
+}
+
 #workspaces button.urgent.active {
   color: #DA702C;
   background-color: alpha(#DA702C, 0.15);

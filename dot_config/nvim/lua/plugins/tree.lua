@@ -23,6 +23,7 @@ return {
       },
     },
     window = {
+      width = 30,
       mappings = {
         [";"] = "open",        -- ; = open (right/l equivalent)
         ["j"] = "close_node",  -- j = close/collapse (left/h equivalent)

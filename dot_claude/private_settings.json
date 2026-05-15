@@ -59,7 +59,7 @@
       {
         "hooks": [
           {
-            "command": "notify-send -a 'Claude Code' -i dialog-information 'Claude is done'",
+            "command": "bash ~/.config/waybar/claude-notify.sh",
             "type": "command"
           }
         ]
@@ -78,7 +78,7 @@
       "Bash(gh pr create:*)",
       "Bash(git commit:*)"
     ],
-    "defaultMode": "acceptEdits",
+    "defaultMode": "auto",
     "deny": [
       "Read(*.env)",
       "Bash(rm:*)",

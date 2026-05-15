@@ -13,7 +13,7 @@ return {
     },
     styles = {
       terminal = {
-        height = 0.5,
+        height = 0.3,
       },
     },
     picker = {

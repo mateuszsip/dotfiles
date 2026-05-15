@@ -11,6 +11,7 @@
     "hyprland/workspaces"
   ],
   "modules-center": [
+    "custom/claude",
     "custom/weather",
     "clock",
     "custom/gcal",
@@ -270,6 +271,13 @@
   "custom/expand-icon": {
     "format": "",
     "tooltip": false
+  },
+  "custom/claude": {
+    "exec": "$HOME/.config/waybar/claude-indicator.sh",
+    "return-type": "json",
+    "signal": 11,
+    "on-click": "rm -f /tmp/claude-count && pkill -SIGRTMIN+11 waybar",
+    "tooltip": true
   },
   "custom/screenrecording-indicator": {
     "on-click": "omarchy-capture-screenrecording",
