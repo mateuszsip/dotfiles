@@ -24,11 +24,6 @@ return {
     image = {
       enabled = true,
     },
-    styles = {
-      terminal = {
-        height = 0.3,
-      },
-    },
     picker = {
       sources = {
         projects = {
