@@ -101,6 +101,9 @@ map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
+map("n", "<leader>fT1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } }) end, { desc = "Terminal 1" })
+map("n", "<leader>fT2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom" } }) end, { desc = "Terminal 2" })
+
 map("n", "<leader>fT", function()
   local terms = Snacks.terminal.list()
   local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
