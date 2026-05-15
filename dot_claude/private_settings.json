@@ -54,6 +54,16 @@
         ],
         "matcher": "Bash"
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "notify-send -a 'Claude Code' -i dialog-information 'Claude is done'",
+            "type": "command"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
@@ -79,5 +89,7 @@
     "command": "bash /home/sip/.claude/statusline-command.sh",
     "type": "command"
   },
-  "theme": "light"
+  "theme": "light",
+  "model": "sonnet",
+  "skipAutoPermissionPrompt": true
 }
