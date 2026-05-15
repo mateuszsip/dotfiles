@@ -3,6 +3,17 @@ return {
   keys = {
     -- Disable <C-f> for file search to allow terminal passthrough
     { "<C-f>", false, mode = { "n", "i", "v" } },
+    { "<leader>ft1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } }) end, desc = "Terminal 1" },
+    { "<leader>ft2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom" } }) end, desc = "Terminal 2" },
+    { "<leader>ftt", function()
+      local terms = Snacks.terminal.list()
+      local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
+      if #shown > 0 then
+        for _, t in ipairs(shown) do t:hide() end
+      else
+        for _, t in ipairs(terms) do t:show() end
+      end
+    end, desc = "Toggle All Terminals" },
   },
   opts = {
     scroll = {
