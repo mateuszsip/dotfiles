@@ -3,10 +3,10 @@ return {
   keys = {
     -- Disable <C-f> for file search to allow terminal passthrough
     { "<C-f>", false, mode = { "n", "i", "v" } },
-    { "<leader>ft1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } }) end, desc = "Terminal 1" },
-    { "<leader>ft2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom" } }) end, desc = "Terminal 2" },
-    { "<leader>ft3", function() Snacks.terminal.toggle(nil, { id = 3, win = { position = "bottom" } }) end, desc = "Terminal 3" },
-    { "<leader>ft4", function() Snacks.terminal.toggle(nil, { id = 4, win = { position = "bottom" } }) end, desc = "Terminal 4" },
+    { "<leader>ft1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 1" },
+    { "<leader>ft2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 2" },
+    { "<leader>ft3", function() Snacks.terminal.toggle(nil, { id = 3, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 3" },
+    { "<leader>ft4", function() Snacks.terminal.toggle(nil, { id = 4, win = { position = "bottom", height = 0.3 } }) end, desc = "Terminal 4" },
     { "<leader>ftt", function()
       local terms = Snacks.terminal.list()
       local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
@@ -15,7 +15,7 @@ return {
       elseif #terms > 0 then
         for _, t in ipairs(terms) do t:show() end
       else
-        Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } })
+        Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom", height = 0.3 } })
       end
     end, desc = "Toggle All Terminals" },
   },

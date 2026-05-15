@@ -101,10 +101,11 @@ map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
-map("n", "<leader>fT1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } }) end, { desc = "Terminal 1" })
-map("n", "<leader>fT2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom" } }) end, { desc = "Terminal 2" })
-map("n", "<leader>fT3", function() Snacks.terminal.toggle(nil, { id = 3, win = { position = "bottom" } }) end, { desc = "Terminal 3" })
-map("n", "<leader>fT4", function() Snacks.terminal.toggle(nil, { id = 4, win = { position = "bottom" } }) end, { desc = "Terminal 4" })
+local bottom_term = { position = "bottom", height = 0.3 }
+map("n", "<leader>fT1", function() Snacks.terminal.toggle(nil, { id = 1, win = bottom_term }) end, { desc = "Terminal 1" })
+map("n", "<leader>fT2", function() Snacks.terminal.toggle(nil, { id = 2, win = bottom_term }) end, { desc = "Terminal 2" })
+map("n", "<leader>fT3", function() Snacks.terminal.toggle(nil, { id = 3, win = bottom_term }) end, { desc = "Terminal 3" })
+map("n", "<leader>fT4", function() Snacks.terminal.toggle(nil, { id = 4, win = bottom_term }) end, { desc = "Terminal 4" })
 
 map("n", "<leader>fT", function()
   local terms = Snacks.terminal.list()
@@ -114,7 +115,7 @@ map("n", "<leader>fT", function()
   elseif #terms > 0 then
     for _, t in ipairs(terms) do t:show() end
   else
-    Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } })
+    Snacks.terminal.toggle(nil, { id = 1, win = bottom_term })
   end
 end, { desc = "Toggle All Terminals" })
 
