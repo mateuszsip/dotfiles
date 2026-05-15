@@ -1,8 +1,12 @@
 return {
-  "crnvl96/lazydocker.nvim",
-  event = "VeryLazy",
+  "folke/snacks.nvim",
   keys = {
-    { "<leader>ld", "<cmd>LazyDocker<cr>", desc = "Open LazyDocker" },
+    {
+      "ll",
+      function()
+        Snacks.terminal("lazydocker", { cwd = vim.fn.getcwd() })
+      end,
+      desc = "LazyDocker",
+    },
   },
-  opts = {},
 }
