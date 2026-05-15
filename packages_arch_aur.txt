@@ -5,6 +5,7 @@ feishin-bin
 gcalcli
 go-aws-sso
 gpu-screen-recorder
+k6-bin
 lazyactions-bin
 lazyjournal-bin
 lazymake-bin
