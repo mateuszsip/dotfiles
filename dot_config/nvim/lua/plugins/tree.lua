@@ -3,12 +3,16 @@ return {
   keys = {
     {
       "<leader>fe",
-      function() require("neo-tree.command").execute({ toggle = true, dir = vim.uv.cwd() }) end,
+      function()
+        require("neo-tree.command").execute({ toggle = true, dir = vim.uv.cwd() })
+      end,
       desc = "Explorer NeoTree (cwd)",
     },
     {
       "<leader>fE",
-      function() require("neo-tree.command").execute({ toggle = true, dir = LazyVim.root() }) end,
+      function()
+        require("neo-tree.command").execute({ toggle = true, dir = LazyVim.root() })
+      end,
       desc = "Explorer NeoTree (Root Dir)",
     },
     { "<leader>e", "<leader>fe", desc = "Explorer NeoTree (cwd)", remap = true },
@@ -23,17 +27,16 @@ return {
       },
     },
     window = {
-      width = 30,
+      width = 45,
       mappings = {
-        [";"] = "open",        -- ; = open (right/l equivalent)
-        ["j"] = "close_node",  -- j = close/collapse (left/h equivalent)
-        ["l"] = false,         -- unmap l=open so global l→k (move up) takes effect
-        ["h"] = false,         -- unmap h=close_node since j now handles this
+        [";"] = "open", -- ; = open (right/l equivalent)
+        ["j"] = "close_node", -- j = close/collapse (left/h equivalent)
+        ["l"] = false, -- unmap l=open so global l→k (move up) takes effect
+        ["h"] = false, -- unmap h=close_node since j now handles this
         ["<leader>sf"] = {
           function(state)
             local node = state.tree:get_node()
-            local dir = node.type == "directory" and node.path
-              or vim.fn.fnamemodify(node.path, ":h")
+            local dir = node.type == "directory" and node.path or vim.fn.fnamemodify(node.path, ":h")
             Snacks.picker.files({ cwd = dir })
           end,
           desc = "find files in node dir",
@@ -41,8 +44,7 @@ return {
         ["<leader>sg"] = {
           function(state)
             local node = state.tree:get_node()
-            local dir = node.type == "directory" and node.path
-              or vim.fn.fnamemodify(node.path, ":h")
+            local dir = node.type == "directory" and node.path or vim.fn.fnamemodify(node.path, ":h")
             Snacks.picker.grep({ cwd = dir })
           end,
           desc = "grep in node dir",
@@ -50,8 +52,7 @@ return {
         ["<leader>RF"] = {
           function(state)
             local node = state.tree:get_node()
-            local dir = node.type == "directory" and node.path
-              or vim.fn.fnamemodify(node.path, ":h")
+            local dir = node.type == "directory" and node.path or vim.fn.fnamemodify(node.path, ":h")
             require("utils.kulala").search_requests_in_dir(dir)
           end,
           desc = "find HTTP requests in node dir",
