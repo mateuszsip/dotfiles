@@ -124,7 +124,8 @@ mpris.empty {
 #custom-media:hover,
 #datetime:hover,
 #connectivity:hover,
-#system:hover {
+#system:hover,
+#power:hover {
   background-color: #CECDC3;
 }
 
