@@ -26,8 +26,7 @@
     "group/connectivity",
     "pulseaudio",
     "group/system",
-    "custom/watts",
-    "battery"
+    "group/power"
   ],
   "group/connectivity": {
     "orientation": "horizontal",
@@ -82,6 +81,13 @@
     "tooltip-format": "Omarchy update available",
     "signal": 7,
     "interval": 21600
+  },
+  "group/power": {
+    "orientation": "horizontal",
+    "modules": [
+      "custom/watts",
+      "battery"
+    ]
   },
   "custom/watts": {
     "exec": "$HOME/.config/waybar/system-watts.sh",

@@ -85,7 +85,8 @@ mpris.empty {
 #custom-media,
 #custom-update,
 #connectivity,
-#system {
+#system,
+#power {
   background-color: #DEDBD0;
   color: @foreground;
   min-width: 12px;
@@ -101,7 +102,9 @@ mpris.empty {
 #connectivity #bluetooth,
 #connectivity #network,
 #system #cpu,
-#system #memory {
+#system #memory,
+#power #custom-watts,
+#power #battery {
   background: none;
   border: none;
   box-shadow: none;
