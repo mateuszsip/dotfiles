@@ -3,16 +3,17 @@ return {
   keys = {
     { "<leader>ac", function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end, desc = "Sidekick Toggle Claude" },
     { "<leader>ao", function() require("sidekick.cli").toggle({ name = "opencode", focus = true }) end, desc = "Sidekick Toggle Opencode" },
+    { "<A-;>", function() require("sidekick").nes_jump_or_apply() end, desc = "Goto/Apply Next Edit Suggestion" },
   },
   opts = {
     cli = {
       win = {
         split = {
-          width = 30,
+          width = 45,
         },
         float = {
-          width = 0.6,
-          height = 0.7,
+          width = 0.75,
+          height = 0.85,
         },
       },
     },
