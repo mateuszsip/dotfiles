@@ -13,6 +13,7 @@ return {
     opts = {
       linters_by_ft = {
         php = { "phpstan" },
+        markdown = { "markdownlint" },
       },
     },
   },
@@ -51,7 +52,13 @@ return {
         ["*"] = {
           keys = {
             { "<leader>cl", false },
-            { "<leader>cL", function() Snacks.picker.lsp_config() end, desc = "Lsp Info" },
+            {
+              "<leader>cL",
+              function()
+                Snacks.picker.lsp_config()
+              end,
+              desc = "Lsp Info",
+            },
           },
         },
         phpactor = {
