@@ -59,6 +59,16 @@ mpris.empty {
   opacity: 0.25;
 }
 
+#workspaces button.urgent {
+  opacity: 1;
+  color: #DA702C;
+}
+
+#workspaces button.urgent.active {
+  color: #DA702C;
+  background-color: alpha(#DA702C, 0.15);
+}
+
 #workspaces button:hover {
   opacity: 0.7;
 }
