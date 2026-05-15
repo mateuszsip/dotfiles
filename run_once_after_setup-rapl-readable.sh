@@ -1,0 +1,12 @@
+#!/bin/bash
+# Make AMD/Intel RAPL power counters readable for Waybar system-watts module
+
+UDEV_RULE='SUBSYSTEM=="powercap", KERNEL=="intel-rapl:0", RUN+="/bin/chmod a+r /sys/class/powercap/%k/energy_uj"'
+UDEV_FILE=/etc/udev/rules.d/99-rapl-readable.rules
+
+if [ ! -f "$UDEV_FILE" ] || ! grep -qF "$UDEV_RULE" "$UDEV_FILE"; then
+    echo "$UDEV_RULE" | sudo tee "$UDEV_FILE"
+fi
+
+# Apply immediately without waiting for reboot
+sudo chmod a+r /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj 2>/dev/null || true
