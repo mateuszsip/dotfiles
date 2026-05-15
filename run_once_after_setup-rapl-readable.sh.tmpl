@@ -1,3 +1,4 @@
+{{- if (eq .chezmoi.os "linux") -}}
 #!/bin/bash
 # Make AMD/Intel RAPL power counters readable for Waybar system-watts module
 
@@ -10,3 +11,4 @@ fi
 
 # Apply immediately without waiting for reboot
 sudo chmod a+r /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj 2>/dev/null || true
+{{ end }}
