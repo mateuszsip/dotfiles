@@ -101,6 +101,18 @@ map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
+map("n", "<leader>fT", function()
+  local terms = Snacks.terminal.list()
+  local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
+  if #shown > 0 then
+    for _, t in ipairs(shown) do t:hide() end
+  elseif #terms > 0 then
+    for _, t in ipairs(terms) do t:show() end
+  else
+    Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } })
+  end
+end, { desc = "Toggle All Terminals" })
+
 map("n", "<leader>CA", function()
   Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
 end, { desc = "Chezmoi Apply All" })
