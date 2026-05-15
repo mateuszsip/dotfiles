@@ -11,6 +11,11 @@ return {
     image = {
       enabled = true,
     },
+    styles = {
+      terminal = {
+        height = 0.5,
+      },
+    },
     picker = {
       sources = {
         projects = {
