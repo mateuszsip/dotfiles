@@ -105,6 +105,15 @@ map("n", "<leader>CA", function()
   Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
 end, { desc = "Chezmoi Apply All" })
 
+-- Override LazyVim's terminal labels
+map("n", "<leader>ft", function() Snacks.terminal(nil, { cwd = vim.fn.getcwd() }) end, { desc = "Terminal (cwd)" })
+map("n", "<leader>fT", function()
+  local path = vim.api.nvim_buf_get_name(0)
+  local dir = path ~= "" and vim.fn.fnamemodify(path, ":h") or nil
+  if dir and vim.fn.isdirectory(dir) ~= 1 then dir = nil end
+  Snacks.terminal(nil, { cwd = dir or vim.fn.getcwd() })
+end, { desc = "Terminal (buf dir)" })
+
 -- Toggle diagnostic virtual text (inline messages); <leader>ud toggles all diagnostics
 local _vt_on = { spacing = 4, source = "if_many", prefix = "●" }
 map("n", "<leader>uv", function()
