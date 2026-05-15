@@ -30,6 +30,7 @@ mysql-client
 neovim
 nushell
 opencode
+php@8.5
 postgresql
 pngpaste
 ripgrep
