@@ -26,6 +26,7 @@
     "group/connectivity",
     "pulseaudio",
     "group/system",
+    "custom/watts",
     "battery"
   ],
   "group/connectivity": {
@@ -81,6 +82,12 @@
     "tooltip-format": "Omarchy update available",
     "signal": 7,
     "interval": 21600
+  },
+  "custom/watts": {
+    "exec": "$HOME/.config/waybar/system-watts.sh",
+    "interval": 6,
+    "format": "{}",
+    "tooltip": false
   },
   "cpu": {
     "interval": 5,
