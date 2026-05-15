@@ -103,6 +103,8 @@ map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cw
 
 map("n", "<leader>fT1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } }) end, { desc = "Terminal 1" })
 map("n", "<leader>fT2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom" } }) end, { desc = "Terminal 2" })
+map("n", "<leader>fT3", function() Snacks.terminal.toggle(nil, { id = 3, win = { position = "bottom" } }) end, { desc = "Terminal 3" })
+map("n", "<leader>fT4", function() Snacks.terminal.toggle(nil, { id = 4, win = { position = "bottom" } }) end, { desc = "Terminal 4" })
 
 map("n", "<leader>fT", function()
   local terms = Snacks.terminal.list()

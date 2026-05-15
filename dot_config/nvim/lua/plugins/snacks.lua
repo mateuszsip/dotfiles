@@ -5,6 +5,8 @@ return {
     { "<C-f>", false, mode = { "n", "i", "v" } },
     { "<leader>ft1", function() Snacks.terminal.toggle(nil, { id = 1, win = { position = "bottom" } }) end, desc = "Terminal 1" },
     { "<leader>ft2", function() Snacks.terminal.toggle(nil, { id = 2, win = { position = "bottom" } }) end, desc = "Terminal 2" },
+    { "<leader>ft3", function() Snacks.terminal.toggle(nil, { id = 3, win = { position = "bottom" } }) end, desc = "Terminal 3" },
+    { "<leader>ft4", function() Snacks.terminal.toggle(nil, { id = 4, win = { position = "bottom" } }) end, desc = "Terminal 4" },
     { "<leader>ftt", function()
       local terms = Snacks.terminal.list()
       local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
