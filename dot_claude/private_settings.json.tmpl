@@ -58,10 +58,12 @@
     "Stop": [
       {
         "hooks": [
+{{ if eq .chezmoi.os "linux" -}}
           {
             "command": "bash ~/.config/waybar/claude-notify.sh",
             "type": "command"
           }
+{{ end -}}
         ]
       }
     ]
