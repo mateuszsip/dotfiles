@@ -35,7 +35,7 @@
       {
         "hooks": [
           {
-            "command": "/home/sip/.claude/hooks/rtk-rewrite.sh",
+            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/rtk-rewrite.sh",
             "type": "command"
           }
         ],
@@ -71,10 +71,10 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Read(/home/sip/.config/**)",
-      "Edit(/home/sip/.config/**)",
-      "Read(/home/sip/.local/share/chezmoi/**)",
-      "Edit(/home/sip/.local/share/chezmoi/**)"
+      "Read({{ .chezmoi.homeDir }}/.config/**)",
+      "Edit({{ .chezmoi.homeDir }}/.config/**)",
+      "Read({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)",
+      "Edit({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)"
     ],
     "ask": [
       "Bash(gh pr create:*)",
@@ -88,7 +88,7 @@
     ]
   },
   "statusLine": {
-    "command": "bash /home/sip/.claude/statusline-command.sh",
+    "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh",
     "type": "command"
   },
   "theme": "light",
