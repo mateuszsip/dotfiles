@@ -3,6 +3,8 @@ unbind j
 unbind k
 unbind l
 unbind ;
+unbind H
+unbind J
 unbind K
 unbind L
 
@@ -18,11 +20,27 @@ bind ; scrollpx 50 0
 bind K tabprev
 bind L tabnext
 
+" History navigation
+bind H back
+bind J forward
+
 " Important: Move the command prefix from ; to h
 bind h fillcmdline
 
 " Hint operations (, replaces ; prefix which is now scroll right)
+bind f hint
 bind ,f hint
 bind ,t hint -t
 bind ,b hint -b
 bind Y hint -y
+
+" Tab management
+bind d tabclose
+bind u undo
+
+" Clipboard
+bind yy clipboard yank
+bind p open clipboard
+
+" Focus input
+bind gi focusinput
