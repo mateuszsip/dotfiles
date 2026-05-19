@@ -99,6 +99,7 @@ mpris.empty {
 #custom-omarchy,
 #custom-media,
 #custom-update,
+#custom-notifications,
 #connectivity,
 #system,
 #power {
@@ -226,6 +227,20 @@ tooltip * {
   margin-right: 5px;
 }
 
+
+#custom-notifications {
+  font-size: 11px;
+  opacity: 0.4;
+}
+
+#custom-notifications.has-notifications {
+  opacity: 1;
+  color: #DA702C;
+}
+
+#custom-notifications:hover {
+  background-color: #CECDC3;
+}
 
 #custom-voxtype {
   min-width: 12px;

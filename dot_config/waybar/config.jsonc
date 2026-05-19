@@ -11,6 +11,7 @@
     "hyprland/workspaces"
   ],
   "modules-center": [
+    "custom/notifications",
     "custom/claude",
     "custom/weather",
     "clock",
@@ -271,6 +272,15 @@
   "custom/expand-icon": {
     "format": "",
     "tooltip": false
+  },
+  "custom/notifications": {
+    "exec": "$HOME/.config/waybar/notifications.sh",
+    "return-type": "json",
+    "interval": 30,
+    "signal": 12,
+    "on-click": "makoctl restore",
+    "on-click-middle": "bash -c 'n=$(cat /tmp/mako-last-count 2>/dev/null || echo 1); for i in $(seq 1 $n); do makoctl restore; done; echo 0 > /tmp/mako-unread-count && pkill -SIGRTMIN+12 waybar'",
+    "on-click-right": "bash -c 'makoctl dismiss -a; echo 0 > /tmp/mako-unread-count && pkill -SIGRTMIN+12 waybar'"
   },
   "custom/claude": {
     "exec": "$HOME/.config/waybar/claude-indicator.sh",
