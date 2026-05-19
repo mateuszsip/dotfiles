@@ -4,21 +4,23 @@ return {
     jira = {
       limit = 200,
     },
-    active_sprint_query = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY Rank ASC",
+    active_sprint_query = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY created DESC, Rank ASC",
     active_sprint_status_order = { "QA", "Review", "In Progress", "Pending", "Blocked", "To Do", "Signed off" },
     -- Maps board column names to actual Jira API status names
     active_sprint_status_map = {
       ["QA"] = "Needs QA",
       ["Review"] = "Awaiting review",
     },
-    -- Palette indices: 1=Green 2=Blue 3=Yellow 4=Red 5=Magenta 6=Cyan 7=Grey
+    -- Background colors using flexoki-400 accents; text is always cream (#FFFCF0)
     status_colors = {
-      ["Needs QA"] = 6,        -- Cyan
-      ["Awaiting review"] = 5, -- Magenta
-      ["In Progress"] = 3,     -- Yellow
-      ["Pending"] = 3,         -- Yellow
-      ["To Do"] = 2,           -- Blue
-      ["Signed off"] = 1,      -- Green
+      ["Needs QA"]        = "#3AA99F", -- cyan
+      ["Awaiting review"] = "#8B7EC8", -- purple
+      ["In Progress"]     = "#D0A215", -- yellow
+      ["Pending"]         = "#DA702C", -- orange
+      ["To Do"]           = "#4385BE", -- blue
+      ["Signed off"]      = "#879A39", -- green
+      ["Closed"]          = "#878580", -- grey
+      ["Blocked"]         = "#D14D41", -- red
     },
     queries = {
       ["All platform"] = "project = '%s' AND labels in (Platform, DevOps, Scalability, Technical) ORDER BY created DESC, Rank ASC",
@@ -47,15 +49,12 @@ return {
     local orig_hl = ui.get_status_hl
     local status_colors = opts.status_colors or {}
     ui.get_status_hl = function(status_name)
-      local palette_idx = status_colors[status_name]
-      if palette_idx then
+      local bg = status_colors[status_name]
+      if bg then
         local board_state = require("jira.board.state")
         local hl_name = "JiraStatus_" .. (status_name or ""):gsub("%s+", "_"):gsub("[^%w_]", "")
         if not board_state.status_hls[status_name] then
-          local util = require("jira.common.util")
-          local palette = util.get_palette()
-          local bg = util.get_theme_color({ "Normal" }, "bg") or "#1e1e2e"
-          vim.api.nvim_set_hl(0, hl_name, { fg = bg, bg = palette[palette_idx], bold = true })
+          vim.api.nvim_set_hl(0, hl_name, { fg = "#FFFCF0", bg = bg, bold = true })
           board_state.status_hls[status_name] = hl_name
         end
         return hl_name
