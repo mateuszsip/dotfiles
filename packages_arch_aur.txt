@@ -1,9 +1,9 @@
+aws-sso-cli-bin
 8bitdo-ultimate-controller-udev
 cloudflare-warp-bin
 dysk-git
 feishin-bin
 gcalcli
-go-aws-sso
 gpu-screen-recorder
 k6-bin
 lazyactions-bin
