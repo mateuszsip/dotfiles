@@ -1,3 +1,5 @@
+set theme base16-grayscale-light
+
 " Unbind to clear the slate
 unbind j
 unbind k
