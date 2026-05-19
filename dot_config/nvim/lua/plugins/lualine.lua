@@ -29,7 +29,7 @@ return {
         groups = {},
         title = false,
         filter = { range = true },
-        format = "{symbol.name:Normal}",
+        format = "{kind_icon}{symbol.name:Normal}",
         hl_group = "lualine_c_normal",
       })
       local function plain_symbols()
