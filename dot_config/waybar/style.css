@@ -64,11 +64,6 @@ mpris.empty {
   color: #DA702C;
 }
 
-#custom-claude {
-  color: #DA702C;
-  margin-right: 4px;
-}
-
 #workspaces button.urgent.active {
   color: #DA702C;
   background-color: alpha(#DA702C, 0.15);
@@ -97,9 +92,10 @@ mpris.empty {
 #bluetooth,
 #pulseaudio,
 #custom-omarchy,
+#custom-claude,
+#custom-notifications,
 #custom-media,
 #custom-update,
-#custom-notifications,
 #connectivity,
 #system,
 #power {
@@ -228,18 +224,20 @@ tooltip * {
 }
 
 
-#custom-notifications {
-  font-size: 11px;
-  opacity: 0.4;
+#custom-claude {
+  color: alpha(@foreground, 0.35);
 }
 
-#custom-notifications.has-notifications {
-  opacity: 1;
+#custom-claude.active {
   color: #DA702C;
 }
 
-#custom-notifications:hover {
-  background-color: #CECDC3;
+#custom-notifications {
+  color: alpha(@foreground, 0.35);
+}
+
+#custom-notifications.has-notifications {
+  color: #DA702C;
 }
 
 #custom-voxtype {
