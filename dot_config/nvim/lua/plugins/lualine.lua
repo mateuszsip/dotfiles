@@ -18,6 +18,26 @@ return {
       end
       return auto
     end)()
+    -- Add trouble breadcrumbs without kind icons (default {kind_icon} renders as grey boxes
+    -- for YAML Object/Key kinds because TroubleIconObject uses a muted highlight)
+    if LazyVim.has("trouble.nvim") then
+      local trouble = require("trouble")
+      local symbols = trouble.statusline({
+        mode = "symbols",
+        groups = {},
+        title = false,
+        filter = { range = true },
+        format = "{symbol.name:Normal}",
+        hl_group = "lualine_c_normal",
+      })
+      table.insert(opts.sections.lualine_c, {
+        symbols and symbols.get,
+        cond = function()
+          return vim.b.trouble_lualine ~= false and symbols.has()
+        end,
+      })
+    end
+
     return opts
   end,
 }
