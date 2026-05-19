@@ -33,17 +33,13 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
-            "command": "{{ .chezmoi.homeDir }}/.claude/hooks/rtk-rewrite.sh",
-            "type": "command"
+            "type": "command",
+            "command": "rtk hook claude"
           }
-        ],
-        "matcher": "Bash"
-      },
-      {
-        "hooks": [],
-        "matcher": "*"
+        ]
       },
       {
         "hooks": [
