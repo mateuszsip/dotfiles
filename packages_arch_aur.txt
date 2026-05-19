@@ -3,6 +3,7 @@ aws-sso-cli-bin
 cloudflare-warp-bin
 dysk-git
 feishin-bin
+firefox-tridactyl-native
 gcalcli
 gpu-screen-recorder
 k6-bin
@@ -15,7 +16,7 @@ moor-bin
 nextmeeting
 pacsea-bin
 phpactor
-riptide
+rtk-bin
 slack-desktop
 subtui-git
 tidal-hifi-bin
