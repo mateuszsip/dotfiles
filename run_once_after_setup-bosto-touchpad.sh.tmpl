@@ -1,0 +1,31 @@
+{{- if (eq .chezmoi.os "linux") -}}
+#!/bin/bash
+# Bind Bosto (Apple 05ac:0265 clone) touchpad to hid-multitouch instead of magicmouse.
+# magicmouse needs a vendor-specific init the Bosto clone doesn't support,
+# leaving it as a dumb mouse with no multitouch events.
+
+REBIND_SCRIPT=/usr/local/bin/rebind-bosto-touchpad
+RULE_FILE=/etc/udev/rules.d/99-bosto-touchpad.rules
+
+REBIND_CONTENT='#!/bin/sh
+# Register device with hid-multitouch (idempotent, survives reboots)
+echo "0003 05ac 0265" > /sys/bus/hid/drivers/hid-multitouch/new_id 2>/dev/null
+# Unbind from magicmouse, then bind to hid-multitouch
+echo -n "$1" > /sys/bus/hid/drivers/magicmouse/unbind 2>/dev/null
+echo -n "$1" > /sys/bus/hid/drivers/hid-multitouch/bind 2>/dev/null'
+
+RULE_CONTENT='ACTION=="add", SUBSYSTEM=="hid", KERNEL=="0003:05AC:0265.*", RUN+="/usr/local/bin/rebind-bosto-touchpad %k"'
+
+# Deploy the rebind script
+if [ ! -f "$REBIND_SCRIPT" ] || ! diff -q <(echo "$REBIND_CONTENT") "$REBIND_SCRIPT" &>/dev/null; then
+    echo "$REBIND_CONTENT" | sudo tee "$REBIND_SCRIPT" > /dev/null
+    sudo chmod +x "$REBIND_SCRIPT"
+fi
+
+# Deploy the udev rule
+if [ ! -f "$RULE_FILE" ] || ! grep -qF "$RULE_CONTENT" "$RULE_FILE"; then
+    echo "$RULE_CONTENT" | sudo tee "$RULE_FILE" > /dev/null
+fi
+
+sudo udevadm control --reload-rules
+{{ end -}}
