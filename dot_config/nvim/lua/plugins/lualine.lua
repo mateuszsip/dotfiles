@@ -18,8 +18,10 @@ return {
       end
       return auto
     end)()
-    -- Add trouble breadcrumbs without kind icons (default {kind_icon} renders as grey boxes
-    -- for YAML Object/Key kinds because TroubleIconObject uses a muted highlight)
+    -- Add trouble breadcrumbs as plain text so lualine paints them with lualine_c_normal.
+    -- Trouble wraps each segment in %#HL#text%* statusline codes; the %* resets to the
+    -- global StatusLine group (not lualine's section color), causing grey-box artifacts
+    -- between items. Stripping HL codes avoids the background mismatch entirely.
     if LazyVim.has("trouble.nvim") then
       local trouble = require("trouble")
       local symbols = trouble.statusline({
@@ -30,8 +32,13 @@ return {
         format = "{symbol.name:Normal}",
         hl_group = "lualine_c_normal",
       })
+      local function plain_symbols()
+        local s = symbols.get()
+        if not s then return s end
+        return s:gsub("%%#[^#]*#", ""):gsub("%%%*", "")
+      end
       table.insert(opts.sections.lualine_c, {
-        symbols and symbols.get,
+        plain_symbols,
         cond = function()
           return vim.b.trouble_lualine ~= false and symbols.has()
         end,
