@@ -19,8 +19,8 @@ bind l scrollline -10
 bind ; scrollpx 50 0
 
 " Tab switching
-bind K tabprev
-bind L tabnext
+bind L tabprev
+bind K tabnext
 
 " History navigation
 bind H back
