@@ -34,6 +34,7 @@ php@8.5
 postgresql
 pngpaste
 ripgrep
+rtk
 shellcheck
 starship
 syncthing

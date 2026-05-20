@@ -36,5 +36,9 @@ mouse-scroll-multiplier = 0.9
 # Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
 async-backend = epoll
 
+{{ if eq .chezmoi.os "darwin" -}}
+command = /usr/local/bin/nu
+{{- else -}}
 command = /usr/bin/nu
+{{- end }}
 
