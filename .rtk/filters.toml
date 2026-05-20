@@ -11,3 +11,7 @@ schema_version = 1
 # strip_lines_matching = ["^\\s*$", "^Downloading", "^Installing"]
 # max_lines = 30
 # on_empty = "my-tool: ok"
+
+[filters.antigravity]
+description = "Antigravity CLI output"
+match_command = "^agy"
