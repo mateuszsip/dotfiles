@@ -35,6 +35,11 @@ description = "Antigravity CLI output"
 match_command = "^agy"
 ```
 
+### 3.5 Configuration Management
+Manage Antigravity CLI settings with chezmoi:
+- **Location:** `~/.gemini/antigravity-cli/`
+- **Files:** `settings.json` (as template), `keybindings.json`.
+
 ## 4. Implementation Details
 
 ### Neovim Changes

@@ -133,7 +133,37 @@ git commit -m "conf: add rtk filter for antigravity"
 
 ---
 
-### Task 5: Apply and Verify
+### Task 6: Add Antigravity Config to Chezmoi
+
+**Files:**
+- Create: `dot_gemini/antigravity-cli/settings.json.tmpl`
+- Create: `dot_gemini/antigravity-cli/keybindings.json`
+
+- [ ] **Step 1: Create settings template**
+
+```json
+{
+  "colorScheme": "light",
+  "trustedWorkspaces": [
+    "{{ .chezmoi.homeDir }}"
+  ]
+}
+```
+
+- [ ] **Step 2: Create keybindings file**
+
+Copy content from `~/.gemini/antigravity-cli/keybindings.json`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add dot_gemini/antigravity-cli/
+git commit -m "feat: add antigravity cli config to chezmoi"
+```
+
+---
+
+### Task 7: Apply and Verify
 
 - [ ] **Step 1: Apply chezmoi changes**
 
