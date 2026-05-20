@@ -12,6 +12,7 @@ lazyjournal-bin
 lazymake-bin
 lazyssh-bin
 lazytailscale-bin
+matcha-client-bin
 moor-bin
 nextmeeting
 pacsea-bin
