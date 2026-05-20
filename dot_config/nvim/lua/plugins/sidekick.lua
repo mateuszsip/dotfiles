@@ -16,6 +16,13 @@ return {
       desc = "Sidekick Toggle Opencode",
     },
     {
+      "<leader>ag",
+      function()
+        require("sidekick.cli").toggle({ name = "gemini", focus = true })
+      end,
+      desc = "Sidekick Toggle Gemini",
+    },
+    {
       "<A-;>",
       function()
         require("sidekick").nes_jump_or_apply()
