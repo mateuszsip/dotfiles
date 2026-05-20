@@ -1,0 +1,10 @@
+#!/bin/bash
+# Install Antigravity CLI if not present
+set -eufo pipefail
+
+if ! command -v agy &>/dev/null; then
+  echo "Installing Antigravity CLI..."
+  curl -fsSL https://antigravity.google/cli/install.sh | bash
+else
+  echo "Antigravity CLI is already installed."
+fi
