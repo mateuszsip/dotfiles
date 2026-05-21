@@ -10,6 +10,15 @@ return {
       { "<leader>Dr", desc = "Refresh DB credentials from Vault" },
     },
     config = function()
+      vim.g.db_ui_table_helpers = {
+        mysql = {
+          Count = "SELECT count(*) FROM `{optional_schema}`.`{table}`",
+        },
+        postgresql = {
+          Count = 'SELECT count(*) FROM "{optional_schema}"."{table}"',
+        },
+      }
+
       local function vault_db_url(vault_path, scheme, host, port, dbname)
         local raw = vim.fn.system("vault read -format=json " .. vault_path)
         local ok, data = pcall(vim.json.decode, raw)
