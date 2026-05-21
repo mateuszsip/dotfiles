@@ -57,8 +57,8 @@ unbind --mode=visual k
 unbind --mode=visual l
 unbind --mode=visual ;
 
-bind --mode=visual j js const sel = document.getSelection(); tri.visual.extendByCharacter(sel, "backward");
+bind --mode=visual j js document.getSelection().modify("extend","backward","character")
 bind --mode=visual k js document.getSelection().modify("extend","forward","line")
 bind --mode=visual l js document.getSelection().modify("extend","backward","line")
-bind --mode=visual ; js const sel = document.getSelection(); tri.visual.extendByCharacter(sel, "forward");
+bind --mode=visual ; js document.getSelection().modify("extend","forward","character")
 
