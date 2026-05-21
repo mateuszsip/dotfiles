@@ -16,6 +16,9 @@ return {
     heading = {
       icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
     },
+    pipe_table = {
+      enabled = false,
+    },
     overrides = {
       filetype = {
         -- Octo buffers often contain GitHub-bot tables with mismatched column counts
