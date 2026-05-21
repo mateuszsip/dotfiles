@@ -35,6 +35,9 @@ bind ,f hint
 bind ,t hint -t
 bind ,b hint -b
 bind Y hint -y
+bind ,y hint -y
+bind ,p hint -p
+bind ,a hint -#
 
 " Tab management
 bind d tabclose
@@ -46,3 +49,16 @@ bind p open clipboard
 
 " Focus input
 bind gi focusinput
+
+" Visual mode navigation (jkl; instead of hjkl)
+unbind --mode=visual h
+unbind --mode=visual j
+unbind --mode=visual k
+unbind --mode=visual l
+unbind --mode=visual ;
+
+bind --mode=visual j js const sel = document.getSelection(); tri.visual.extendByCharacter(sel, "backward");
+bind --mode=visual k js document.getSelection().modify("extend","forward","line")
+bind --mode=visual l js document.getSelection().modify("extend","backward","line")
+bind --mode=visual ; js const sel = document.getSelection(); tri.visual.extendByCharacter(sel, "forward");
+
