@@ -12,10 +12,10 @@ return {
     config = function()
       vim.g.db_ui_table_helpers = {
         mysql = {
-          Count = "SELECT count(*) FROM `{optional_schema}`.`{table}`",
+          Count = "SELECT count(*) FROM `{table}`",
         },
         postgresql = {
-          Count = 'SELECT count(*) FROM "{optional_schema}"."{table}"',
+          Count = 'SELECT count(*) FROM "{schema}"."{table}"',
         },
       }
 
