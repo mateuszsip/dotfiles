@@ -161,7 +161,7 @@ def parse_arguments():
     # Increase verbosity with every occurrence of -v
     parser.add_argument("-v", "--verbose", action="count", default=0)
 
-    parser.add_argument("-x", "--exclude", "- Comma-separated list of excluded player")
+    parser.add_argument("-x", "--exclude", help="Comma-separated list of excluded players")
 
     # Define for which player we"re listening
     parser.add_argument("--player")
