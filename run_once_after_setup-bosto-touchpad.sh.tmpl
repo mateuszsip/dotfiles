@@ -14,7 +14,7 @@ echo "0003 05ac 0265" > /sys/bus/hid/drivers/hid-multitouch/new_id 2>/dev/null
 echo -n "$1" > /sys/bus/hid/drivers/magicmouse/unbind 2>/dev/null
 echo -n "$1" > /sys/bus/hid/drivers/hid-multitouch/bind 2>/dev/null'
 
-RULE_CONTENT='ACTION=="add", SUBSYSTEM=="hid", KERNEL=="0003:05AC:0265.*", RUN+="/usr/local/bin/rebind-bosto-touchpad %k"'
+RULE_CONTENT='ACTION=="bind", DRIVER=="magicmouse", SUBSYSTEM=="hid", KERNEL=="0003:05AC:0265.*", RUN+="/usr/local/bin/rebind-bosto-touchpad %k"'
 
 # Deploy the rebind script
 if [ ! -f "$REBIND_SCRIPT" ] || ! diff -q <(echo "$REBIND_CONTENT") "$REBIND_SCRIPT" &>/dev/null; then
