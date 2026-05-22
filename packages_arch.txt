@@ -40,7 +40,6 @@ neovim
 nushell
 nwg-displays
 opencode
-paru
 playerctl
 plymouth
 polkit-gnome
@@ -51,6 +50,7 @@ powertop
 python-gobject
 python-pillow
 python-pip
+python-pipx
 python-pygments
 ripgrep
 ruby

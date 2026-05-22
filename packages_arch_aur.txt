@@ -16,6 +16,7 @@ matcha-client-bin
 moor-bin
 nextmeeting
 pacsea-bin
+paru
 phpactor
 rtk-bin
 slack-desktop
