@@ -7,8 +7,6 @@
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
--- Thin window separators: flexoki sets fg=bg on WinSeparator making a solid filled block.
--- Override to bg=NONE so only the thin │ glyph is visible as a subtle line.
 local function apply_hl_overrides()
   -- Thin window separators (flexoki sets fg=bg, making a solid block)
   vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#CECDC3", bg = "NONE" })

@@ -19,6 +19,9 @@ return {
     pipe_table = {
       enabled = false,
     },
+    yaml = {
+      enabled = false,
+    },
     overrides = {
       filetype = {
         -- Octo buffers often contain GitHub-bot tables with mismatched column counts
@@ -38,4 +41,13 @@ return {
     },
   },
   ft = { "markdown", "octo" },
+  config = function(_, opts)
+    require("render-markdown").setup(opts)
+    local function fix_bullet_hl()
+      local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
+      vim.api.nvim_set_hl(0, "RenderMarkdownBullet", { fg = normal.fg, bg = "NONE" })
+    end
+    fix_bullet_hl()
+    vim.api.nvim_create_autocmd("ColorScheme", { callback = fix_bullet_hl })
+  end,
 }
