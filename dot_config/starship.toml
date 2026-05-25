@@ -1,6 +1,7 @@
 add_newline = true
 command_timeout = 200
 format = "[$directory$git_branch$git_status]($style)$character"
+right_format = "$cmd_duration$shell"
 
 [character]
 error_symbol = "[✗](bold cyan)"
@@ -9,16 +10,17 @@ success_symbol = "[❯](bold cyan)"
 [directory]
 truncation_length = 2
 truncation_symbol = "…/"
+style = "bold cyan"
 repo_root_style = "bold cyan"
 repo_root_format = "[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
 
 [git_branch]
 format = "[$branch]($style) "
-style = "italic cyan"
+style = "italic purple"
 
 [git_status]
 format     = '[$all_status]($style)'
-style      = "cyan"
+style      = "yellow"
 ahead      = "⇡${count} "
 diverged   = "⇕⇡${ahead_count}⇣${behind_count} "
 behind     = "⇣${count} "
@@ -30,3 +32,15 @@ stashed    = ""
 staged     = ""
 renamed    = ""
 deleted    = ""
+
+[cmd_duration]
+min_time = 2000
+format = "[$duration](dimmed cyan) "
+
+[shell]
+nu_indicator = "nu"
+bash_indicator = "bash"
+zsh_indicator = "zsh"
+fish_indicator = "fish"
+format = "[$indicator](dimmed cyan)"
+disabled = false
