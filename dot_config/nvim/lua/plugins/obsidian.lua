@@ -1,7 +1,6 @@
 return {
   "obsidian-nvim/obsidian.nvim",
   version = "*", -- recommended, use latest release instead of latest commit
-  ft = "markdown",
   keys = {
     -- Daily notes (global, work from any buffer)
     { "<leader>odt", "<cmd>Obsidian today<CR>", desc = "Obsidian: Today's note" },
@@ -29,17 +28,36 @@ return {
       desc = "Obsidian: Todo",
     },
   },
+  config = function(_, opts)
+    require("obsidian").setup(opts)
+
+    local function update_workspace()
+      local cwd = vim.fn.getcwd()
+      local work_path = vim.fn.expand("~/dev/work")
+      if vim.startswith(cwd, work_path) then
+        vim.cmd("Obsidian workspace work")
+      else
+        vim.cmd("Obsidian workspace personal")
+      end
+    end
+
+    update_workspace()
+
+    vim.api.nvim_create_autocmd("DirChanged", {
+      callback = update_workspace,
+    })
+  end,
   opts = {
     legacy_commands = false,
     workspaces = {
       {
-        name = "work",
-        path = "~/.notes/work",
+        name = "personal",
+        path = "~/.notes/personal",
         strict = true,
       },
       {
-        name = "personal",
-        path = "~/.notes/personal",
+        name = "work",
+        path = "~/.notes/work",
         strict = true,
       },
     },
