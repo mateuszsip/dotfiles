@@ -33,13 +33,13 @@ return {
     legacy_commands = false,
     workspaces = {
       {
-        name = "personal",
-        path = "~/.notes/personal",
+        name = "work",
+        path = "~/.notes/work",
         strict = true,
       },
       {
-        name = "work",
-        path = "~/.notes/work",
+        name = "personal",
+        path = "~/.notes/personal",
         strict = true,
       },
     },
