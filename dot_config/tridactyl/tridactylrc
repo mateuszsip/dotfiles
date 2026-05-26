@@ -40,7 +40,7 @@ bind ,p hint -p
 bind ,a hint -#
 
 " Tab management
-bind d tabclose
+bind d jsb browser.tabs.query({active: true, currentWindow: true}).then(async tabs => { let tab = tabs[0]; if (tab.pinned) { let all = await browser.tabs.query({currentWindow: true}); if (all.length > 1) { let idx = all.findIndex(t => t.id === tab.id); await browser.tabs.update(all[(idx + 1) % all.length].id, {active: true}); } await browser.tabs.discard(tab.id); } else { await browser.tabs.remove(tab.id); } })
 bind u undo
 
 " Clipboard
