@@ -27,7 +27,7 @@ bind H back
 bind J forward
 
 " Important: Move the command prefix from ; to h
-bind h fillcmdline
+bind . fillcmdline
 
 " Hint operations (, replaces ; prefix which is now scroll right)
 bind f hint
@@ -38,6 +38,8 @@ bind Y hint -y
 bind ,y hint -y
 bind ,p hint -p
 bind ,a hint -#
+bind h hint -F (el => el.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, cancelable: true})))
+bind ,h hint -F (el => el.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, cancelable: true})))
 
 " Tab management
 bind d jsb browser.tabs.query({active: true, currentWindow: true}).then(async tabs => { let tab = tabs[0]; if (tab.pinned) { let all = await browser.tabs.query({currentWindow: true}); if (all.length > 1) { let idx = all.findIndex(t => t.id === tab.id); await browser.tabs.update(all[(idx + 1) % all.length].id, {active: true}); } await browser.tabs.discard(tab.id); } else { await browser.tabs.remove(tab.id); } })
