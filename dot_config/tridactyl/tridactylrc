@@ -9,6 +9,8 @@ unbind H
 unbind J
 unbind K
 unbind L
+unbind t
+unbind b
 
 unbind <C-f>
 
@@ -32,8 +34,12 @@ bind . fillcmdline
 " Hint operations (, replaces ; prefix which is now scroll right)
 bind f hint
 bind ,f hint
+bind t hint -t
 bind ,t hint -t
+bind T tabopen
+bind b hint -b
 bind ,b hint -b
+bind B buffer
 bind Y hint -y
 bind ,y hint -y
 bind ,p hint -p
