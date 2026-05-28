@@ -40,8 +40,9 @@ bind T fillcmdline tabopen
 bind b hint -b
 bind ,b hint -b
 bind B fillcmdline buffer
-bind Y hint -y
+bind y hint -y
 bind ,y hint -y
+bind p hint -p
 bind ,p hint -p
 bind ,a hint -#
 bind h hint -F (el => el.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, cancelable: true})))
@@ -54,8 +55,8 @@ bind gD jsb browser.tabs.query({}).then(ts => browser.tabs.discard(ts.map(t => t
 bind u undo
 
 " Clipboard
-bind yy clipboard yank
-bind p open clipboard
+bind Y clipboard yank
+bind P open clipboard
 
 " Focus input
 bind gi focusinput
