@@ -36,10 +36,10 @@ bind f hint
 bind ,f hint
 bind t hint -t
 bind ,t hint -t
-bind T tabopen
+bind T fillcmdline tabopen
 bind b hint -b
 bind ,b hint -b
-bind B buffer
+bind B fillcmdline buffer
 bind Y hint -y
 bind ,y hint -y
 bind ,p hint -p
