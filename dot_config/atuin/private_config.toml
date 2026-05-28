@@ -181,7 +181,7 @@ search_mode = "daemon-fuzzy"
 ## keybinding is defined.  If this is set to "emacs", "vim-insert", or
 ## "vim-normal", the startup keymap mode in the Atuin search is forced to be
 ## the specified one.
-# keymap_mode = "auto"
+keymap_mode = "vim-insert"
 
 ## Cursor style in each keymap mode.  If specified, the cursor style is changed
 ## in entering the cursor shape.  Available values are "default" and
@@ -309,6 +309,12 @@ autostart = true
 ## Whether the theme manager should output normal or extra information to help fix themes.
 ## Boolean, true or false. If unset, left up to the theme manager.
 # debug = true
+
+[keymap.vim-normal]
+"j" = "cursor-left"
+"k" = "select-next"
+"l" = "select-previous"
+";" = "cursor-right"
 
 [search]
 ## The list of enabled filter modes, in order of priority.
