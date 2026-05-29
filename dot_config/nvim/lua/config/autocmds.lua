@@ -183,6 +183,13 @@ vim.api.nvim_create_autocmd("FileType", {
     end
     -- Blockquote toggle
     map("n", "<leader>mq", md_blockquote,                  vim.tbl_extend("force", o, { desc = "Markdown: Blockquote toggle" }))
+    -- Insert current date
+    map({ "n", "i" }, "<leader>mt", function()
+      local date = os.date("%Y-%m-%d")
+      local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+      vim.api.nvim_buf_set_text(0, row - 1, col, row - 1, col, { date })
+      vim.api.nvim_win_set_cursor(0, { row, col + #date })
+    end, vim.tbl_extend("force", o, { desc = "Markdown: Insert date (YYYY-MM-DD)" }))
     -- Code fence (visual only)
     map("v", "<leader>mC", md_code_fence,                  vim.tbl_extend("force", o, { desc = "Markdown: Code fence" }))
   end,

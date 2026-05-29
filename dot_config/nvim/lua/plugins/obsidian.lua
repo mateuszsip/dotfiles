@@ -8,6 +8,18 @@ return {
     { "<leader>ody", "<cmd>Obsidian tomorrow<CR>", desc = "Obsidian: Tomorrow's note" },
     { "<leader>od", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
     { "<leader>ode", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
+    -- New note at subpath
+    {
+      "<leader>oN",
+      function()
+        vim.ui.input({ prompt = "New note (path/name): " }, function(input)
+          if input and input ~= "" then
+            vim.cmd("Obsidian new " .. input)
+          end
+        end)
+      end,
+      desc = "Obsidian: New note",
+    },
     -- Quick access
     { "<leader>ot", "<cmd>Obsidian tags<CR>", desc = "Obsidian: Tags" },
     { "<leader>os", "<cmd>Obsidian search<CR>", desc = "Obsidian: Search" },
