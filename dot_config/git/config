@@ -51,3 +51,10 @@
 	cmd = delta --pager=\"less -R\" --side-by-side --light \"$LOCAL\" \"$REMOTE\"
 [difftool "nvimdiff"]
 	cmd = "f() { l=\"$1\"; r=\"$2\"; tl=\"\"; tr=\"\"; if [ \"$l\" = \"/dev/null\" ]; then tl=$(mktemp); l=\"$tl\"; fi; if [ \"$r\" = \"/dev/null\" ]; then tr=$(mktemp); r=\"$tr\"; fi; nvim -c \"packadd nvim.difftool\" -c \"lua local d = require('difftool'); local old = d.open; d.open = function(l,r,o) local function touch(p) if p and p ~= '' and vim.fn.isdirectory(p) == 0 and vim.fn.filereadable(p) == 0 then local f = io.open(p, 'w') if f then f:close() end end end; touch(l); touch(r); old(l,r,o) end\" -c \"DiffTool $l $r\"; [ -n \"$tl\" ] && rm -f \"$tl\"; [ -n \"$tr\" ] && rm -f \"$tr\"; }; f \"$LOCAL\" \"$REMOTE\""
+[merge]
+  tool = nvimdiff
+[mergetool]
+  prompt = false
+  keepBackup = false
+[mergetool "nvimdiff"]
+  layout = "LOCAL,BASE,REMOTE / MERGED"
