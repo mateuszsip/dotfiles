@@ -17,6 +17,9 @@ return {
       icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
     },
     pipe_table = {
+      enabled = true,
+    },
+    anti_conceal = {
       enabled = false,
     },
     yaml = {
