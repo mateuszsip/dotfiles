@@ -18,9 +18,7 @@ return {
     },
     pipe_table = {
       enabled = true,
-    },
-    anti_conceal = {
-      enabled = false,
+      cell = "raw",
     },
     yaml = {
       enabled = false,
