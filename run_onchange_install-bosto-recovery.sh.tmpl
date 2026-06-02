@@ -1,3 +1,4 @@
+{{- if (eq .chezmoi.os "linux") -}}
 #!/bin/bash
 # Installs the Bosto touchpad USB recovery service system-wide.
 # run_onchange_: chezmoi re-runs this whenever this file changes.
@@ -58,3 +59,4 @@ sudo systemctl enable bosto-recovery.service
 rm /tmp/bosto-recovery.sh /tmp/bosto-recovery.service
 
 echo "bosto-recovery installed and enabled"
+{{- end }}
