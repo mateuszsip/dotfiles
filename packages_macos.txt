@@ -11,6 +11,7 @@ fastfetch
 fd
 fzf
 gh
+ghostscript
 git
 git-delta
 gum
