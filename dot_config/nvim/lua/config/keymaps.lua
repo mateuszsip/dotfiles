@@ -101,6 +101,17 @@ map("n", "<leader>fd", function()
     end,
   })
 end, { desc = "Find Directories (home)" })
+map("n", "<leader>f.", function()
+  local dir = vim.fn.expand("%:p:h")
+  if vim.fn.isdirectory(dir) == 1 then
+    vim.fn.chdir(dir)
+    vim.notify("cd " .. dir)
+  end
+end, { desc = "cd to buf dir" })
+map("n", "<leader>f-", function()
+  vim.cmd("cd -")
+  vim.notify("cd " .. vim.fn.getcwd())
+end, { desc = "cd back (previous dir)" })
 map("n", "<leader>fF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
 map("n", "<leader>fw", function() Snacks.picker.files({ root = false, pattern = vim.fn.expand("<cword>") }) end, { desc = "Find Files (word, cwd)" })
 map("n", "<leader>fW", function() Snacks.picker.files({ pattern = vim.fn.expand("<cword>") }) end, { desc = "Find Files (word, Root Dir)" })
