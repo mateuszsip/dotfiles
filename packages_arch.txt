@@ -15,6 +15,7 @@ dust
 fastfetch
 fd
 fzf
+ghostscript
 ghostty
 git
 git-delta
