@@ -10,7 +10,7 @@ return {
     },
   },
   keys = {
-    { "<leader>cv", ":Convy<CR>", desc = "Convy: interactive converter", mode = { "n", "v" }, silent = true },
-    { "<leader>cs", ":ConvySeparator<CR>", desc = "Convy: set separator", mode = { "v" }, silent = true },
+    { "<leader>uc", ":Convy<CR>", desc = "Convy: interactive converter", mode = { "n", "v" }, silent = true },
+    { "<leader>us", ":ConvySeparator<CR>", desc = "Convy: set separator", mode = { "v" }, silent = true },
   },
 }
