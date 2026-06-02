@@ -53,24 +53,28 @@ local function apply_bufferline_bg()
     "BufferLineError", "BufferLineErrorVisible", "BufferLineErrorSelected",
     "BufferLineErrorDiagnostic", "BufferLineErrorDiagnosticVisible", "BufferLineErrorDiagnosticSelected",
   }
-  -- Put BufferLineBufferSelected back in so bulk loop sets its bg cleanly first
-  local all_groups = vim.list_extend({ "BufferLineBufferSelected" }, groups)
-  for _, group in ipairs(all_groups) do
+  for _, group in ipairs(groups) do
     local hl = vim.api.nvim_get_hl(0, { name = group })
     hl.bg = bg
     vim.api.nvim_set_hl(0, group, hl)
   end
-  -- Active tab: bold + underline in flexoki teal; no bg change keeps icons clean
+  -- Inactive tabs: muted gray. BufferLineBackground is the rendered group for
+  -- NONE-state buffers; Buffer/BufferVisible are aliases bufferline also sets.
+  vim.api.nvim_set_hl(0, "BufferLineBackground",    { bg = bg, fg = 0xB7B5AC })
+  vim.api.nvim_set_hl(0, "BufferLineBuffer",        { bg = bg, fg = 0xB7B5AC })
+  vim.api.nvim_set_hl(0, "BufferLineBufferVisible", { bg = bg, fg = 0xB7B5AC })
+
+  -- Active tab: let theme handle fg/bold/italic; just align the bg.
   local sel = vim.api.nvim_get_hl(0, { name = "BufferLineBufferSelected" })
   sel.bg = bg
-  sel.bold = true
   vim.api.nvim_set_hl(0, "BufferLineBufferSelected", sel)
 
   vim.api.nvim_set_hl(0, "BufferLineSeparator",         { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible",  { fg = sep, bg = bg })
   vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", { fg = sep, bg = bg })
+  vim.api.nvim_set_hl(0, "BufferLineIndicatorSelected", { fg = bg,  bg = bg })
 
-  -- DevIcon groups are dynamically named per filetype; all get Normal bg.
+  -- DevIcon groups: bg only, preserve fg (colour_icons = false already kills tint).
   for name, hl in pairs(vim.api.nvim_get_hl(0, {})) do
     if name:match("^BufferLineDevIcon") then
       hl.bg = bg
@@ -82,11 +86,11 @@ end
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = function()
     apply_hl_overrides()
-    vim.defer_fn(apply_bufferline_bg, 50)
+    vim.defer_fn(apply_bufferline_bg, 150)
   end,
 })
 apply_hl_overrides()
-vim.defer_fn(apply_bufferline_bg, 50)
+vim.defer_fn(apply_bufferline_bg, 150)
 
 -- Markdown editing helpers: wrap word (normal) or selection (visual) with syntax markers
 -- Keys are fed as one sequence so mode transitions happen naturally:

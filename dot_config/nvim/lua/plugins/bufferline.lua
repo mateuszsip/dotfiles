@@ -5,7 +5,7 @@ return {
       separator_style = { "", "" },
       indicator = { style = "none" },
       name_formatter = function(buf)
-        return " " .. buf.name .. " "
+        return " " .. buf.name
       end,
     },
   },
