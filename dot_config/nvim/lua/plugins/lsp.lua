@@ -46,12 +46,13 @@ return {
     end,
     opts = {
       diagnostics = {
-        virtual_text = true,
+        virtual_text = false,
       },
       servers = {
         ["*"] = {
           keys = {
             { "<leader>cl", false },
+            { "<leader>ca", false },
             {
               "<leader>cL",
               function()

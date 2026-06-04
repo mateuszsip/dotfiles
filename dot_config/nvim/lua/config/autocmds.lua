@@ -89,6 +89,13 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     vim.defer_fn(apply_bufferline_bg, 150)
   end,
 })
+-- Bufferline is VeryLazy so it may not exist at the ColorScheme defer.
+-- Run once after VeryLazy so we always win the race.
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  once = true,
+  callback = function() vim.defer_fn(apply_bufferline_bg, 50) end,
+})
 apply_hl_overrides()
 vim.defer_fn(apply_bufferline_bg, 150)
 
