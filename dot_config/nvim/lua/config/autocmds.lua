@@ -233,3 +233,17 @@ vim.api.nvim_create_autocmd("FileType", {
     end)
   end,
 })
+
+-- Close Neo-tree before saving session to prevent window size distortion on restore
+vim.api.nvim_create_autocmd("User", {
+  pattern = "PersistenceSavePre",
+  group = vim.api.nvim_create_augroup("PersistenceNeoTreeClose", { clear = true }),
+  desc = "Close Neo-tree before saving session",
+  callback = function()
+    local success, neotree = pcall(require, "neo-tree.command")
+    if success then
+      neotree.execute({ action = "close" })
+    end
+  end,
+})
+
