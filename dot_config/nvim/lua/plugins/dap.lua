@@ -1,4 +1,6 @@
 return {
+  { "rcarriga/nvim-dap-ui", enabled = false },
+
   {
     "mfussenegger/nvim-dap",
     opts = function()
@@ -28,12 +30,33 @@ return {
           name = "Listen for Xdebug (Docker)",
           port = 9003,
           pathMappings = {
-            -- Adjust the container path to match your docker-compose volume mount
-            -- e.g. if your volumes section has: ./:/app
             ["/app"] = "${workspaceFolder}",
           },
         },
       }
+    end,
+  },
+
+  {
+    "igorlfs/nvim-dap-view",
+    dependencies = { "mfussenegger/nvim-dap" },
+    keys = {
+      { "<leader>du", function() require("dap-view").toggle() end, desc = "Dap View" },
+    },
+    opts = {},
+    config = function(_, opts)
+      local dap = require("dap")
+      local dapview = require("dap-view")
+      dapview.setup(opts)
+      dap.listeners.after.event_initialized["dap-view"] = function()
+        dapview.open()
+      end
+      dap.listeners.before.event_terminated["dap-view"] = function()
+        dapview.close()
+      end
+      dap.listeners.before.event_exited["dap-view"] = function()
+        dapview.close()
+      end
     end,
   },
 }
