@@ -17,6 +17,7 @@ return {
         "markdown-toc",
         "marksman",
         "neocmakelsp",
+        "phpantom-lsp",
         "phpcs",
         "php-cs-fixer",
         "shellcheck",
