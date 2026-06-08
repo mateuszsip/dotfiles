@@ -31,6 +31,9 @@ return {
       diagnostics = {
         virtual_text = false,
       },
+      codelens = {
+        enabled = true,
+      },
       servers = {
         ["*"] = {
           keys = {
