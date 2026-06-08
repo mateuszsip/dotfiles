@@ -160,3 +160,5 @@ end, { desc = "Toggle Virtual Text" })
 -- Fold keymaps (overrides movement mappings above; require() is lazy so safe before origami loads)
 map("n", "j", function() require("origami").h() end, { desc = "Left / fold" })
 map("n", ";", function() require("origami").l() end, { desc = "Right / unfold" })
+
+map("n", "ZZ", "<cmd>wqall<cr>", { desc = "Save all and quit" })
