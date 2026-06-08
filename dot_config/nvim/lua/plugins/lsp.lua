@@ -27,23 +27,6 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
-    init = function()
-      -- Phpactor advertises Incremental sync but has issues with Nvim 0.12's changetracking.
-      -- Force Full sync by patching only the `change` field, preserving `openClose` so that
-      -- didOpen is still sent (replacing the whole textDocumentSync object breaks openClose).
-      local ct = require("vim.lsp._changetracking")
-      local orig_init = ct.init
-      ct.init = function(client, bufnr)
-        local caps = client.server_capabilities
-        if caps then
-          local tds = caps.textDocumentSync
-          if type(tds) == "table" then
-            tds.change = vim.lsp.protocol.TextDocumentSyncKind.Full
-          end
-        end
-        orig_init(client, bufnr)
-      end
-    end,
     opts = {
       diagnostics = {
         virtual_text = false,
@@ -62,10 +45,10 @@ return {
             },
           },
         },
-        phpactor = {
-          -- nvim-lspconfig changed root_markers to prefer .git over composer.json,
-          -- which breaks monorepos where each service has its own composer.json.
-          root_markers = { "composer.json", ".phpactor.json", ".phpactor.yml", ".git" },
+        phpantom_lsp = {
+          -- Prefer composer.json over .git as root marker — monorepos have
+          -- per-service composer.json files that define the correct project root.
+          root_markers = { "composer.json", ".phpantom.toml", ".git" },
         },
         lua_ls = {
           settings = {
