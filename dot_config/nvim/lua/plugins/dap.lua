@@ -9,7 +9,9 @@ return {
       -- Guard against nil command in malformed DAP responses (e.g. some Xdebug versions)
       local safe_mt = {
         __index = function(tbl, key)
-          if key == nil then return nil end
+          if key == nil then
+            return {}
+          end
           rawset(tbl, key, {})
           return rawget(tbl, key)
         end,
@@ -38,10 +40,79 @@ return {
   },
 
   {
+    "mfussenegger/nvim-dap",
+    keys = {
+      {
+        "<leader>dc",
+        function()
+          require("dap").continue()
+        end,
+        desc = "DAP Continue",
+      },
+      {
+        "<leader>do",
+        function()
+          require("dap").step_over()
+        end,
+        desc = "DAP Step Over",
+      },
+      {
+        "<leader>di",
+        function()
+          require("dap").step_into()
+        end,
+        desc = "DAP Step Into",
+      },
+      {
+        "<leader>dO",
+        function()
+          require("dap").step_out()
+        end,
+        desc = "DAP Step Out",
+      },
+      {
+        "<leader>db",
+        function()
+          require("dap").toggle_breakpoint()
+        end,
+        desc = "DAP Toggle Breakpoint",
+      },
+      {
+        "<leader>dB",
+        function()
+          require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+        end,
+        desc = "DAP Conditional Breakpoint",
+      },
+      {
+        "<leader>dk",
+        function()
+          require("dap-view").hover()
+        end,
+        desc = "DAP Hover",
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>dq",
+        function()
+          require("dap").terminate()
+        end,
+        desc = "DAP Terminate",
+      },
+    },
+  },
+
+  {
     "igorlfs/nvim-dap-view",
     dependencies = { "mfussenegger/nvim-dap" },
     keys = {
-      { "<leader>du", function() require("dap-view").toggle() end, desc = "Dap View" },
+      {
+        "<leader>du",
+        function()
+          require("dap-view").toggle()
+        end,
+        desc = "Dap View",
+      },
     },
     opts = {},
     config = function(_, opts)

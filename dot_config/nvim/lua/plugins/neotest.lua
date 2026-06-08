@@ -24,7 +24,7 @@ return {
             return "vendor/bin/phpunit"
           end,
           filter_dirs = { "vendor" },
-          dap = { port = 9003 },
+          dap = { port = 9003, request = "launch" },
         }),
       },
     })
