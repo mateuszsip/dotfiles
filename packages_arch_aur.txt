@@ -18,6 +18,7 @@ nextmeeting
 pacsea-bin
 paru
 phpactor
+phpantom-git
 rtk-bin
 slack-desktop
 subtui-git
