@@ -45,6 +45,7 @@ tldr
 tmux
 tree-sitter
 vault-cli
+wget
 yazi
 yq
 zoxide
