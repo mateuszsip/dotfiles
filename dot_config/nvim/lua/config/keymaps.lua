@@ -162,3 +162,4 @@ map("n", "j", function() require("origami").h() end, { desc = "Left / fold" })
 map("n", ";", function() require("origami").l() end, { desc = "Right / unfold" })
 
 map("n", "ZZ", "<cmd>wqall<cr>", { desc = "Save all and quit" })
+map("n", "Zz", "<cmd>qall<cr>", { desc = "Quit all" })
