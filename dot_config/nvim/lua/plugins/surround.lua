@@ -1,18 +1,14 @@
 return {
-  {
-    "kylechui/nvim-surround",
-    version = "*",
-    event = "VeryLazy",
-    config = function()
-      require("nvim-surround").setup()
-    end,
-  },
-  {
-    "gregorias/nvim-surround-wk",
-    dependencies = { "kylechui/nvim-surround", "folke/which-key.nvim" },
-    event = "VeryLazy",
-    config = function()
-      require("nvim-surround-wk").setup()
-    end,
+  "echasnovski/mini.surround",
+  opts = {
+    mappings = {
+      add = "gza",
+      delete = "gzd",
+      find = "gzf",
+      find_left = "gzF",
+      highlight = "gzh",
+      replace = "gzr",
+      update_n_lines = "gzn",
+    },
   },
 }
