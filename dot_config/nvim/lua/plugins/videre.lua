@@ -6,5 +6,13 @@ return {
     "Owen-Dechow/graph_view_toml_parser",
     "a-usr/xml2lua.nvim",
   },
-  opts = {},
+  opts = {
+    keymaps = {
+      jump_back = "J",
+      jump_down = "K",
+      jump_up = "L",
+      jump_forward = ":",
+      return_to_parent_table = "J",
+    },
+  },
 }
