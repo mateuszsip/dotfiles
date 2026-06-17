@@ -5,6 +5,7 @@ $env.K9S_SKIN = 'solarized-light'
 {{- if eq .chezmoi.os "darwin" }}
 $env.PATH ++= ['/opt/homebrew/bin']
 $env.PATH ++= ['/usr/local/opt/mysql-client/bin']
+$env.LANG = "en_GB.UTF-8"
 {{- end }}
 
 {{- if .bitwarden_agent }}
