@@ -1,5 +1,9 @@
 # Dynamic theme colors
+{{- if eq .chezmoi.os "darwin" }}
+config-file = ~/.config/ghostty/flexoki-2.conf
+{{- else }}
 config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
+{{- end }}
 
 # Font
 font-family = "JetBrainsMono Nerd Font Mono"
@@ -37,7 +41,7 @@ mouse-scroll-multiplier = 0.9
 async-backend = epoll
 
 {{ if eq .chezmoi.os "darwin" -}}
-command = /usr/local/bin/nu
+command = /opt/homebrew/bin/nu
 {{- else -}}
 command = /usr/bin/nu
 {{- end }}
