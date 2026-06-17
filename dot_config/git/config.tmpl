@@ -18,7 +18,7 @@
 	tool = nvimdiff
 [commit]
 	verbose = true           # Include diff comment in commit message template
-	gpgsign = true
+	gpgsign = {{ .git_gpgsign }}
 [column]
 	ui = auto 			     # Output in columns when possible
 [branch]

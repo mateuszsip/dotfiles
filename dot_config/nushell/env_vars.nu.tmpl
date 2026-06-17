@@ -5,10 +5,14 @@ $env.K9S_SKIN = 'solarized-light'
 {{- if eq .chezmoi.os "darwin" }}
 $env.PATH ++= ['/opt/homebrew/bin']
 $env.PATH ++= ['/usr/local/opt/mysql-client/bin']
+{{- end }}
 
+{{- if .bitwarden_agent }}
+{{- if eq .chezmoi.os "darwin" }}
 $env.SSH_AUTH_SOCK = "/Users/sip/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
-{{ else }}
+{{- else }}
 $env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"
+{{- end }}
 {{- end }}
 
 $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
