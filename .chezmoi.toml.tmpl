@@ -8,4 +8,5 @@ recipient = "age1p77krysuae4g2crh3g9yppushu48a2gaz4acmedum548n30v8dnq23gsdh"
 email = "mateusz.sip@gmail.com"
 bitwarden_agent = {{ promptBool "Use Bitwarden SSH agent?" false }}
 git_gpgsign = {{ promptBool "Sign git commits with SSH key?" true }}
+homebrew_user_appdir = {{ if eq .chezmoi.os "darwin" }}{{ promptBool "Install Homebrew casks to ~/Applications?" false }}{{ else }}false{{ end }}
 

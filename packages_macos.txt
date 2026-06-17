@@ -12,6 +12,7 @@ fd
 fzf
 gh
 ghostscript
+ghostty
 git
 git-delta
 gum
