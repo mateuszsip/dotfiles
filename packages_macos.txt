@@ -5,6 +5,7 @@ aws-sso-cli
 bat
 chezmoi
 coreutils
+docker-buildx
 dust
 eza
 fastfetch

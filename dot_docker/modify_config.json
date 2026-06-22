@@ -1,0 +1,3 @@
+#!/bin/bash
+# Merge cliPluginsExtraDirs into existing docker config without touching auth/secrets
+jq '. + {"cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]}'
