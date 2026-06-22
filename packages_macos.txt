@@ -6,6 +6,7 @@ bat
 chezmoi
 coreutils
 docker-buildx
+docker-compose
 dust
 eza
 fastfetch
@@ -34,6 +35,7 @@ mysql-client
 neovim
 nushell
 opencode
+openjdk@25
 phpantom-lsp
 php@8.5
 postgresql
