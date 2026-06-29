@@ -33,6 +33,8 @@ return {
         ["j"] = "close_node", -- j = close/collapse (left/h equivalent)
         ["l"] = false, -- unmap l=open so global l→k (move up) takes effect
         ["h"] = false, -- unmap h=close_node since j now handles this
+        ["<C-;>"] = false, -- unmap so global C-; (go to right window) works
+        ["<Esc>"] = "clear_selection",
         ["<leader>sf"] = {
           function(state)
             local node = state.tree:get_node()
