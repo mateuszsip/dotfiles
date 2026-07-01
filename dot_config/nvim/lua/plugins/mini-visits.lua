@@ -20,7 +20,7 @@ local function open_visits(cwd)
     format = function(item, _)
       local ret = {}
       local icon, icon_hl = Snacks.util.icon(item.file, "file")
-      ret[#ret + 1] = { icon, icon_hl }
+      ret[#ret + 1] = { icon .. " ", icon_hl }
       ret[#ret + 1] = { vim.fn.fnamemodify(item.file, ":~:."), "SnacksPickerFile" }
       return ret
     end,
