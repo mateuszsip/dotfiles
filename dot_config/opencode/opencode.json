@@ -13,16 +13,9 @@
         "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
     },
-    "jira": {
-      "type": "remote",
-      "url": "https://mcp.atlassian.com/v1/sse"
-    },
-    "datadog": {
-      "type": "remote",
-      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp?toolsets=core,alerting,dashboards,dbm,ddsql,error-tracking,kubernetes,networks,apm"
-    }
   },
   "plugin": [
     "@mohak34/opencode-notifier@latest",
   ]
 }
+
