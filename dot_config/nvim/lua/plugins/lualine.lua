@@ -45,6 +45,17 @@ return {
       })
     end
 
+    if LazyVim.has("grapple.nvim") then
+      local function grapple_status()
+        local status = require("grapple").statusline()
+        if status == "" then
+          return nil
+        end
+        return status
+      end
+      table.insert(opts.sections.lualine_b, { grapple_status })
+    end
+
     return opts
   end,
 }
