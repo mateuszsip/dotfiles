@@ -32,7 +32,7 @@ luarocks
 maccy
 mermaid-cli
 mise
-mysql-client
+mysql
 neovim
 nushell
 opencode
