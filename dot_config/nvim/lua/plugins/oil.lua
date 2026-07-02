@@ -28,7 +28,7 @@ return {
       show_hidden = true,
     },
     float = {
-      padding = 0,
+      padding = 2,
       max_width = 0.8,
       max_height = 0.8,
       border = "rounded",
@@ -127,4 +127,23 @@ return {
       },
     },
   },
+  config = function(_, opts)
+    require("oil").setup(opts)
+    -- Fix: oil doesn't set title_pos on the preview window, causing first
+    -- letters to be clipped with rounded borders. Patch open_preview to force
+    -- title_pos = "left" (oil opens preview with noautocmd, so autocmds can't catch it).
+    local oil = require("oil")
+    local orig_open_preview = oil.open_preview
+    oil.open_preview = function(o, cb)
+      orig_open_preview(o, cb)
+      vim.schedule(function()
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          local ok, is_p = pcall(vim.api.nvim_win_get_var, win, "oil_preview")
+          if ok and is_p then
+            pcall(vim.api.nvim_win_set_config, win, { title_pos = "left" })
+          end
+        end
+      end)
+    end
+  end,
 }
