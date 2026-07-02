@@ -7,7 +7,7 @@ return {
     },
     cmd = "Neogit",
     opts = {
-      kind = "floating",
+      kind = "tab",
       graph_style = "unicode",
       commit_order = "topo",
       sort_branches = "-refname",
