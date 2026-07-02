@@ -234,23 +234,16 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Close Neo-tree and wipeout directory buffers before saving/loading session to prevent window size/layout distortion
+-- Wipeout directory and oil buffers before saving/loading session to prevent window size/layout distortion
 vim.api.nvim_create_autocmd("User", {
   pattern = { "PersistenceSavePre", "PersistenceLoadPre" },
-  group = vim.api.nvim_create_augroup("PersistenceNeoTreeClose", { clear = true }),
-  desc = "Close Neo-tree and wipeout directory buffers before saving or loading session",
+  group = vim.api.nvim_create_augroup("PersistenceBufferCleanup", { clear = true }),
+  desc = "Wipeout directory and oil buffers before saving or loading session",
   callback = function()
-    -- 1. Close Neo-tree sidebar cleanly
-    local success, neotree = pcall(require, "neo-tree.command")
-    if success then
-      neotree.execute({ action = "close" })
-    end
-
-    -- 2. Wipeout directory buffers (e.g. "./") so they aren't saved/restored in the session file
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_is_valid(buf) then
         local bufname = vim.api.nvim_buf_get_name(buf)
-        if vim.fn.isdirectory(bufname) == 1 then
+        if vim.fn.isdirectory(bufname) == 1 or bufname:match("^oil://") then
           pcall(vim.api.nvim_buf_delete, buf, { force = true })
         end
       end
