@@ -147,6 +147,13 @@ map("n", "<leader>sf", LazyVim.pick("files", { root = false }), { desc = "Find F
 map("n", "<leader>sF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
 map("n", "<leader>sg", LazyVim.pick("live_grep", { root = false }), { desc = "Grep (cwd)" })
 map("n", "<leader>sG", LazyVim.pick("live_grep"), { desc = "Grep (Root Dir)" })
+map("n", "<leader>s.", function()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" or vim.fn.filereadable(file) == 0 then
+    return Snacks.notify.warn("Buffer has no readable file")
+  end
+  Snacks.picker.grep({ dirs = { file }, title = "Grep (current file)" })
+end, { desc = "Grep (current file)" })
 map({ "n", "x" }, "<leader>sw", function()
   Snacks.picker.grep_word({ root = false })
 end, { desc = "Grep Word (cwd)" })
