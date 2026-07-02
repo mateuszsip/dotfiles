@@ -34,7 +34,7 @@ return {
     cli = {
       win = {
         split = {
-          width = 60,
+          width = 80,
         },
         float = {
           width = 0.75,

@@ -8,19 +8,26 @@ return {
       function()
         require("oil").open_float(nil, { preview = { vertical = true } })
       end,
+      desc = "Explorer Oil (file dir)",
+    },
+    {
+      "<leader>fEc",
+      function()
+        require("oil").open_float(vim.uv.cwd(), { preview = { vertical = true } })
+      end,
       desc = "Explorer Oil (cwd)",
     },
     {
-      "<leader>fE",
+      "<leader>fEr",
       function()
         local root = LazyVim.root()
         vim.cmd("tcd " .. vim.fn.fnameescape(root))
-        require("oil").open_float(nil, { preview = { vertical = true } })
+        require("oil").open_float(root, { preview = { vertical = true } })
       end,
       desc = "Explorer Oil (Root Dir)",
     },
-    { "<leader>e", "<leader>fe", desc = "Explorer Oil (cwd)", remap = true },
-    { "<leader>E", "<leader>fE", desc = "Explorer Oil (Root Dir)", remap = true },
+    { "<leader>e", "<leader>fe", desc = "Explorer Oil (file dir)", remap = true },
+    { "<leader>E", "<leader>fEc", desc = "Explorer Oil (cwd)", remap = true },
   },
   opts = {
     watch_for_changes = true,
@@ -55,31 +62,33 @@ return {
         desc = "Close oil",
       },
 
-      -- ~ = open oil at the directory of the most recent non-oil file buffer
-      ["~"] = {
+      -- <Tab> = toggle focus between oil list and preview
+      ["<Tab>"] = {
         callback = function()
-          local dir
-          local bufs = vim.fn.getbufinfo({ buflisted = 1 })
-          table.sort(bufs, function(a, b)
-            return a.lastused > b.lastused
-          end)
-          for _, info in ipairs(bufs) do
-            local name = info.name
-            if
-              name ~= ""
-              and not name:match("^oil://")
-              and vim.fn.isdirectory(name) == 0
-            then
-              dir = vim.fn.fnamemodify(name, ":h")
-              break
+          -- If in preview, go back to oil list
+          local ok, is_p = pcall(vim.api.nvim_win_get_var, 0, "oil_preview")
+          if ok and is_p then
+            for _, w in ipairs(vim.api.nvim_list_wins()) do
+              local ok2, is_oil = pcall(vim.api.nvim_win_get_var, w, "is_oil_win")
+              if ok2 and is_oil and vim.api.nvim_win_is_valid(w) then
+                vim.api.nvim_set_current_win(w)
+                return
+              end
+            end
+            return
+          end
+          -- Otherwise, focus preview
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            local ok2, is_p2 = pcall(vim.api.nvim_win_get_var, win, "oil_preview")
+            if ok2 and is_p2 and vim.api.nvim_win_is_valid(win) then
+              vim.api.nvim_set_current_win(win)
+              vim.cmd("stopinsert")
+              return
             end
           end
-          require("oil").open_float(dir or vim.uv.cwd(), { preview = { vertical = true } })
         end,
-        desc = "Open dir of last edited buffer",
+        desc = "Toggle oil list / preview",
       },
-
-      -- Snacks pickers scoped to cursor entry's dir
       ["<leader>sf"] = {
         callback = function()
           local oil = require("oil")
@@ -129,9 +138,9 @@ return {
   },
   config = function(_, opts)
     require("oil").setup(opts)
+
     -- Fix: oil doesn't set title_pos on the preview window, causing first
-    -- letters to be clipped with rounded borders. Patch open_preview to force
-    -- title_pos = "left" (oil opens preview with noautocmd, so autocmds can't catch it).
+    -- letters to be clipped with rounded borders.
     local oil = require("oil")
     local orig_open_preview = oil.open_preview
     oil.open_preview = function(o, cb)
@@ -145,5 +154,37 @@ return {
         end
       end)
     end
+
+    -- Set <Tab> on file preview buffers to focus back to oil list.
+    -- Uses BufWinEnter + vim.schedule so it runs AFTER filetype plugins
+    -- (which may set their own <Tab>).
+    vim.api.nvim_create_autocmd("BufWinEnter", {
+      group = vim.api.nvim_create_augroup("OilPreviewTab", { clear = true }),
+      callback = function(ev)
+        local win = vim.api.nvim_get_current_win()
+        local ok, is_p = pcall(vim.api.nvim_win_get_var, win, "oil_preview")
+        if not ok or not is_p then
+          return
+        end
+        vim.schedule(function()
+          if not vim.api.nvim_win_is_valid(win) then
+            return
+          end
+          local ok2, still_p = pcall(vim.api.nvim_win_get_var, win, "oil_preview")
+          if not ok2 or not still_p then
+            return
+          end
+          vim.keymap.set("n", "<Tab>", function()
+            for _, w in ipairs(vim.api.nvim_list_wins()) do
+              local ok3, is_oil = pcall(vim.api.nvim_win_get_var, w, "is_oil_win")
+              if ok3 and is_oil and vim.api.nvim_win_is_valid(w) then
+                vim.api.nvim_set_current_win(w)
+                return
+              end
+            end
+          end, { buffer = ev.buf, nowait = true, desc = "Back to oil list" })
+        end)
+      end,
+    })
   end,
 }

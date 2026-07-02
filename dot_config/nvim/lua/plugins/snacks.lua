@@ -89,22 +89,19 @@ return {
           keys = {
             ["<PageDown>"] = { "list_scroll_down", mode = { "i", "n" } },
             ["<PageUp>"] = { "list_scroll_up", mode = { "i", "n" } },
-            ["<A-;>"] = { "cycle_win", mode = { "i", "n" } },
-            ["<A-j>"] = { "cycle_win", mode = { "i", "n" } },
+            ["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
             ["<A-w>"] = "none",
           },
         },
         list = {
           keys = {
-            ["<A-;>"] = "cycle_win",
-            ["<A-j>"] = "cycle_win",
+            ["<Tab>"] = "focus_preview",
             ["<A-w>"] = "none",
           },
         },
         preview = {
           keys = {
-            ["<A-;>"] = "cycle_win",
-            ["<A-j>"] = "cycle_win",
+            ["<Tab>"] = "focus_list",
             ["<A-w>"] = "none",
           },
         },
