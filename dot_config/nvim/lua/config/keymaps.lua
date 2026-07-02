@@ -104,11 +104,8 @@ local function find_dirs(cwd)
     confirm = function(picker, item)
       picker:close()
       if item then
-        vim.schedule(function()
-          local dir = cwd .. "/" .. item.file
-          vim.fn.chdir(dir)
-          vim.cmd("Neotree focus dir=" .. dir)
-        end)
+        local dir = cwd .. "/" .. item.file
+        require("oil").open_float(dir, { preview = { vertical = true } })
       end
     end,
   })
@@ -137,6 +134,7 @@ map("n", "<leader>f~", function()
   vim.fn.chdir(vim.fn.expand("~"))
   vim.notify("cd " .. vim.fn.getcwd())
 end, { desc = "cd to home dir" })
+map("n", "<leader>f_", function() require("utils.cwd").pick() end, { desc = "CWD History" })
 map("n", "<leader>fw", function()
   Snacks.picker.files({ root = false, pattern = vim.fn.expand("<cword>") })
 end, { desc = "Find Files (word, cwd)" })
