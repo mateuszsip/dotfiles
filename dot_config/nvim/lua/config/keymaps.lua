@@ -13,7 +13,9 @@ map({ "n", "x" }, "j", "h", { desc = "Left" })
 map({ "n", "x" }, "k", "j", { desc = "Down" })
 map({ "n", "x" }, "l", "k", { desc = "Up" })
 map({ "n", "x" }, ";", "l", { desc = "Right" })
-map({ "n", "x", "o" }, "h", function() require("flash.plugins.char").jump(";") end, { desc = "Repeat f/t forward" })
+map({ "n", "x", "o" }, "h", function()
+  require("flash.plugins.char").jump(";")
+end, { desc = "Repeat f/t forward" })
 map({ "n", "x" }, "J", "^", { desc = "Start of line" })
 map({ "n", "x" }, ":", "$", { desc = "End of line" })
 map({ "n", "x" }, ",", ":", { desc = "Command mode" })
@@ -76,33 +78,49 @@ map("n", "<A-j>", "<cmd>cprev<cr>", { desc = "Previous Quickfix" })
 map("n", "<A-;>", "<cmd>cnext<cr>", { desc = "Next Quickfix" })
 
 map("n", "<leader>ff", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
-map("n", "<leader>fh", function() Snacks.picker.files({ cwd = vim.fn.expand("~") }) end, { desc = "Find Files (home)" })
-map("n", "<leader>fd", function()
+map("n", "<leader>fF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
+map("n", "<leader>fh", function()
+  Snacks.picker.files({ cwd = vim.fn.expand("~") })
+end, { desc = "Find Files (home)" })
+-- Find Directories picker (chdir + Neotree focus on confirm)
+local function find_dirs(cwd)
   Snacks.picker({
     title = "Find Directories",
-    cwd = vim.fn.expand("~"),
+    cwd = cwd,
     format = "file",
-    finder = function(opts, ctx)
-      return require("snacks.picker.source.proc").proc(ctx:opts({
-        cmd = "fd",
-        args = { "--type", "d", "--hidden", "--exclude", ".git", "." },
-        transform = function(item)
-          item.file = item.text
-          item.dir = true
-        end,
-      }), ctx)
+    finder = function(_, ctx)
+      return require("snacks.picker.source.proc").proc(
+        ctx:opts({
+          cmd = "fd",
+          args = { "--type", "d", "--hidden", "--exclude", ".git", "." },
+          transform = function(item)
+            item.file = item.text
+            item.dir = true
+          end,
+        }),
+        ctx
+      )
     end,
     confirm = function(picker, item)
       picker:close()
       if item then
         vim.schedule(function()
-          local dir = vim.fn.expand("~") .. "/" .. item.file
+          local dir = cwd .. "/" .. item.file
           vim.fn.chdir(dir)
           vim.cmd("Neotree focus dir=" .. dir)
         end)
       end
     end,
   })
+end
+map("n", "<leader>fd", function()
+  find_dirs(vim.fn.getcwd())
+end, { desc = "Find Directories (cwd)" })
+map("n", "<leader>fD", function()
+  find_dirs(LazyVim.root.get())
+end, { desc = "Find Directories (Root Dir)" })
+map("n", "<leader>fH", function()
+  find_dirs(vim.fn.expand("~"))
 end, { desc = "Find Directories (home)" })
 map("n", "<leader>f.", function()
   local dir = vim.fn.expand("%:p:h")
@@ -119,20 +137,29 @@ map("n", "<leader>f~", function()
   vim.fn.chdir(vim.fn.expand("~"))
   vim.notify("cd " .. vim.fn.getcwd())
 end, { desc = "cd to home dir" })
-map("n", "<leader>fF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
-map("n", "<leader>fw", function() Snacks.picker.files({ root = false, pattern = vim.fn.expand("<cword>") }) end, { desc = "Find Files (word, cwd)" })
-map("n", "<leader>fW", function() Snacks.picker.files({ pattern = vim.fn.expand("<cword>") }) end, { desc = "Find Files (word, Root Dir)" })
+map("n", "<leader>fw", function()
+  Snacks.picker.files({ root = false, pattern = vim.fn.expand("<cword>") })
+end, { desc = "Find Files (word, cwd)" })
+map("n", "<leader>fW", function()
+  Snacks.picker.files({ pattern = vim.fn.expand("<cword>") })
+end, { desc = "Find Files (word, Root Dir)" })
 map("n", "<leader>sf", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>sF", LazyVim.pick("files"), { desc = "Find Files (Root Dir)" })
 map("n", "<leader>sg", LazyVim.pick("live_grep", { root = false }), { desc = "Grep (cwd)" })
 map("n", "<leader>sG", LazyVim.pick("live_grep"), { desc = "Grep (Root Dir)" })
-map({ "n", "x" }, "<leader>sw", function() Snacks.picker.grep_word({ root = false }) end, { desc = "Grep Word (cwd)" })
-map({ "n", "x" }, "<leader>sW", function() Snacks.picker.grep_word() end, { desc = "Grep Word (Root Dir)" })
+map({ "n", "x" }, "<leader>sw", function()
+  Snacks.picker.grep_word({ root = false })
+end, { desc = "Grep Word (cwd)" })
+map({ "n", "x" }, "<leader>sW", function()
+  Snacks.picker.grep_word()
+end, { desc = "Grep Word (Root Dir)" })
 
 map("n", "<leader>ss", LazyVim.pick("lsp_document_symbols"), { desc = "Document Symbols" })
 map("n", "<leader>sS", LazyVim.pick("lsp_workspace_symbols"), { desc = "Workspace Symbols" })
 
-map("n", "<leader>be", function() Snacks.picker.buffers() end, { desc = "Buffer Picker" })
+map("n", "<leader>be", function()
+  Snacks.picker.buffers()
+end, { desc = "Buffer Picker" })
 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
@@ -142,11 +169,15 @@ map("n", "<leader>CA", function()
 end, { desc = "Chezmoi Apply All" })
 
 -- Override LazyVim's terminal labels
-map("n", "<leader>ft", function() Snacks.terminal(nil, { cwd = vim.fn.getcwd() }) end, { desc = "Terminal (cwd)" })
+map("n", "<leader>ft", function()
+  Snacks.terminal(nil, { cwd = vim.fn.getcwd() })
+end, { desc = "Terminal (cwd)" })
 map("n", "<leader>fT", function()
   local path = vim.api.nvim_buf_get_name(0)
   local dir = path ~= "" and vim.fn.fnamemodify(path, ":h") or nil
-  if dir and vim.fn.isdirectory(dir) ~= 1 then dir = nil end
+  if dir and vim.fn.isdirectory(dir) ~= 1 then
+    dir = nil
+  end
   Snacks.terminal(nil, { cwd = dir or vim.fn.getcwd() })
 end, { desc = "Terminal (buf dir)" })
 
@@ -158,8 +189,12 @@ map("n", "<leader>uv", function()
 end, { desc = "Toggle Virtual Text" })
 
 -- Fold keymaps (overrides movement mappings above; require() is lazy so safe before origami loads)
-map("n", "j", function() require("origami").h() end, { desc = "Left / fold" })
-map("n", ";", function() require("origami").l() end, { desc = "Right / unfold" })
+map("n", "j", function()
+  require("origami").h()
+end, { desc = "Left / fold" })
+map("n", ";", function()
+  require("origami").l()
+end, { desc = "Right / unfold" })
 
 map("n", "ZZ", "<cmd>wqall<cr>", { desc = "Save all and quit" })
 map("n", "Zz", "<cmd>qall<cr>", { desc = "Quit all" })
