@@ -134,6 +134,38 @@ return {
         end,
         desc = "Find HTTP requests in cursor dir",
       },
+      ["<leader>yr"] = {
+        callback = function()
+          local oil = require("oil")
+          local dir = oil.get_current_dir()
+          if not dir then
+            return
+          end
+          local entry = oil.get_cursor_entry()
+          if not entry then
+            return
+          end
+          local path = dir .. "/" .. entry.name
+          require("utils.path").copy_relative(path, vim.uv.cwd(), { dir = entry.type == "directory" })
+        end,
+        desc = "Copy relative path (cwd)",
+      },
+      ["<leader>yR"] = {
+        callback = function()
+          local oil = require("oil")
+          local dir = oil.get_current_dir()
+          if not dir then
+            return
+          end
+          local entry = oil.get_cursor_entry()
+          if not entry then
+            return
+          end
+          local path = dir .. "/" .. entry.name
+          require("utils.path").copy_relative(path, LazyVim.root(), { dir = entry.type == "directory" })
+        end,
+        desc = "Copy relative path (root)",
+      },
     },
   },
   config = function(_, opts)

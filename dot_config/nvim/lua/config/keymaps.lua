@@ -224,3 +224,25 @@ end, { desc = "Right / unfold" })
 
 map("n", "ZZ", "<cmd>wqall<cr>", { desc = "Save all and quit" })
 map("n", "Zz", "<cmd>qall<cr>", { desc = "Quit all" })
+
+-- Copy relative path of current buffer
+map("n", "<leader>yr", function()
+  local name = vim.api.nvim_buf_get_name(0)
+  if name == "" or name:match("://") then
+    return Snacks.notify.warn("Buffer has no readable file")
+  end
+  if vim.fn.filereadable(name) == 0 and vim.fn.isdirectory(name) == 0 then
+    return Snacks.notify.warn("Buffer has no readable file")
+  end
+  require("utils.path").copy_relative(name, vim.uv.cwd())
+end, { desc = "Copy relative path (cwd)" })
+map("n", "<leader>yR", function()
+  local name = vim.api.nvim_buf_get_name(0)
+  if name == "" or name:match("://") then
+    return Snacks.notify.warn("Buffer has no readable file")
+  end
+  if vim.fn.filereadable(name) == 0 and vim.fn.isdirectory(name) == 0 then
+    return Snacks.notify.warn("Buffer has no readable file")
+  end
+  require("utils.path").copy_relative(name, LazyVim.root())
+end, { desc = "Copy relative path (root)" })
