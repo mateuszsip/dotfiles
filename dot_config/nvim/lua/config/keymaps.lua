@@ -5,6 +5,10 @@
 -- lua/config/keymaps.lua
 local map = vim.keymap.set
 
+-- Root detection: drop "lsp" from LazyVim defaults so root is always the
+-- git toplevel (or "lua" project root), never an LSP workspace subdir.
+vim.g.root_spec = { { ".git", "lua" }, "cwd" }
+
 -- Fix LazyVim root detection for URI-scheme buffers (oil://, term://, ...).
 -- M.realpath does `fs_realpath(path) or path`, so for an `oil:///path` URI it
 -- keeps the (invalid) URI and M.norm collapses "//" -> "/", yielding `oil:/path`.
