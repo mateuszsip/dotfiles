@@ -244,9 +244,5 @@ map("n", "<leader>yR", function()
   if vim.fn.filereadable(name) == 0 and vim.fn.isdirectory(name) == 0 then
     return Snacks.notify.warn("Buffer has no readable file")
   end
-  local root = require("utils.path").git_toplevel(name)
-  if not root then
-    return Snacks.notify.warn("Not inside a git repo")
-  end
-  require("utils.path").copy_relative(name, root)
+  require("utils.path").copy_relative(name, LazyVim.root())
 end, { desc = "Copy relative path (root)" })
