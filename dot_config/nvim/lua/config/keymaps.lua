@@ -5,6 +5,27 @@
 -- lua/config/keymaps.lua
 local map = vim.keymap.set
 
+-- Fix LazyVim root detection for URI-scheme buffers (oil://, term://, ...).
+-- M.realpath does `fs_realpath(path) or path`, so for an `oil:///path` URI it
+-- keeps the (invalid) URI and M.norm collapses "//" -> "/", yielding `oil:/path`.
+-- That non-nil mangled path feeds M.detectors.pattern, the cwd fallback never
+-- triggers, and vim.fs.find upward from the invalid path finds nothing -> the
+-- (.git/.lua) detector returns empty and root falls through to `cwd`.
+-- Treat scheme buffers as having no real path so detection falls back to cwd.
+do
+  local root = require("lazyvim.util.root")
+  if not root._bufpath_patched then
+    root._bufpath_patched = true
+    root.bufpath = function(b)
+      local name = vim.api.nvim_buf_get_name(b)
+      if name == "" or name:find("://") then
+        return nil
+      end
+      return root.realpath(name)
+    end
+  end
+end
+
 -- Note: <C-f> is disabled in snacks config (lua/plugins/snacks-animated-scrolling-off.lua)
 -- Terminal passthrough is handled in the TermOpen autocmd below
 
