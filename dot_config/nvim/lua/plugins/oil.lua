@@ -162,7 +162,11 @@ return {
             return
           end
           local path = dir .. "/" .. entry.name
-          require("utils.path").copy_relative(path, LazyVim.root(), { dir = entry.type == "directory" })
+          local root = require("utils.path").git_toplevel(dir)
+          if not root then
+            return Snacks.notify.warn("Not inside a git repo")
+          end
+          require("utils.path").copy_relative(path, root, { dir = entry.type == "directory" })
         end,
         desc = "Copy relative path (root)",
       },
