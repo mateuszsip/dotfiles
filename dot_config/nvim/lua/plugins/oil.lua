@@ -4,21 +4,21 @@ return {
   cmd = { "Oil" },
   keys = {
     {
-      "<leader>fe",
+      "<leader>fee",
       function()
         require("oil").open_float(nil, { preview = { vertical = true } })
       end,
       desc = "Explorer Oil (file dir)",
     },
     {
-      "<leader>fEc",
+      "<leader>fec",
       function()
         require("oil").open_float(vim.uv.cwd(), { preview = { vertical = true } })
       end,
       desc = "Explorer Oil (cwd)",
     },
     {
-      "<leader>fEr",
+      "<leader>fer",
       function()
         local root = LazyVim.root()
         vim.cmd("tcd " .. vim.fn.fnameescape(root))
@@ -26,8 +26,8 @@ return {
       end,
       desc = "Explorer Oil (Root Dir)",
     },
-    { "<leader>e", "<leader>fe", desc = "Explorer Oil (file dir)", remap = true },
-    { "<leader>E", "<leader>fEc", desc = "Explorer Oil (cwd)", remap = true },
+    { "<leader>e", "<leader>fee", desc = "Explorer Oil (file dir)", remap = true },
+    { "<leader>E", "<leader>fec", desc = "Explorer Oil (cwd)", remap = true },
   },
   opts = {
     watch_for_changes = true,
