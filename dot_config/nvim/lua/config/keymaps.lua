@@ -226,6 +226,8 @@ map("n", ";", function()
   require("origami").l()
 end, { desc = "Right / unfold" })
 
+map("n", "<leader>gub", function() Snacks.picker.git_log_line() end, { desc = "Git Blame Line" })
+
 map("n", "ZZ", "<cmd>wqall<cr>", { desc = "Save all and quit" })
 map("n", "Zz", "<cmd>qall<cr>", { desc = "Quit all" })
 

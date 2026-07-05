@@ -9,7 +9,7 @@ return {
       end
 
       -- Full blame window
-      map("n", "<leader>ghB", gs.blame, "Git Blame (full)")
+      map("n", "<leader>guB", gs.blame, "Git Blame (toggle)")
     end,
   },
 }
