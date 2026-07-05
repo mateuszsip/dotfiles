@@ -14,40 +14,174 @@ return {
   keys = {
     -- Disable <C-f> for file search to allow terminal passthrough
     { "<C-f>", false, mode = { "n", "i", "v" } },
-    { "<leader>ftq", function() Snacks.terminal.toggle(nil, { count = 1, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 1" },
-    { "<leader>ftw", function() Snacks.terminal.toggle(nil, { count = 2, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 2" },
-    { "<leader>fte", function() Snacks.terminal.toggle(nil, { count = 3, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 3" },
-    { "<leader>fta", function() Snacks.terminal.toggle(nil, { count = 4, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 4" },
-    { "<leader>fts", function() Snacks.terminal.toggle(nil, { count = 5, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 5" },
-    { "<leader>ftd", function() Snacks.terminal.toggle(nil, { count = 6, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 6" },
-    { "<leader>fTq", function() Snacks.terminal.toggle(nil, { count = 1, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 1 (buf dir)" },
-    { "<leader>fTw", function() Snacks.terminal.toggle(nil, { count = 2, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 2 (buf dir)" },
-    { "<leader>fTe", function() Snacks.terminal.toggle(nil, { count = 3, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 3 (buf dir)" },
-    { "<leader>fTa", function() Snacks.terminal.toggle(nil, { count = 4, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 4 (buf dir)" },
-    { "<leader>fTs", function() Snacks.terminal.toggle(nil, { count = 5, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 5 (buf dir)" },
-    { "<leader>fTd", function() Snacks.terminal.toggle(nil, { count = 6, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }) end, desc = "Terminal 6 (buf dir)" },
-    { "<leader>ftt", function()
-      local terms = Snacks.terminal.list()
-      local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
-      if #shown > 0 then
-        for _, t in ipairs(shown) do t:hide() end
-      elseif #terms > 0 then
-        for _, t in ipairs(terms) do t:show() end
-      else
-        Snacks.terminal.toggle(nil, { count = 1, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } })
-      end
-    end, desc = "Toggle All Terminals" },
-    { "<leader>fT", function()
-      local terms = Snacks.terminal.list()
-      local shown = vim.tbl_filter(function(t) return t:win_valid() end, terms)
-      if #shown > 0 then
-        for _, t in ipairs(shown) do t:hide() end
-      elseif #terms > 0 then
-        for _, t in ipairs(terms) do t:show() end
-      else
-        Snacks.terminal.toggle(nil, { count = 1, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } })
-      end
-    end, desc = "Toggle All Terminals" },
+    {
+      "<leader>ftq",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 1, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 1",
+    },
+    {
+      "<leader>ftw",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 2, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 2",
+    },
+    {
+      "<leader>fte",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 3, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 3",
+    },
+    {
+      "<leader>fta",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 4, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 4",
+    },
+    {
+      "<leader>fts",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 5, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 5",
+    },
+    {
+      "<leader>ftd",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 6, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 6",
+    },
+    {
+      "<leader>fTq",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 1, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 1 (buf dir)",
+    },
+    {
+      "<leader>fTw",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 2, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 2 (buf dir)",
+    },
+    {
+      "<leader>fTe",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 3, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 3 (buf dir)",
+    },
+    {
+      "<leader>fTa",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 4, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 4 (buf dir)",
+    },
+    {
+      "<leader>fTs",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 5, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 5 (buf dir)",
+    },
+    {
+      "<leader>fTd",
+      function()
+        Snacks.terminal.toggle(
+          nil,
+          { count = 6, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+        )
+      end,
+      desc = "Terminal 6 (buf dir)",
+    },
+    {
+      "<leader>ftt",
+      function()
+        local terms = Snacks.terminal.list()
+        local shown = vim.tbl_filter(function(t)
+          return t:win_valid()
+        end, terms)
+        if #shown > 0 then
+          for _, t in ipairs(shown) do
+            t:hide()
+          end
+        elseif #terms > 0 then
+          for _, t in ipairs(terms) do
+            t:show()
+          end
+        else
+          Snacks.terminal.toggle(
+            nil,
+            { count = 1, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
+          )
+        end
+      end,
+      desc = "Toggle All Terminals",
+    },
+    {
+      "<leader>fT",
+      function()
+        local terms = Snacks.terminal.list()
+        local shown = vim.tbl_filter(function(t)
+          return t:win_valid()
+        end, terms)
+        if #shown > 0 then
+          for _, t in ipairs(shown) do
+            t:hide()
+          end
+        elseif #terms > 0 then
+          for _, t in ipairs(terms) do
+            t:show()
+          end
+        else
+          Snacks.terminal.toggle(
+            nil,
+            { count = 1, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
+          )
+        end
+      end,
+      desc = "Toggle All Terminals",
+    },
   },
   opts = {
     scroll = {
@@ -90,18 +224,28 @@ return {
             ["<PageDown>"] = { "list_scroll_down", mode = { "i", "n" } },
             ["<PageUp>"] = { "list_scroll_up", mode = { "i", "n" } },
             ["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
+            ["<S-Tab>"] = { "focus_list", mode = { "i", "n" } },
+            ["<C-Space>"] = { "select_and_next", mode = { "i", "n" } },
+            ["<C-S-Space>"] = { "select_and_prev", mode = { "i", "n" } },
+            ["<C-S-q>"] = { "loclist", mode = { "i", "n" } },
             ["<A-w>"] = "none",
           },
         },
         list = {
           keys = {
             ["<Tab>"] = "focus_preview",
+            ["<S-Tab>"] = "focus_list",
+            ["<C-Space>"] = { "select_and_next", mode = { "i", "n" } },
+            ["<C-S-Space>"] = { "select_and_prev", mode = { "i", "n" } },
+            ["<C-S-q>"] = { "loclist", mode = { "i", "n" } },
             ["<A-w>"] = "none",
           },
         },
         preview = {
           keys = {
             ["<Tab>"] = "focus_list",
+            ["<S-Tab>"] = "focus_input",
+            ["<M-q>"] = { "loclist", mode = { "i", "n" } },
             ["<A-w>"] = "none",
           },
         },

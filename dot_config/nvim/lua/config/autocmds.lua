@@ -228,8 +228,14 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
   callback = function()
     vim.schedule(function()
-      vim.cmd("cclose")
-      require("trouble").open({ mode = "quickfix", focus = true, open_folds = false })
+      local win_type = vim.fn.win_gettype(0)
+      if win_type == "loclist" then
+        vim.cmd("lclose")
+        require("trouble").open({ mode = "loclist", focus = true, open_folds = false })
+      else
+        vim.cmd("cclose")
+        require("trouble").open({ mode = "quickfix", focus = true, open_folds = false })
+      end
     end)
   end,
 })
