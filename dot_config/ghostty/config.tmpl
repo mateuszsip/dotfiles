@@ -41,6 +41,8 @@ mouse-scroll-multiplier = 0.9
 async-backend = epoll
 
 {{ if eq .chezmoi.os "darwin" -}}
+# Make Option send Alt/Escape so <A-...> keybinds work in Neovim
+macos-option-as-alt = true
 command = /opt/homebrew/bin/nu
 {{- else -}}
 command = /usr/bin/nu
