@@ -31,6 +31,7 @@ return {
   },
   opts = {
     watch_for_changes = true,
+    columns = { "icon", "operms", { "mtime", format = "%d-%m-%y" } },
     view_options = {
       show_hidden = true,
     },
@@ -169,7 +170,92 @@ return {
     },
   },
   config = function(_, opts)
+    -- Custom column: numeric (octal) permissions, e.g. "755" or "4755".
+    -- Each digit gets its own highlight: special / user / group / other.
+    local columns = require("oil.columns")
+    local permissions = require("oil.adapters.files.permissions")
+    local FIELD_META = require("oil.constants").FIELD_META
+    columns.register("operms", {
+      require_stat = true,
+      render = function(entry, conf)
+        local meta = entry[FIELD_META]
+        local stat = meta and meta.stat
+        if not stat then
+          return columns.EMPTY
+        end
+        local s = permissions.mode_to_octal_str(stat.mode):gsub("^0(%d%d%d)$", "%1")
+        local hls = {}
+        for i = 1, #s do
+          local d = s:sub(i, i)
+          table.insert(hls, { "OilPermsDigit" .. d, i - 1, i })
+        end
+        return { s, hls }
+      end,
+      parse = function(line, conf)
+        local octal, rem = line:match("^(%d%d%d%d?)%s+(.*)$")
+        if not octal then
+          return
+        end
+        local mode = tonumber(octal, 8)
+        if not mode then
+          return
+        end
+        return mode, rem
+      end,
+      compare = function(entry, parsed_value)
+        local meta = entry[FIELD_META]
+        if parsed_value and meta and meta.stat and meta.stat.mode then
+          local mask = bit.lshift(1, 12) - 1
+          if parsed_value ~= bit.band(meta.stat.mode, mask) then
+            return true
+          end
+        end
+        return false
+      end,
+      render_action = function(action)
+        local _, path = require("oil.util").parse_url(action.url)
+        assert(path)
+        return string.format(
+          "CHMOD %s %s",
+          permissions.mode_to_octal_str(action.value),
+          require("oil.adapters.files").to_short_os_path(path, action.entry_type)
+        )
+      end,
+      perform_action = function(action, callback)
+        local util = require("oil.util")
+        local fs = require("oil.fs")
+        local uv = vim.uv
+        local _, path = util.parse_url(action.url)
+        assert(path)
+        path = fs.posix_to_os_path(path)
+        uv.fs_stat(path, function(err, stat)
+          if err then
+            return callback(err)
+          end
+          assert(stat)
+          local mask = bit.bnot(bit.lshift(1, 12) - 1)
+          local old_mode = bit.band(stat.mode, mask)
+          uv.fs_chmod(path, bit.bor(old_mode, action.value), callback)
+        end)
+      end,
+    })
+
     require("oil").setup(opts)
+
+    -- Highlight groups per digit value 0-7 for the operms column.
+    local perm_hls = {
+      [0] = "Comment",      -- no perms (---)
+      [1] = "DiagnosticWarn", -- execute only (--x)
+      [2] = "DiagnosticOk",   -- write only (-w-)
+      [3] = "DiagnosticOk",   -- write+exec (-wx)
+      [4] = "Special",      -- read only (r--)
+      [5] = "Statement",    -- read+exec (r-x)
+      [6] = "Constant",     -- read+write (rw-)
+      [7] = "Error",        -- all perms (rwx)
+    }
+    for d = 0, 7 do
+      vim.api.nvim_set_hl(0, "OilPermsDigit" .. d, { link = perm_hls[d] })
+    end
 
     -- Fix: oil doesn't set title_pos on the preview window, causing first
     -- letters to be clipped with rounded borders.

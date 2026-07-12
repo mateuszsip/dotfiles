@@ -14,7 +14,7 @@ return {
       disable_insert_on_commit = "auto",
       auto_show_console = true,
       auto_close_console = true,
-      integrations = { snacks = true, diffview = false, telescope = false },
+      integrations = { snacks = true, diffview = true, telescope = false },
       sections = {
         untracked = { folded = false },
         unstaged = { folded = false },

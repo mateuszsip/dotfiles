@@ -8,6 +8,7 @@ return {
       { "<leader>m", group = "markdown" },
       { "<leader>fe", group = "Explorer Oil" },
       { "<leader>y", group = "yank" },
+      { "<leader>gd", group = "diff" },
     },
   },
 }

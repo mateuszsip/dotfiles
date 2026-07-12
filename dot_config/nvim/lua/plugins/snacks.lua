@@ -14,6 +14,12 @@ return {
   keys = {
     -- Disable <C-f> for file search to allow terminal passthrough
     { "<C-f>", false, mode = { "n", "i", "v" } },
+    -- Disable snacks picker git_diff maps; <leader>gd is a diff subgroup (see diffview.lua)
+    { "<leader>gd", false },
+    { "<leader>gD", false },
+    -- Diff hunks via snacks picker (replaces the disabled top-level maps above)
+    { "<leader>gdd", function() Snacks.picker.git_diff() end, desc = "Diff Hunks (working tree)" },
+    { "<leader>gdD", function() Snacks.picker.git_diff({ base = "origin", group = true }) end, desc = "Diff Hunks (origin)" },
     {
       "<leader>ftq",
       function()
