@@ -4,9 +4,9 @@ return {
     { "nvim-tree/nvim-web-devicons", lazy = true },
   },
   opts = {
-    scope = "git", -- also try out "git_branch"
-    icons = false,
-    status = false,
+    scope = "cwd",
+    icons = true,
+    status = true,
   },
   keys = {
     { "<leader>h", "<cmd>Grapple toggle_tags<cr>", desc = "Grapple toggle tags menu" },
