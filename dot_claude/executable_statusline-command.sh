@@ -51,7 +51,10 @@ fmt_tokens() {
   local n_int
   n_int=$(printf "%.0f" "$1" 2>/dev/null) || n_int=0
   if [ "$n_int" -ge 1000 ]; then
-    printf "%.1fk" "$(awk "BEGIN{printf \"%.1f\", $n_int/1000}")"
+    # 1 decimal place via integer math, rounded (avoids awk; macOS bash 3.2
+    # brace-expands the awk program inside command substitution).
+    local tenths=$(( (n_int + 50) / 100 ))
+    printf "%d.%dk" "$((tenths / 10))" "$((tenths % 10))"
   else
     echo "$n_int"
   fi
