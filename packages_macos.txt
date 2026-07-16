@@ -4,6 +4,7 @@ awscli
 aws-sso-cli
 bat
 chezmoi
+colima
 coreutils
 docker
 docker-buildx
@@ -32,6 +33,7 @@ luarocks
 maccy
 mermaid-cli
 mise
+mutagen-io/mutagen/mutagen
 mysql
 neovim
 nushell
