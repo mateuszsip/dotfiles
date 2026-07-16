@@ -227,6 +227,16 @@ return {
       win = {
         input = {
           keys = {
+            -- Override defaults so the physical jkl; layout stays consistent in pickers.
+            -- Snacks binds `j`=list_down and `k`=list_up as buffer-local maps
+            -- (picker/config/defaults.lua), which shadow this config's global jkl; remap,
+            -- so physical `k` (your "Down" key) would move UP with stock Snacks. Swap to
+            -- match the physical layout in normal mode; while typing, use the arrow keys
+            -- (<c-j>/<c-k>/<c-l> are reserved for window navigation, see keymaps.lua).
+            ["j"] = false,
+            [";"] = false,
+            ["k"] = "list_down",
+            ["l"] = "list_up",
             ["<PageDown>"] = { "list_scroll_down", mode = { "i", "n" } },
             ["<PageUp>"] = { "list_scroll_up", mode = { "i", "n" } },
             ["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
@@ -239,6 +249,11 @@ return {
         },
         list = {
           keys = {
+            -- Match the physical jkl; layout (see input window comment above).
+            ["j"] = false,
+            [";"] = false,
+            ["k"] = "list_down",
+            ["l"] = "list_up",
             ["<Tab>"] = "focus_preview",
             ["<S-Tab>"] = "focus_list",
             ["<C-Space>"] = { "select_and_next", mode = { "i", "n" } },
