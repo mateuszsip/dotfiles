@@ -301,6 +301,22 @@ return {
               end
             end
           end, { buffer = ev.buf, nowait = true, desc = "Back to oil list" })
+
+          -- q / <Esc> from the preview buffer: focus oil list, then close it.
+          -- The oil-buffer keymaps don't exist in the preview file buffer, so
+          -- without this q starts a macro recording and <Esc> does nothing.
+          local close_oil = function()
+            for _, w in ipairs(vim.api.nvim_list_wins()) do
+              local ok3, is_oil = pcall(vim.api.nvim_win_get_var, w, "is_oil_win")
+              if ok3 and is_oil and vim.api.nvim_win_is_valid(w) then
+                vim.api.nvim_set_current_win(w)
+                break
+              end
+            end
+            vim.cmd("close")
+          end
+          vim.keymap.set("n", "q", close_oil, { buffer = ev.buf, nowait = true, desc = "Close oil" })
+          vim.keymap.set("n", "<Esc>", close_oil, { buffer = ev.buf, nowait = true, desc = "Close oil" })
         end)
       end,
     })
