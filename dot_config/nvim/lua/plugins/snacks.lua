@@ -1,3 +1,20 @@
+-- Window nav from inside Snacks terminals, matching the shifted jkl; layout
+-- (see config/keymaps.lua). LazyVim (lazyvim/plugins/util.lua) injects nav_h/j/k/l
+-- into Snacks `terminal.win.keys` using the *standard* hjkl directions; Snacks applies
+-- these when the terminal window is shown, which shadows the TermOpen maps. Remap them
+-- to the physical layout here. Floating terminals pass the key through to the program,
+-- matching LazyVim's term_nav behaviour.
+local function term_nav(key, dir)
+  return function(self)
+    if self:is_floating() then
+      return "<C-" .. key .. ">"
+    end
+    vim.schedule(function()
+      vim.cmd.wincmd(dir)
+    end)
+  end
+end
+
 local function buf_dir()
   local path = vim.api.nvim_buf_get_name(0)
   if path ~= "" then
@@ -190,6 +207,20 @@ return {
     },
   },
   opts = {
+    terminal = {
+      win = {
+        keys = {
+          -- Match the shifted jkl; window-nav layout (see config/keymaps.lua):
+          -- C-j=left, C-k=down, C-l=up, C-;=right. C-h exits terminal mode
+          -- (handled by the TermOpen map), so disable LazyVim's nav_h.
+          nav_h = false,
+          nav_j = { "<C-j>", term_nav("j", "h"), expr = true, mode = "t", desc = "Go to Left Window" },
+          nav_k = { "<C-k>", term_nav("k", "j"), expr = true, mode = "t", desc = "Go to Lower Window" },
+          nav_l = { "<C-l>", term_nav("l", "k"), expr = true, mode = "t", desc = "Go to Upper Window" },
+          nav_semicolon = { "<C-;>", term_nav(";", "l"), expr = true, mode = "t", desc = "Go to Right Window" },
+        },
+      },
+    },
     scroll = {
       enabled = true, -- Disable scrolling animations
     },
