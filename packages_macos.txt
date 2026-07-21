@@ -33,7 +33,6 @@ luarocks
 maccy
 mermaid-cli
 mise
-mutagen-io/mutagen/mutagen
 mysql
 neovim
 nushell

@@ -35,6 +35,7 @@ brew install \
 while IFS= read -r formula; do
   [ -z "$formula" ] && continue
   brew tap "${formula%/*}"
+  brew trust --formula "$formula"
   brew install "$formula"
 done <<'TAPS'
 {{ include "packages_macos_taps.txt" | trim }}
