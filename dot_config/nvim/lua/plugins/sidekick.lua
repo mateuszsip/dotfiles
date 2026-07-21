@@ -16,7 +16,14 @@ return {
       desc = "Sidekick Toggle Opencode",
     },
     {
-      "<leader>ag",
+      "<leader>ap",
+      function()
+        require("sidekick.cli").toggle({ name = "pi", focus = true })
+      end,
+      desc = "Sidekick Toggle Pi",
+    },
+    {
+      "<leader>aP",
       function()
         require("sidekick.cli").toggle({ name = "antigravity", focus = true })
       end,
