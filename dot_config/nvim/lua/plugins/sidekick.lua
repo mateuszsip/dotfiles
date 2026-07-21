@@ -47,6 +47,9 @@ return {
 	},
 	opts = {
 		cli = {
+			-- disable default `<c-p>` terminal-mode prompt keymap;
+			-- `<leader>aP` already opens the prompt picker
+			keys = { prompt = false },
 			win = {
 				split = {
 					width = 80,
