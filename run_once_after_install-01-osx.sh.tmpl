@@ -15,6 +15,14 @@ defaults write com.apple.dock tilesize -int 64
 # Tap to click
 defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
 
+# Disable Mission Control "Move left/right a space" (Ctrl+Left/Right) so those
+# keys reach apps (e.g. Neovim window resize). Bindings preserved (enabled=0).
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 '{ enabled = 0; value = { parameters = ( 65535, 123, 262144 ); type = standard; }; }'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 80 '{ enabled = 0; value = { parameters = ( 65535, 123, 393216 ); type = standard; }; }'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{ enabled = 0; value = { parameters = ( 65535, 124, 262144 ); type = standard; }; }'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 '{ enabled = 0; value = { parameters = ( 65535, 124, 393216 ); type = standard; }; }'
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
 ln -s ~/.config/nushell "$HOME/Library/Application Support"
 
 {{ end }}
