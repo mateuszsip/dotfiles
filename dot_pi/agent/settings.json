@@ -4,7 +4,10 @@
   "defaultProvider": "opencode-go",
   "defaultModel": "glm-5.2",
   "defaultThinkingLevel": "medium",
-  "enabledModels": ["opencode-go/*", "opencode/*"],
+  "enabledModels": [
+    "opencode-go/*",
+    "opencode/*"
+  ],
   "packages": [
     "npm:pi-subagents",
     "npm:pi-mcp-adapter",
