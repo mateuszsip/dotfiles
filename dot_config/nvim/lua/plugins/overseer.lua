@@ -65,6 +65,14 @@ return {
     -- which doesn't expose targets for our Makefiles. We register a custom
     -- provider below that uses `make list` instead.
     disable_template_modules = { "overseer.template.make" },
+    task_list = {
+      keymaps = {
+        ["<C-k>"] = false,
+        ["<C-j>"] = false,
+        ["K"] = "keymap.scroll_output_up",
+        ["L"] = "keymap.scroll_output_down",
+      },
+    },
   },
   config = function(_, opts)
     local overseer = require("overseer")
