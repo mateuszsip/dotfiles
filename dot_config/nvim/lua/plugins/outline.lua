@@ -4,10 +4,10 @@ return {
 		lazy = true,
 		cmd = { "Outline", "OutlineOpen" },
 		-- Override LazyVimTrouble's `<leader>cs` (Trouble symbols toggle) with outline.nvim.
-		-- The `<leader>cS` (Trouble lsp references/definitions) binding is left intact.
+		-- `cs` opens (and focuses) the outline; `cS` toggles it open/closed.
 		keys = {
-			{ "<leader>cs", "<cmd>Outline<CR>", desc = "Toggle Outline" },
-			{ "<leader>cS", "<cmd>OutlineOpen<CR>", desc = "Open Outline" },
+			{ "<leader>cs", "<cmd>OutlineOpen<CR>", desc = "Open Outline" },
+			{ "<leader>cS", "<cmd>Outline<CR>", desc = "Toggle Outline" },
 		},
 		opts = {
 			outline_window = {
@@ -15,12 +15,12 @@ return {
 				width = 25,
 				relative_width = true,
 				auto_close = false,
-				auto_jump = false,
+				auto_jump = true,
 				show_numbers = false,
 				show_relative_numbers = false,
 				show_cursorline = true,
 				hide_cursor = false,
-				focus_on_open = false,
+				focus_on_open = true,
 				center_on_jump = true,
 			},
 			outline_items = {
@@ -34,7 +34,7 @@ return {
 				markers = { "", "" },
 			},
 			preview_window = {
-				auto_preview = true,
+				auto_preview = false,
 				open_hover_on_preview = true,
 				border = "rounded",
 				winblend = 0,
