@@ -3,7 +3,7 @@
   "theme": "light",
   "defaultProvider": "opencode-go",
   "defaultModel": "glm-5.2",
-  "defaultThinkingLevel": "medium",
+  "defaultThinkingLevel": "minimal",
   "enabledModels": [
     "opencode-go/*",
     "opencode/*"
