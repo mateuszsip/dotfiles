@@ -23,6 +23,12 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{ en
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 '{ enabled = 0; value = { parameters = ( 65535, 124, 393216 ); type = standard; }; }'
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
-ln -s ~/.config/nushell "$HOME/Library/Application Support"
+# Symlink nushell config into macOS' Application Support dir, but only when
+# the link isn't already there (chezmoi run_once scripts re-run on edits,
+# and `ln -s" over an existing target exits non-zero → whole script fails).
+NUSHELL_LINK="$HOME/Library/Application Support/nushell"
+if [ ! -e "$NUSHELL_LINK" ] && [ ! -L "$NUSHELL_LINK" ]; then
+  ln -s ~/.config/nushell "$NUSHELL_LINK"
+fi
 
 {{ end }}
