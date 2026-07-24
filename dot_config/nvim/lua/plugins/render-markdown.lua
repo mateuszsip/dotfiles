@@ -50,26 +50,5 @@ return {
 		end
 		fix_bullet_hl()
 		vim.api.nvim_create_autocmd("ColorScheme", { callback = fix_bullet_hl })
-
-		-- K: preview the image under the cursor (snacks.image hover) when sitting
-		-- on an image link; otherwise fall back to LSP hover (e.g. marksman). Pairs
-		-- with snacks.image `doc.inline=false, float=false` — images are never
-		-- auto-rendered, only shown when explicitly asked via K. Once open, the
-		-- hover follows the cursor and self-closes when leaving an image line.
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = { "markdown", "octo" },
-			callback = function(args)
-				vim.keymap.set("n", "K", function()
-					local doc = require("snacks.image.doc")
-					doc.at_cursor(function(src)
-						if src then
-							doc.hover()
-						else
-							vim.lsp.buf.hover()
-						end
-					end)
-				end, { buffer = args.buf, silent = true, desc = "Hover / Image preview" })
-			end,
-		})
 	end,
 }

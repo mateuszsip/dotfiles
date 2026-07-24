@@ -245,12 +245,11 @@ return {
 		image = {
 			enabled = true,
 			doc = {
-				-- Don't auto-render images. Inline would clutter the buffer with every
-				-- image at once; float pops a window on every CursorMoved. Instead,
-				-- show an image only on demand via K (see render-markdown.lua
-				-- FileType autocmd) → Snacks.image.doc.hover().
+				-- Don't render images inline in the buffer. Instead show the image
+				-- under the cursor in a floating window (snacks' built-in hover mode,
+				-- triggered automatically on CursorMoved). See snacks image/doc.lua.
 				inline = false,
-				float = false,
+				float = true,
 			},
 		},
 		picker = {
