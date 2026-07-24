@@ -91,6 +91,36 @@ return {
               end,
             },
             {
+              name = "approve_pr",
+              lhs = "<C-y>",
+              desc = "approve pull request",
+              mode = { "n", "i" },
+              fn = function(picker, item)
+                if item.kind ~= "pull_request" then
+                  return
+                end
+                local gh = require "octo.gh"
+                local utils = require "octo.utils"
+                gh.pr.review {
+                  item.number,
+                  repo = item.repository.nameWithOwner,
+                  approve = true,
+                  opts = {
+                    cb = function(output, stderr)
+                      local msg = (not utils.is_blank(output) and output)
+                        or (not utils.is_blank(stderr) and stderr)
+                      if msg then
+                        utils.info(msg)
+                      end
+                      vim.schedule(function()
+                        picker:refresh()
+                      end)
+                    end,
+                  },
+                }
+              end,
+            },
+            {
               name = "merge_pr",
               lhs = "<C-m>",
               desc = "merge pull request",
