@@ -252,6 +252,18 @@ return {
 				float = true,
 			},
 		},
+		styles = {
+			-- The image hover float defaults to relative="cursor" (row=1, col=1), so
+			-- tall images clip against the screen edge when the cursor is low — the
+			-- whole image isn't shown. Anchor to the editor and center it instead;
+			-- snacks centers a float when row/col are falsy (see snacks/win.lua pos()),
+			-- and treats relative="editor" specially when sizing (image/placement.lua).
+			snacks_image = {
+				relative = "editor",
+				row = false,
+				col = false,
+			},
+		},
 		picker = {
 			sources = {
 				projects = {
