@@ -1,15 +1,30 @@
 return {
-  "sindrets/diffview.nvim",
+  -- "sindrets/diffview.nvim",
+  "dlyongemallo/diffview-plus.nvim",
   cmd = { "DiffviewOpen", "DiffviewFileHistory", "DiffviewClose" },
   keys = {
-    { "<leader>gdm", function() require("utils.git").diffview_against(false) end, desc = "Diff vs main/master" },
-    { "<leader>gdM", function() require("utils.git").diffview_against(true) end, desc = "Diff vs origin/main/master" },
+    {
+      "<leader>gdm",
+      function()
+        require("utils.git").diffview_against(false)
+      end,
+      desc = "Diff vs main/master",
+    },
+    {
+      "<leader>gdM",
+      function()
+        require("utils.git").diffview_against(true)
+      end,
+      desc = "Diff vs origin/main/master",
+    },
     { "<leader>gdh", "<cmd>DiffviewFileHistory %<cr>", desc = "File History" },
     { "<leader>gdH", "<cmd>DiffviewFileHistory<cr>", desc = "Repo History" },
   },
   config = function(_, opts)
     require("diffview").setup(opts)
-    local close = function() vim.cmd("DiffviewClose") end
+    local close = function()
+      vim.cmd("DiffviewClose")
+    end
     vim.api.nvim_create_autocmd("FileType", {
       pattern = { "DiffviewFiles", "DiffviewFileHistory" },
       callback = function(args)
