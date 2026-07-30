@@ -48,6 +48,21 @@ return {
             },
           },
         },
+        -- LSP servers installed + enabled via mason-lspconfig (LazyVim
+        -- auto-installs enabled servers whose mason package exists).
+        -- Moved out of mason.nvim `ensure_installed` to avoid two concurrent
+        -- install loops racing on the same package.
+        bashls = {},
+        docker_compose_language_service = {},
+        dockerls = {},
+        helm_ls = {},
+        jsonls = {},
+        marksman = {},
+        neocmake = {},
+        taplo = {},
+        terraformls = {},
+        twiggy_language_server = {},
+        yamlls = {},
         phpantom_lsp = {
           -- Prefer composer.json over .git as root marker — monorepos have
           -- per-service composer.json files that define the correct project root.
