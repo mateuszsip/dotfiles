@@ -15,7 +15,10 @@
     },
   },
   "plugin": [
+{{- if eq .chezmoi.os "darwin" }}
     "@mohak34/opencode-notifier@latest",
+{{- else if eq .chezmoi.os "linux" }}
+    "./waybar-notify.ts",
+{{- end }}
   ]
 }
-

@@ -1,3 +1,102 @@
+# Dotfiles — Chezmoi Management
+
+This repo (`~/.local/share/chezmoi/`) is the **source** for chezmoi-managed
+dotfiles. Files here deploy to `$HOME` via `chezmoi apply`.
+
+## Path mapping
+
+| Chezmoi source                          | Deployed path             |
+| --------------------------------------- | ------------------------- |
+| `dot_config/<dir>/<file>`               | `~/.config/<dir>/<file>`  |
+| `dot_<file>`                            | `~/.<file>`               |
+
+### Naming conventions
+- `dot_` prefix     → leading `.` in the deployed path
+- `private_` prefix  → file deployed with mode `600`
+- `.tmpl` suffix     → Go template, rendered on apply (access `.chezmoi.os`, `.chezmoi.arch`, user data from `.chezmoi.toml.tmpl`)
+- `run_once_` prefix → script runs once per machine on `chezmoi apply`
+- `run_onchange_` prefix → script runs when the file content changes
+- `executable_` prefix → file deployed with the executable bit set
+
+## OS-specific files
+
+`.chezmoiignore.tmpl` excludes platform-inappropriate files:
+- **Linux**: omarchy, waybar, hypr, nvim theme hot-reload are tracked
+- **macOS**: aerospace, mac-themed nvim plugins are tracked
+
+Use Go template conditionals in `.tmpl` files for per-OS config. Example from
+`dot_config/opencode/opencode.json.tmpl`:
+
+```
+{{- if eq .chezmoi.os "darwin" }}
+    "@mohak34/opencode-notifier@latest",
+{{- else if eq .chezmoi.os "linux" }}
+    "./waybar-notify.ts",
+{{- end }}
+```
+
+Available template data: `.chezmoi.os` (`linux`/`darwin`), `.chezmoi.arch`,
+and custom data from `.chezmoi.toml.tmpl` under `.[data]` (`email`,
+`bitwarden_agent`, `git_gpgsign`, `homebrew_user_appdir`).
+
+## Workflow
+
+### Editing config — two equivalent approaches
+
+**A) Edit deployed, sync back (preferred for existing files):**
+```bash
+# edit the live file at its deployed location
+$EDITOR ~/.config/<dir>/<file>
+# pull the change into chezmoi source
+chezmoi add ~/.config/<dir>/<file>
+```
+
+**B) Edit chezmoi source directly (preferred for templates & new files):**
+```bash
+# edit the source file
+$EDITOR ~/.local/share/chezmoi/dot_config/<dir>/<file>
+# preview the diff before applying
+chezmoi diff
+# deploy to $HOME
+chezmoi apply
+```
+
+### Committing
+
+After `chezmoi add` or direct source edits:
+```bash
+git -C ~/.local/share/chezmoi add -A
+git -C ~/.local/share/chezmoi commit -m "message"
+```
+
+## Critical rules for AI agents
+
+0. **NEVER override existing live changes.** Before `chezmoi apply` (even with
+   permission) run `chezmoi diff` and check for un-synced local edits. If the
+   deployed file has changes the source doesn't, the user has unsaved work —
+   offer `chezmoi add` to absorb it first, or stop and ask. Never `apply` over
+   a file whose live content differs from source in a way the user hasn't
+   confirmed.
+
+1. **Never run `chezmoi apply` without explicit user permission.** It overwrites
+   the user's live files. Prefer `chezmoi diff` to show what *would* change,
+   and let the user decide.
+2. **Never `chezmoi add` a file the user is still editing** — it snapshots the
+   current content, which may be a half-finished edit.
+3. **When the user edits live files and asks you to sync**, run
+   `chezmoi add <path>` then `git add -A && git commit`. Do NOT `chezmoi apply`
+   afterward unless asked — the user already has their changes deployed.
+4. **For templated files (`.tmpl`)**, always edit the source in this repo, not
+   the deployed rendered file — `chezmoi add` on a rendered file will strip the
+   template and replace it with the literal output.
+5. **Test templates** with `chezmoi cat <source-path>` or `chezmoi diff` to
+   verify rendering before committing.
+6. **Encryption**: `.age` files are encrypted with the key at
+   `~/.config/chezmoi/key.txt`. Never commit the key. Never read or log
+   decrypted secret contents.
+
+---
+
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
 
