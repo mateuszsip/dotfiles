@@ -2,8 +2,16 @@
 # See https://wiki.hypr.land/Configuring/Variables/#input
 input {
   # Use multiple keyboard layouts and switch between them with Left Alt + Right Alt
+{{- if eq .chezmoi.osRelease.id "archarm" }}
+  # plmac = custom gb(mac)-based layout with Polish diacritics on AltGr
+  # (a=ą c=ć e=ę l=ł n=ń o=ó s=ś x=ź z=ż). Preserves `~ next to Z on Mac ISO.
+  # Installed by run_onchange_before-plmac-keyboard.sh.tmpl
+  kb_layout = plmac
+  kb_options = compose:caps,altwin:swap_alt_win
+{{- else }}
   kb_layout = pl
   kb_options = compose:caps # ,grp:alts_toggle
+{{- end }}
 
   # Change speed of keyboard repeat
   repeat_rate = 40
