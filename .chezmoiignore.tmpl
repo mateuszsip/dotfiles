@@ -13,8 +13,14 @@ dot_config/pacsea
 .config/nvim/lua/plugins/all-themes.lua
 .config/nvim/lua/plugins/theme.lua
 dot_docker/modify_config.json
+dot_config/environment.d
+dot_config/systemd
 {{ else }}
 .aerospace.toml
 .config/nvim/lua/plugins/mac_theme.lua
+{{- if ne .chezmoi.osRelease.id "archarm" }}
+dot_config/environment.d
+dot_config/systemd
+{{- end }}
 {{- end }}
 

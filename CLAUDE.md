@@ -24,6 +24,12 @@ dotfiles. Files here deploy to `$HOME` via `chezmoi apply`.
 - **Linux**: omarchy, waybar, hypr, nvim theme hot-reload are tracked
 - **macOS**: aerospace, mac-themed nvim plugins are tracked
 
+Within Linux, Mac-hardware-specific config (Apple Silicon keyboard layout,
+macsmc-battery, keyboard backlight bindings) is gated on
+`{{- if eq .chezmoi.osRelease.id "archarm" }}` (Asahi Linux on Apple Silicon).
+Files using this pattern: `dot_config/hypr/input.conf.tmpl`,
+`dot_config/hypr/bindings.conf.tmpl`, `dot_config/waybar/config.jsonc.tmpl`.
+
 Use Go template conditionals in `.tmpl` files for per-OS config. Example from
 `dot_config/opencode/opencode.json.tmpl`:
 

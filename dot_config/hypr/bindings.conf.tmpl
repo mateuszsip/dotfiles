@@ -1,0 +1,39 @@
+# Application bindings
+bindd = SUPER, RETURN, Terminal, exec, uwsm-app -- xdg-terminal-exec --dir="$(omarchy-cmd-terminal-cwd)"
+bindd = SUPER ALT, RETURN, Tmux, exec, uwsm-app -- xdg-terminal-exec --dir="$(omarchy-cmd-terminal-cwd)" bash -c "tmux attach || tmux new -s Work"
+bindd = SUPER SHIFT, RETURN, Browser, exec, omarchy-launch-browser
+bindd = SUPER SHIFT, F, File manager, exec, uwsm-app -- nautilus --new-window
+bindd = SUPER ALT SHIFT, F, File manager (cwd), exec, uwsm-app -- nautilus --new-window "$(omarchy-cmd-terminal-cwd)"
+bindd = SUPER SHIFT, B, Browser, exec, omarchy-launch-browser
+bindd = SUPER SHIFT ALT, B, Browser (private), exec, omarchy-launch-browser --private
+bindd = SUPER SHIFT, M, Music, exec, omarchy-launch-webapp "https://spotify.com"
+bindd = SUPER SHIFT ALT, M, Music TUI, exec, omarchy-launch-or-focus-tui cliamp
+bindd = SUPER SHIFT, N, Editor, exec, omarchy-launch-editor
+bindd = SUPER SHIFT, D, Docker, exec, omarchy-launch-tui lazydocker
+bindd = SUPER SHIFT, G, Signal, exec, omarchy-launch-or-focus ^signal$ "uwsm-app -- signal-desktop"
+bindd = SUPER SHIFT, O, Obsidian, exec, omarchy-launch-or-focus ^obsidian$ "uwsm-app -- obsidian -disable-gpu --enable-wayland-ime"
+bindd = SUPER SHIFT, W, Typora, exec, uwsm-app -- typora --enable-wayland-ime
+bindd = SUPER SHIFT, SLASH, Passwords, exec, uwsm-app -- 1password
+
+# Use fuzzel for the application launcher
+bindd = SUPER, SPACE, Launch apps, exec, omarchy-launch-fuzzel
+bindd = SUPER ALT, SPACE, Omarchy menu, exec, omarchy-menu
+bindr = SUPER, V, exec, cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
+
+# Add extra bindings
+# bind = SUPER SHIFT, R, exec, alacritty -e ssh your-server
+
+# Overwrite existing bindings, like putting Omarchy Menu on Super + Space
+# unbind = SUPER, SPACE
+# bindd = SUPER, SPACE, Omarchy menu, exec, omarchy-menu
+
+# Logitech MX Keys
+# bind = SUPER SHIFT, S, exec, omarchy-capture-screenshot      # Print Screen Button
+# bind = SUPER, H, exec, voxtype record toggle                 # Dictation Button
+# bind = SUPER, PERIOD, exec, omarchy-emoji-picker             # Emoji Button
+{{- if eq .chezmoi.osRelease.id "archarm" }}
+
+# Keyboard backlight (Super+F1/F2; native Apple kbd-bright keys removed on this model)
+bindle = SUPER, XF86MonBrightnessDown, exec, brightnessctl --device='kbd_backlight' set 10%-
+bindle = SUPER, XF86MonBrightnessUp,   exec, brightnessctl --device='kbd_backlight' set +10%
+{{- end }}
