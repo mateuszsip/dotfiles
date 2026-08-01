@@ -21,6 +21,7 @@ source aliases.nu
 source env_vars.nu
 source completions.nu
 source lendable.nu
+source jira_atlas.nu
 
 mkdir ($nu.data-dir | path join "vendor/autoload")
 starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
