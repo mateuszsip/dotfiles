@@ -9,10 +9,12 @@ input {
   kb_layout = plmac
   # altwin:swap_lalt_lwin (not full swap_alt_win) keeps right Option as AltGr
   # so Polish diacritics on AltGr work; left Alt/Cmd still swap for shortcuts.
-  kb_options = compose:caps,altwin:swap_lalt_lwin
+  # caps:escape remaps Caps Lock -> Escape (was compose:caps).
+  # Polish diacritics still work via AltGr in the plmac layout.
+  kb_options = caps:escape,altwin:swap_lalt_lwin
 {{- else }}
   kb_layout = pl
-  kb_options = compose:caps # ,grp:alts_toggle
+  kb_options = caps:escape # ,grp:alts_toggle
 {{- end }}
 
   # Change speed of keyboard repeat
