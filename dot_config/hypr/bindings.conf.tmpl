@@ -8,6 +8,7 @@ bindd = SUPER SHIFT, B, Browser, exec, omarchy-launch-browser
 bindd = SUPER SHIFT ALT, B, Browser (private), exec, omarchy-launch-browser --private
 bindd = SUPER SHIFT, M, Music, exec, omarchy-launch-webapp "https://spotify.com"
 bindd = SUPER SHIFT ALT, M, Music TUI, exec, omarchy-launch-or-focus-tui cliamp
+bindd = SUPER SHIFT ALT, G, WhatsApp, exec, omarchy-launch-or-focus-webapp WhatsApp "https://web.whatsapp.com/"
 bindd = SUPER SHIFT, N, Editor, exec, omarchy-launch-editor
 bindd = SUPER SHIFT, D, Docker, exec, omarchy-launch-tui lazydocker
 bindd = SUPER SHIFT, G, Signal, exec, omarchy-launch-or-focus ^signal$ "uwsm-app -- signal-desktop"
@@ -18,7 +19,7 @@ bindd = SUPER SHIFT, SLASH, Passwords, exec, uwsm-app -- 1password
 # Use fuzzel for the application launcher
 bindd = SUPER, SPACE, Launch apps, exec, omarchy-launch-fuzzel
 bindd = SUPER ALT, SPACE, Omarchy menu, exec, omarchy-menu
-bindr = SUPER, V, exec, cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
+bindr = SUPER SHIFT, V, exec, cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
 
 # Add extra bindings
 # bind = SUPER SHIFT, R, exec, alacritty -e ssh your-server
