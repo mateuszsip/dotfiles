@@ -97,7 +97,9 @@ return {
       -- form maps everything under <root>; explicit entries always win.
       repo_config = {
         paths = {
-          ["mateuszsip/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/*") or "~/dev/*",
+          ["mateuszsip/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/prv/*") or "~/dev/prv/*",
+          ["lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*") or "~/dev/work/lendable/*",
+          ["Lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*") or "~/dev/work/lendable/*",
         },
       },
       custom_actions = {
