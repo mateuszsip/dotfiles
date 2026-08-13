@@ -78,6 +78,385 @@ local function gh_pr(pr, ctx, sub, args, done)
   end)
 end
 
+-- ---------------------------------------------------------------------------
+-- Theme-adaptive highlights
+--
+-- atlas ships a hardcoded Catppuccin-dark palette and re-applies it from
+-- `atlas.ui.shared.highlights.setup()` (plus the per-domain and per-provider
+-- highlight modules) on *every* panel open — so plain `nvim_set_hl` calls made
+-- at plugin-init time are clobbered the moment the UI opens. We therefore
+-- (a) derive the palette from the active colorscheme rather than hardcoding
+-- one, and (b) chain our overrides onto those `setup()` functions in `config`
+-- below so ours always runs last.
+--
+-- Every colour is pushed to a WCAG contrast ratio against the surface it sits
+-- on (4.5:1), so this reads on flexoki-light here and on whatever omarchy
+-- picks on Linux.
+-- ---------------------------------------------------------------------------
+
+---@param name string highlight group
+---@param attr "fg"|"bg"
+---@return string|nil hex
+local function get_hl(name, attr)
+  local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
+  if not ok or type(hl) ~= "table" or type(hl[attr]) ~= "number" then
+    return nil
+  end
+  return string.format("#%06X", hl[attr])
+end
+
+local function hex2rgb(hex)
+  hex = hex:gsub("#", "")
+  return tonumber(hex:sub(1, 2), 16) / 255, tonumber(hex:sub(3, 4), 16) / 255, tonumber(hex:sub(5, 6), 16) / 255
+end
+
+local function rgb2hex(r, g, b)
+  local function byte(v)
+    return math.floor(math.max(0, math.min(1, v)) * 255 + 0.5)
+  end
+  return string.format("#%02X%02X%02X", byte(r), byte(g), byte(b))
+end
+
+local function rgb2hsl(hex)
+  local r, g, b = hex2rgb(hex)
+  local max, min = math.max(r, g, b), math.min(r, g, b)
+  local l = (max + min) / 2
+  if max == min then
+    return 0, 0, l
+  end
+  local d = max - min
+  local s = l > 0.5 and d / (2 - max - min) or d / (max + min)
+  local h
+  if max == r then
+    h = (g - b) / d + (g < b and 6 or 0)
+  elseif max == g then
+    h = (b - r) / d + 2
+  else
+    h = (r - g) / d + 4
+  end
+  return h / 6, s, l
+end
+
+local function hsl2hex(h, s, l)
+  if s == 0 then
+    return rgb2hex(l, l, l)
+  end
+  local function channel(p, q, t)
+    t = t % 1
+    if t < 1 / 6 then
+      return p + (q - p) * 6 * t
+    elseif t < 1 / 2 then
+      return q
+    elseif t < 2 / 3 then
+      return p + (q - p) * (2 / 3 - t) * 6
+    end
+    return p
+  end
+  local q = l < 0.5 and l * (1 + s) or l + s - l * s
+  local p = 2 * l - q
+  return rgb2hex(channel(p, q, h + 1 / 3), channel(p, q, h), channel(p, q, h - 1 / 3))
+end
+
+-- WCAG 2.1 relative luminance / contrast ratio.
+local function luminance(hex)
+  local function linear(v)
+    return v <= 0.03928 and v / 12.92 or ((v + 0.055) / 1.055) ^ 2.4
+  end
+  local r, g, b = hex2rgb(hex)
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+end
+
+local function contrast(a, b)
+  local la, lb = luminance(a), luminance(b)
+  if la < lb then
+    la, lb = lb, la
+  end
+  return (la + 0.05) / (lb + 0.05)
+end
+
+local function mix(a, b, t)
+  local ar, ag, ab = hex2rgb(a)
+  local br, bg, bb = hex2rgb(b)
+  return rgb2hex(ar + (br - ar) * t, ag + (bg - ag) * t, ab + (bb - ab) * t)
+end
+
+-- Re-light `hex` (hue and saturation preserved) until it clears `target`
+-- contrast against `over`, walking away from that background's luminance.
+local function fit(hex, over, target)
+  local h, s, l = rgb2hsl(hex)
+  local step = luminance(over) < 0.5 and 0.02 or -0.02
+  for _ = 1, 50 do
+    local candidate = hsl2hex(h, s, l)
+    if contrast(candidate, over) >= target then
+      return candidate
+    end
+    l = l + step
+    if l > 0.97 or l < 0.03 then
+      break
+    end
+  end
+  return hsl2hex(h, s, math.max(0.03, math.min(0.97, l)))
+end
+
+-- Same, but for a hue picked by us rather than lifted from the colorscheme.
+local function tone(degrees, saturation, over, target)
+  return fit(hsl2hex(degrees / 360, saturation, luminance(over) < 0.5 and 0.62 or 0.48), over, target)
+end
+
+local function atlas_hl_groups()
+  local bg = get_hl("Normal", "bg") or (vim.o.background == "light" and "#FFFFFF" or "#111111")
+  local fg = get_hl("Normal", "fg") or (vim.o.background == "light" and "#111111" or "#DDDDDD")
+  local dark = luminance(bg) < 0.5
+
+  -- Raised surface for the tab strip, footer and panel headers. Most schemes
+  -- give us a usable one; reject it if it is invisible or too loud.
+  local surface = get_hl("CursorLine", "bg") or get_hl("StatusLine", "bg")
+  if not surface or surface == bg or contrast(surface, bg) > 1.7 then
+    surface = mix(bg, fg, dark and 0.12 or 0.08)
+  end
+
+  -- Accents are borrowed from the colorscheme, but only when they land near the
+  -- hue the role is meant to read as *and* stay clear of the roles already
+  -- assigned — otherwise we synthesize the hue at the scheme's own saturation.
+  -- Without this, a scheme whose `Keyword` is green (flexoki) collapses "purple"
+  -- onto "green" and merged PRs become indistinguishable from open ones.
+  local candidates = {
+    red = get_hl("DiagnosticError", "fg"),
+    yellow = get_hl("DiagnosticWarn", "fg"),
+    green = get_hl("DiagnosticOk", "fg") or get_hl("String", "fg"),
+    blue = get_hl("DiagnosticInfo", "fg") or get_hl("Function", "fg"),
+    purple = get_hl("Keyword", "fg") or get_hl("Statement", "fg"),
+    orange = get_hl("Constant", "fg") or get_hl("Number", "fg"),
+    cyan = get_hl("DiagnosticHint", "fg") or get_hl("Special", "fg"),
+  }
+  local hue_of = { red = 8, yellow = 50, green = 105, blue = 220, purple = 290, orange = 30, cyan = 180 }
+  local roles = { "red", "yellow", "green", "blue", "purple", "orange", "cyan" }
+
+  local function hue_gap(a, b)
+    local d = math.abs(a - b) % 360
+    return d > 180 and 360 - d or d
+  end
+
+  -- Saturation of the scheme's own accents, so synthesized hues match its mood.
+  local saturation, samples = 0, 0
+  for _, color in pairs(candidates) do
+    local _, s = rgb2hsl(color)
+    if s > 0.15 then
+      saturation, samples = saturation + s, samples + 1
+    end
+  end
+  saturation = samples > 0 and math.max(0.45, math.min(0.85, saturation / samples)) or 0.6
+
+  local accent, claimed = {}, {}
+  for _, role in ipairs(roles) do
+    local want = hue_of[role]
+    local color, hue = candidates[role], nil
+    local keep = false
+    if color then
+      local h, s = rgb2hsl(color)
+      hue = h * 360
+      keep = s > 0.15 and hue_gap(hue, want) <= 35
+      for _, used in ipairs(claimed) do
+        if keep and hue_gap(hue, used) < 22 then
+          keep = false
+        end
+      end
+    end
+    accent[role] = keep and color or tone(want, saturation, bg, 4.5)
+    table.insert(claimed, keep and hue or want)
+  end
+
+  local function text(color, over)
+    return fit(color, over or bg, 4.5)
+  end
+
+  -- Chips carry the surrounding surface colour as ink, so the body has to clear
+  -- 4.5:1 against it — which also makes the chip itself pop off the panel.
+  local function chip(color)
+    local body = fit(color, bg, 4.5)
+    return {
+      fg = contrast(bg, body) >= contrast(fg, body) and bg or fg,
+      bg = body,
+      bold = true,
+    }
+  end
+
+  local muted = text(mix(fg, bg, 0.45))
+  local muted_on_surface = fit(mix(fg, surface, 0.4), surface, 4.5)
+  local grey = mix(fg, bg, 0.35)
+  local header = text(mix(fg, bg, 0.2))
+  -- Provider banner / active tab. GitHub's brand is monochrome, so invert.
+  local inverse = { fg = bg, bg = fg, bold = true }
+
+  local groups = {
+    AtlasText = { fg = fg },
+    AtlasBorder = { fg = fit(mix(fg, bg, 0.6), bg, 3) },
+    AtlasTabInactive = { fg = muted_on_surface, bg = surface },
+    AtlasPanelHeaderBg = { bg = surface },
+    AtlasColumnHeader = { fg = header, bold = true },
+    AtlasSectionHeader = { fg = header, bold = true, underline = true },
+
+    AtlasTextMuted = { fg = muted },
+    AtlasTextMutedItalic = { fg = muted, italic = true },
+    AtlasTextMutedStrikethrough = { fg = muted, strikethrough = true },
+    AtlasTextPositive = { fg = text(accent.green), bold = true },
+    AtlasTextWarning = { fg = text(accent.yellow), bold = true },
+    AtlasTextNote = { fg = text(accent.purple), bold = true },
+
+    AtlasLogInfo = { fg = text(accent.blue), bold = true },
+    AtlasLogWarn = { fg = text(accent.orange), bold = true },
+    AtlasLogError = { fg = text(accent.red), bold = true },
+
+    AtlasFooterBackground = { bg = surface },
+    AtlasFooterText = { fg = muted_on_surface, bg = surface },
+    AtlasFooterInfo = { fg = text(accent.blue, surface), bg = surface, bold = true },
+    AtlasFooterNote = { fg = text(accent.purple, surface), bg = surface, bold = true },
+    AtlasFooterWarning = { fg = text(accent.yellow, surface), bg = surface, bold = true },
+    AtlasFooterError = { fg = text(accent.red, surface), bg = surface, bold = true },
+    AtlasFooterSuccess = { fg = text(accent.green, surface), bg = surface, bold = true },
+
+    AtlasChipActive = chip(accent.blue),
+
+    -- Pull requests.
+    AtlasPROpen = { fg = text(accent.green), bold = true },
+    AtlasPRMerged = { fg = text(accent.purple), bold = true },
+    AtlasPRDeclined = { fg = text(accent.red), bold = true },
+    AtlasPRDraft = { fg = muted, bold = true },
+    AtlasPROpenChip = chip(accent.green),
+    AtlasPRMergedChip = chip(accent.purple),
+    AtlasPRDeclinedChip = chip(accent.red),
+    AtlasPRDraftChip = chip(grey),
+    AtlasPipelineLinkSuccess = { fg = text(accent.green) },
+    AtlasPipelineLinkFailed = { fg = text(accent.red) },
+    AtlasPipelineLinkInProgress = { fg = text(accent.yellow) },
+    AtlasPipelineLinkMuted = { fg = muted },
+
+    -- GitHub pulls.
+    AtlasGitHubTheme = inverse,
+    AtlasGitHubPROpen = chip(accent.green),
+    AtlasGitHubPRMerged = chip(accent.purple),
+    AtlasGitHubPRClosed = chip(accent.red),
+    AtlasGitHubPRDraft = chip(grey),
+
+    -- GitHub issues.
+    AtlasGHIssuesTheme = inverse,
+    AtlasGHIssueOpen = { fg = text(accent.green), bold = true },
+    AtlasGHIssueClosed = { fg = text(accent.purple), bold = true },
+    AtlasGHIssueOpenChip = chip(accent.green),
+    AtlasGHIssueClosedChip = chip(accent.purple),
+    AtlasGHIssueKey = { fg = text(accent.blue), bold = true },
+    AtlasGHIssueChipRepo = chip(accent.blue),
+
+    -- Jira. Upstream's AtlasJiraTheme sets only a dark blue bg and inherits the
+    -- Normal fg, which is unreadable on a light scheme — hence a full chip.
+    AtlasJiraTheme = chip(accent.blue),
+    AtlasJiraKey = { fg = text(accent.blue), bold = true },
+    AtlasJiraChipStoryPoints = chip(accent.purple),
+    AtlasJiraChipDueDate = chip(accent.yellow),
+    AtlasJiraChipParent = chip(accent.blue),
+    AtlasProjectKey = { fg = text(accent.cyan), bold = true },
+  }
+
+  -- Identity palette: atlas hashes repo names, authors, Jira statuses and issue
+  -- types into 11 fixed slots (AtlasDynColor* for text, AtlasDynBgColor* for
+  -- chips). Fixed hue order, re-lit per theme. The label text is always printed
+  -- next to the colour, so identity is never colour-alone.
+  local dyn_hues = { 212, 32, 162, 55, 322, 128, 268, 5, 186, 88, 285 }
+  for i, hue in ipairs(dyn_hues) do
+    local color = tone(hue, dark and 0.55 or 0.62, bg, 4.5)
+    groups[string.format("AtlasDynColor%02d", i)] = { fg = color }
+    groups[string.format("AtlasDynBgColor%02d", i)] = {
+      fg = contrast(bg, color) >= contrast(fg, color) and bg or fg,
+      bg = color,
+      bold = true,
+    }
+  end
+
+  return groups
+end
+
+local function apply_atlas_highlights()
+  local ok, err = pcall(function()
+    for name, spec in pairs(atlas_hl_groups()) do
+      vim.api.nvim_set_hl(0, name, spec)
+    end
+  end)
+  if not ok then
+    vim.notify_once("atlas.nvim highlights failed: " .. tostring(err), vim.log.levels.WARN)
+  end
+end
+
+-- ---------------------------------------------------------------------------
+-- Views
+--
+-- Defined up here so the keymaps can open a panel directly on a given tab:
+-- `atlas.open()` takes an `initial_view`, and the tab bar marks the active tab
+-- by matching `key`/`name` — so handing it one of these tables lands on that
+-- tab with no follow-up keypress.
+-- ---------------------------------------------------------------------------
+
+local github_pull_views = {
+  { name = "My open PRs", key = "1", layout = "plain", search = "is:pr is:open author:@me sort:updated-desc" },
+  { name = "Review queue", key = "2", layout = "compact", search = "is:pr is:open review-requested:@me" },
+  { name = "All my PRs", key = "3", layout = "plain", search = "is:pr author:@me sort:updated-desc" },
+  { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me" },
+  { name = "Recently merged", key = "5", layout = "plain", search = "is:pr is:merged author:@me sort:updated-desc" },
+}
+
+local github_issue_views = {
+  { name = "Assigned", key = "1", layout = "plain", search = "assignee:@me is:open" },
+  { name = "Created", key = "2", layout = "compact", search = "author:@me is:open" },
+  { name = "Mentions", key = "3", layout = "plain", search = "mentions:@me is:open" },
+}
+
+local jira_views = {
+  {
+    name = "My tasks",
+    key = "1",
+    layout = "plain",
+    jql = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC",
+  },
+  {
+    name = "My board tasks",
+    key = "2",
+    layout = "compact",
+    jql = "project = CARD AND assignee = currentUser() AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done ORDER BY created DESC, Rank ASC",
+  },
+  {
+    name = "Active sprint",
+    key = "3",
+    layout = "plain",
+    jql = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY created DESC, Rank ASC",
+  },
+  {
+    name = "All platform",
+    key = "4",
+    layout = "compact",
+    jql = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) ORDER BY created DESC, Rank ASC",
+  },
+  { name = "All CARD", key = "5", layout = "plain", jql = "project = CARD ORDER BY created DESC, Rank ASC" },
+}
+
+---Look a view up by its `name`, so keymaps don't depend on list order.
+---@param views table[]
+---@param name string
+local function view(views, name)
+  for _, v in ipairs(views) do
+    if v.name == name then
+      return v
+    end
+  end
+  error("atlas: no view named " .. name)
+end
+
+---Open a panel straight onto `view_name` — no number key needed.
+local function open_view(domain, provider, views, view_name)
+  local target = view(views, view_name)
+  return function()
+    require("atlas").open(domain, provider, { initial_view = target })
+  end
+end
+
 return {
   "emrearmagan/atlas.nvim",
   dependencies = {
@@ -153,23 +532,7 @@ return {
       providers = {
         github = {
           cache_ttl = 300,
-          views = {
-            {
-              name = "My open PRs",
-              key = "1",
-              layout = "plain",
-              search = "is:pr is:open author:@me sort:updated-desc",
-            },
-            { name = "Review queue", key = "2", layout = "compact", search = "is:pr is:open review-requested:@me" },
-            { name = "All my PRs", key = "3", layout = "plain", search = "is:pr author:@me sort:updated-desc" },
-            { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me" },
-            {
-              name = "Recently merged",
-              key = "5",
-              layout = "plain",
-              search = "is:pr is:merged author:@me sort:updated-desc",
-            },
-          },
+          views = github_pull_views,
         },
       },
     },
@@ -179,11 +542,7 @@ return {
       providers = {
         github = {
           cache_ttl = 300,
-          views = {
-            { name = "Assigned", key = "1", layout = "plain", search = "assignee:@me is:open" },
-            { name = "Created", key = "2", layout = "compact", search = "author:@me is:open" },
-            { name = "Mentions", key = "3", layout = "plain", search = "mentions:@me is:open" },
-          },
+          views = github_issue_views,
         },
         -- LENDABLE Jira. Credentials exported by
         -- ~/.config/nushell/jira_atlas.nu (Bitwarden-backed, see source).
@@ -203,38 +562,7 @@ return {
               },
             },
           },
-          views = {
-            {
-              name = "My tasks",
-              key = "1",
-              layout = "plain",
-              jql = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC",
-            },
-            {
-              name = "My board tasks",
-              key = "2",
-              layout = "compact",
-              jql = "project = CARD AND assignee = currentUser() AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done ORDER BY created DESC, Rank ASC",
-            },
-            {
-              name = "Active sprint",
-              key = "3",
-              layout = "plain",
-              jql = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY created DESC, Rank ASC",
-            },
-            {
-              name = "All platform",
-              key = "4",
-              layout = "compact",
-              jql = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) ORDER BY created DESC, Rank ASC",
-            },
-            {
-              name = "All CARD",
-              key = "5",
-              layout = "plain",
-              jql = "project = CARD ORDER BY created DESC, Rank ASC",
-            },
-          },
+          views = jira_views,
           bookmarks = {
             items = {
               ["Backlog"] = "project = CARD AND statusCategory != Done AND (sprint IS EMPTY OR sprint NOT IN openSprints()) ORDER BY Rank ASC",
@@ -276,7 +604,11 @@ return {
       end,
       desc = "My open PRs (current repo)",
     },
-    { "<leader>gM", "<cmd>AtlasPulls github<CR>", desc = "My open PRs (all repos, press 1)" },
+    {
+      "<leader>gM",
+      open_view("pulls", "github", github_pull_views, "My open PRs"),
+      desc = "My open PRs (all repos)",
+    },
     {
       "<leader>gn",
       function()
@@ -284,7 +616,11 @@ return {
       end,
       desc = "All my PRs (current repo)",
     },
-    { "<leader>gN", "<cmd>AtlasPulls github<CR>", desc = "All my PRs (all repos, press 3)" },
+    {
+      "<leader>gN",
+      open_view("pulls", "github", github_pull_views, "All my PRs"),
+      desc = "All my PRs (all repos)",
+    },
     { "<leader>gR", atlas_search_repo, desc = "Search PRs (current repo)" },
 
     -- Jira (replaces letieu/jira.nvim). No board UI — these open atlas's issue list.
@@ -299,7 +635,9 @@ return {
       end,
       desc = "Jira: View issue (Atlas)",
     },
-    { "<leader>jj", "<cmd>AtlasIssues jira<CR>", desc = "Jira: Open panels (Atlas)" },
+    { "<leader>jj", open_view("issues", "jira", jira_views, "My tasks"), desc = "Jira: My tasks (Atlas)" },
+    { "<leader>jb", open_view("issues", "jira", jira_views, "My board tasks"), desc = "Jira: My board tasks (Atlas)" },
+    { "<leader>js", open_view("issues", "jira", jira_views, "Active sprint"), desc = "Jira: Active sprint (Atlas)" },
     { "<leader>je", "<cmd>AtlasIssues jira<CR>", desc = "Jira: Edit issue (press ge in panel)" },
     {
       "<leader>jc",
@@ -329,56 +667,33 @@ return {
     "AtlasLogs",
   },
   init = function()
-    -- Flexoki-light overrides for atlas.nvim. Applied on every colorscheme switch
-    -- so they survive theme changes (flexoki ships its own palette at swap time).
-    -- Palette: paper #FFFCF0, bg-50 #F2F0E5, bg-100 #E6E4D9, text-100 #100F0D,
-    -- text-300 #100F0D/70, text-500 #100F0D/40, line #E6E4D9.
-    -- Accents: red #D14D41, green #879A39, blue #4385BE, yellow #D0A215,
-    -- orange #DA702C, purple #8B7EC8, cyan #3AA99F, grey #878580.
-    local function flexoki_atlas_hl()
-      local paper = "#FFFCF0"
-      local bg50 = "#F2F0E5"
-      local bg100 = "#E6E4D9"
-      local text = "#100F0D"
-      local text300 = "#5C5A52"
-      local text500 = "#878580"
-      local line = "#E6E4D9"
-      local red, green, blue, yellow, orange, purple, cyan =
-        "#D14D41", "#879A39", "#4385BE", "#D0A215", "#DA702C", "#8B7EC8", "#3AA99F"
-      local groups = {
-        AtlasTabActive = { bg = bg50, fg = text, bold = true },
-        AtlasTabInactive = { bg = bg100, fg = text500 },
-        AtlasPanelHeaderBg = { bg = bg100 },
-        AtlasColumnHeader = { fg = text300, bold = true },
-        AtlasSectionHeader = { fg = text300, bold = true, underline = true },
-        AtlasBorder = { fg = line },
-        AtlasTextMuted = { fg = text500 },
-        AtlasTextMutedItalic = { fg = text500, italic = true },
-        AtlasTextMutedStrikethrough = { fg = text500, strikethrough = true },
-        AtlasTextPositive = { fg = green, bold = true },
-        AtlasTextWarning = { fg = yellow, bold = true },
-        AtlasLogInfo = { fg = blue, bold = true },
-        AtlasLogWarn = { fg = orange, bold = true },
-        AtlasLogError = { fg = red, bold = true },
-        AtlasFooterBackground = { bg = bg50 },
-        AtlasFooterText = { fg = text500 },
-        AtlasChipActive = { fg = paper, bg = blue, bold = true },
-        AtlasChipPending = { fg = paper, bg = yellow, bold = true },
-        AtlasChipError = { fg = paper, bg = red, bold = true },
-        AtlasChipSuccess = { fg = paper, bg = green, bold = true },
-        AtlasChipReviewRequested = { fg = paper, bg = purple, bold = true },
-        AtlasChipChangesRequested = { fg = paper, bg = orange, bold = true },
-        AtlasChipApproved = { fg = paper, bg = green, bold = true },
-        AtlasChipMerged = { fg = paper, bg = purple, bold = true },
-        AtlasChipClosed = { fg = paper, bg = red, bold = true },
-        AtlasChipDraft = { fg = paper, bg = text500, bold = true },
-        AtlasChipOpen = { fg = text, bg = bg100, bold = true },
-      }
-      for name, spec in pairs(groups) do
-        vim.api.nvim_set_hl(0, name, spec)
+    apply_atlas_highlights()
+    vim.api.nvim_create_autocmd("ColorScheme", { callback = apply_atlas_highlights })
+  end,
+  config = function(_, opts)
+    require("atlas").setup(opts)
+
+    -- atlas re-applies its own hardcoded palette from these modules every time
+    -- a panel opens, so chain ours onto the end of each `setup()` — otherwise
+    -- the overrides above are silently discarded on the first open.
+    for _, name in ipairs({
+      "atlas.ui.shared.highlights",
+      "atlas.pulls.ui.highlights",
+      "atlas.pulls.providers.github.highlights",
+      "atlas.issues.providers.github.highlights",
+      "atlas.issues.providers.jira.highlights",
+    }) do
+      local ok, mod = pcall(require, name)
+      if ok and type(mod) == "table" and type(mod.setup) == "function" and not mod.__atlas_hl_chained then
+        local upstream = mod.setup
+        mod.setup = function(...)
+          upstream(...)
+          apply_atlas_highlights()
+        end
+        mod.__atlas_hl_chained = true
       end
     end
-    flexoki_atlas_hl()
-    vim.api.nvim_create_autocmd("ColorScheme", { callback = flexoki_atlas_hl })
+
+    apply_atlas_highlights()
   end,
 }
