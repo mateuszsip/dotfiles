@@ -477,8 +477,10 @@ return {
       repo_config = {
         paths = {
           ["mateuszsip/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/prv/*") or "~/dev/prv/*",
-          ["lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*") or "~/dev/work/lendable/*",
-          ["Lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*") or "~/dev/work/lendable/*",
+          ["lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*")
+            or "~/dev/work/lendable/*",
+          ["Lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*")
+            or "~/dev/work/lendable/*",
         },
       },
       custom_actions = {
@@ -544,8 +546,6 @@ return {
           cache_ttl = 300,
           views = github_issue_views,
         },
-        -- LENDABLE Jira. Credentials exported by
-        -- ~/.config/nushell/jira_atlas.nu (Bitwarden-backed, see source).
         jira = {
           base_url = vim.env.LENDABLE_JIRA_BASE_URL or "https://lendable.atlassian.net",
           email = vim.env.LENDABLE_JIRA_EMAIL or "",
