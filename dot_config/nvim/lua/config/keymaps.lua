@@ -30,13 +30,11 @@ do
   end
 end
 
--- Note: <C-f> is disabled in snacks config (lua/plugins/snacks-animated-scrolling-off.lua)
+-- Note: <C-f> is disabled in snacks config (lua/plugins/snacks.lua)
 -- Terminal passthrough is handled in the TermOpen autocmd below
 
--- Remap h to j, j to k, k to l, l to ; (example)
+-- Shifted jkl; layout: j=left, k=down, l=up, ;=right
 map({ "n", "x" }, "j", "h", { desc = "Left" })
-map({ "n", "x" }, "k", "j", { desc = "Down" })
-map({ "n", "x" }, "l", "k", { desc = "Up" })
 map({ "n", "x" }, ";", "l", { desc = "Right" })
 map({ "n", "x", "o" }, "h", function()
   require("flash.plugins.char").jump(";")

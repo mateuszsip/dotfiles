@@ -26,198 +26,73 @@ local function buf_dir()
 	return vim.fn.getcwd()
 end
 
+-- Toggle terminal `count` in a bottom split rooted at the dir `cwd_fn` returns.
+-- `cwd_fn` is called at keypress time so the cwd follows the current buffer.
+local function term_toggle(count, cwd_fn)
+	return function()
+		Snacks.terminal.toggle(
+			nil,
+			{ count = count, cwd = cwd_fn(), win = { position = "bottom", height = 0.3, stack = true } }
+		)
+	end
+end
+
+-- Hide all shown terminals, show all hidden ones, or open terminal 1 if none exist.
+local function term_toggle_all(cwd_fn)
+	return function()
+		local terms = Snacks.terminal.list()
+		local shown = vim.tbl_filter(function(t)
+			return t:win_valid()
+		end, terms)
+		if #shown > 0 then
+			for _, t in ipairs(shown) do
+				t:hide()
+			end
+		elseif #terms > 0 then
+			for _, t in ipairs(terms) do
+				t:show()
+			end
+		else
+			term_toggle(1, cwd_fn)()
+		end
+	end
+end
+
+-- Numbered terminal keymaps: <leader>ft{q,w,e,a,s,d} = terminals 1-6 (cwd),
+-- <leader>fT{q,w,e,a,s,d} = terminals 1-6 (buf dir).
+local term_keys = { "q", "w", "e", "a", "s", "d" }
+local keys = {
+	-- Disable <C-f> for file search to allow terminal passthrough
+	{ "<C-f>", false, mode = { "n", "i", "v" } },
+	-- Disable snacks picker git_diff maps; <leader>gd is a diff subgroup (see diffview.lua)
+	{ "<leader>gd", false },
+	{ "<leader>gD", false },
+	-- Diff hunks via snacks picker (replaces the disabled top-level maps above)
+	{
+		"<leader>gdd",
+		function()
+			Snacks.picker.git_diff()
+		end,
+		desc = "Diff Hunks (working tree)",
+	},
+	{
+		"<leader>gdD",
+		function()
+			Snacks.picker.git_diff({ base = "origin", group = true })
+		end,
+		desc = "Diff Hunks (origin)",
+	},
+	{ "<leader>ftt", term_toggle_all(vim.fn.getcwd), desc = "Toggle All Terminals" },
+	{ "<leader>fT", term_toggle_all(buf_dir), desc = "Toggle All Terminals (buf dir)" },
+}
+for i, key in ipairs(term_keys) do
+	table.insert(keys, { "<leader>ft" .. key, term_toggle(i, vim.fn.getcwd), desc = "Terminal " .. i })
+	table.insert(keys, { "<leader>fT" .. key, term_toggle(i, buf_dir), desc = "Terminal " .. i .. " (buf dir)" })
+end
+
 return {
 	"folke/snacks.nvim",
-	keys = {
-		-- Disable <C-f> for file search to allow terminal passthrough
-		{ "<C-f>", false, mode = { "n", "i", "v" } },
-		-- Disable snacks picker git_diff maps; <leader>gd is a diff subgroup (see diffview.lua)
-		{ "<leader>gd", false },
-		{ "<leader>gD", false },
-		-- Diff hunks via snacks picker (replaces the disabled top-level maps above)
-		{
-			"<leader>gdd",
-			function()
-				Snacks.picker.git_diff()
-			end,
-			desc = "Diff Hunks (working tree)",
-		},
-		{
-			"<leader>gdD",
-			function()
-				Snacks.picker.git_diff({ base = "origin", group = true })
-			end,
-			desc = "Diff Hunks (origin)",
-		},
-		{
-			"<leader>ftq",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 1, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 1",
-		},
-		{
-			"<leader>ftw",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 2, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 2",
-		},
-		{
-			"<leader>fte",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 3, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 3",
-		},
-		{
-			"<leader>fta",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 4, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 4",
-		},
-		{
-			"<leader>fts",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 5, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 5",
-		},
-		{
-			"<leader>ftd",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 6, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 6",
-		},
-		{
-			"<leader>fTq",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 1, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 1 (buf dir)",
-		},
-		{
-			"<leader>fTw",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 2, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 2 (buf dir)",
-		},
-		{
-			"<leader>fTe",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 3, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 3 (buf dir)",
-		},
-		{
-			"<leader>fTa",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 4, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 4 (buf dir)",
-		},
-		{
-			"<leader>fTs",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 5, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 5 (buf dir)",
-		},
-		{
-			"<leader>fTd",
-			function()
-				Snacks.terminal.toggle(
-					nil,
-					{ count = 6, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-				)
-			end,
-			desc = "Terminal 6 (buf dir)",
-		},
-		{
-			"<leader>ftt",
-			function()
-				local terms = Snacks.terminal.list()
-				local shown = vim.tbl_filter(function(t)
-					return t:win_valid()
-				end, terms)
-				if #shown > 0 then
-					for _, t in ipairs(shown) do
-						t:hide()
-					end
-				elseif #terms > 0 then
-					for _, t in ipairs(terms) do
-						t:show()
-					end
-				else
-					Snacks.terminal.toggle(
-						nil,
-						{ count = 1, cwd = vim.fn.getcwd(), win = { position = "bottom", height = 0.3, stack = true } }
-					)
-				end
-			end,
-			desc = "Toggle All Terminals",
-		},
-		{
-			"<leader>fT",
-			function()
-				local terms = Snacks.terminal.list()
-				local shown = vim.tbl_filter(function(t)
-					return t:win_valid()
-				end, terms)
-				if #shown > 0 then
-					for _, t in ipairs(shown) do
-						t:hide()
-					end
-				elseif #terms > 0 then
-					for _, t in ipairs(terms) do
-						t:show()
-					end
-				else
-					Snacks.terminal.toggle(
-						nil,
-						{ count = 1, cwd = buf_dir(), win = { position = "bottom", height = 0.3, stack = true } }
-					)
-				end
-			end,
-			desc = "Toggle All Terminals",
-		},
-	},
+	keys = keys,
 	opts = {
 		terminal = {
 			win = {
@@ -240,7 +115,7 @@ return {
 			},
 		},
 		scroll = {
-			enabled = true, -- Disable scrolling animations
+			enabled = false, -- Disable scrolling animations (neoscroll.nvim handles smooth scroll)
 		},
 		image = {
 			enabled = true,
