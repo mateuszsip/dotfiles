@@ -8,6 +8,7 @@ return {
 			},
 		},
 		spec = {
+			{ "<leader>B", group = "haunt bookmarks" },
 			{ "<leader>C", group = "chezmoi" },
 			{ "<leader>o", group = "obsidian" },
 			{ "<leader>ow", group = "workspace" },
