@@ -187,14 +187,6 @@ return {
       },
       custom_actions = {
         {
-          id = "approve_pr",
-          label = "Approve PR",
-          confirmation = true,
-          run = function(pr, ctx, done)
-            gh_pr(pr, ctx, "review", { "--approve" }, done)
-          end,
-        },
-        {
           id = "close_pr",
           label = "Close PR",
           confirmation = true,
@@ -208,28 +200,6 @@ return {
           confirmation = true,
           run = function(pr, ctx, done)
             gh_pr(pr, ctx, "merge", { "--squash" }, done)
-          end,
-        },
-        {
-          id = "toggle_draft",
-          label = "Toggle draft / ready",
-          confirmation = true,
-          run = function(pr, ctx, done)
-            local repo = pr.repository and pr.repository.nameWithOwner or pr.repo or pr.repository_full_name
-            local view_cmd = vim.list_extend(
-              { "gh", "pr", "view", tostring(pr.number), "--json", "isDraft", "-q", ".isDraft" },
-              repo and { "--repo", repo } or {}
-            )
-            vim.system(view_cmd, { cwd = ctx.repo_path, text = true }, function(res)
-              vim.schedule(function()
-                if res.code ~= 0 then
-                  done(false, res.stderr or "gh pr view failed")
-                  return
-                end
-                local is_draft = res.stdout:match("^true") ~= nil
-                gh_pr(pr, ctx, "ready", is_draft and {} or { "--undo" }, done)
-              end)
-            end)
           end,
         },
       },
