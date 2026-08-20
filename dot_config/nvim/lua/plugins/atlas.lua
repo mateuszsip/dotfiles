@@ -59,12 +59,29 @@ local function atlas_search_repo()
   require("atlas.pulls.providers.github.completion.search").open("is:pr repo:" .. repo .. " ")
 end
 
+-- atlas' PullRequest keeps the PR number in `id` and the slug in
+-- `repo_full_name` (atlas/pulls/types.lua, github/api/mapper.lua) — there is no
+-- `number` and no `repository` field, and `repo` is the bare name without the
+-- owner. Reading those ran `gh pr <sub> nil` and every custom action failed.
+local function pr_number(pr)
+  return pr.id
+end
+
+local function pr_slug(pr)
+  return pr.repo_full_name
+end
+
 local function gh_pr(pr, ctx, sub, args, done)
   -- Run `gh pr <sub> <num> <args...>` for the PR. Prefer the local checkout
   -- (ctx.repo_path) when present so `gh` infers the repo; otherwise fall back
   -- to --repo <owner/repo> derived from the PR object.
-  local repo = pr.repository and pr.repository.nameWithOwner or pr.repo or pr.repository_full_name
-  local cmd = vim.list_extend({ "gh", "pr", sub, tostring(pr.number) }, args or {})
+  local repo = pr_slug(pr)
+  local number = pr_number(pr)
+  if not number then
+    done(false, "PR has no number")
+    return
+  end
+  local cmd = vim.list_extend({ "gh", "pr", sub, tostring(number) }, args or {})
   if not ctx.repo_path then
     if not repo then
       done(false, "No repo path or repository name to target this PR")
@@ -167,6 +184,10 @@ return {
   },
   opts = {
     pulls = {
+      -- Lendable repos disable merge commits and rebases (squash only), and
+      -- atlas defaults to `--merge` — which fails with "Merge commits are not
+      -- allowed on this repository" from the GraphQL mergePullRequest call.
+      default_merge_method = "squash",
       diff = {
         open_cmd = "AtlasDiff",
         layout = "inline",
