@@ -341,6 +341,37 @@ return {
   init = function()
     highlights.apply()
     vim.api.nvim_create_autocmd("ColorScheme", { callback = highlights.apply })
+
+    -- The PR/issue panels flip their scratch buffer to `filetype=markdown` so
+    -- render-markdown draws the body — which trips LazyVim's `wrap_spell`
+    -- autocmd and turns `spell` on. Spell attributes win over the panel's own
+    -- extmarks, so SpellCap repaints the "open" state chip yellow-on-green
+    -- (1.5:1 instead of 5:1) and SpellBad red-underlines every SHA, branch and
+    -- product name in the header. Nothing in a read-only panel is worth
+    -- spell-checking, so switch it off for atlas' own scratch buffers — the
+    -- comment/review editor popups are real markdown buffers and keep it.
+    vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
+      group = vim.api.nvim_create_augroup("atlas_nospell", { clear = true }),
+      callback = function(ev)
+        if vim.bo[ev.buf].buftype ~= "nofile" then
+          return
+        end
+        if not vim.fs.basename(vim.api.nvim_buf_get_name(ev.buf)):match("^Atlas") then
+          return
+        end
+        -- Deferred because LazyVim's FileType handler may be registered after
+        -- ours; `spell` is window-local, so clear it on every window showing
+        -- the buffer rather than only the current one.
+        vim.schedule(function()
+          if not vim.api.nvim_buf_is_valid(ev.buf) then
+            return
+          end
+          for _, win in ipairs(vim.fn.win_findbuf(ev.buf)) do
+            vim.wo[win].spell = false
+          end
+        end)
+      end,
+    })
   end,
   config = function(_, opts)
     require("atlas").setup(opts)
