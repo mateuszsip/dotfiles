@@ -1,8 +1,9 @@
 -- atlas.nvim: PR browsing, diff review, and search across GitHub + LENDABLE Jira.
 -- GitHub auth reuses the `gh` CLI, so no tokens here.
--- PR lifecycle actions (approve/close/merge/draft) are not built into atlas,
--- so they are wired as `pulls.custom_actions` that shell out to `gh` and are
--- reachable from the action menu (default `A`).
+-- PR lifecycle actions come from atlas' own action menu (default `A`): Approve,
+-- Request changes, Merge, Decline (= close), Convert to draft / Mark as ready.
+-- They are state-gated and refresh the panel, unlike `pulls.custom_actions`,
+-- which cannot report a state change and silently ignore `confirmation`.
 --
 -- Supporting modules:
 --   lua/utils/atlas_highlights.lua — theme-adaptive highlight palette (WCAG 4.5:1)
@@ -57,49 +58,6 @@ local function atlas_search_repo()
     return
   end
   require("atlas.pulls.providers.github.completion.search").open("is:pr repo:" .. repo .. " ")
-end
-
--- atlas' PullRequest keeps the PR number in `id` and the slug in
--- `repo_full_name` (atlas/pulls/types.lua, github/api/mapper.lua) — there is no
--- `number` and no `repository` field, and `repo` is the bare name without the
--- owner. Reading those ran `gh pr <sub> nil` and every custom action failed.
-local function pr_number(pr)
-  return pr.id
-end
-
-local function pr_slug(pr)
-  return pr.repo_full_name
-end
-
-local function gh_pr(pr, ctx, sub, args, done)
-  -- Run `gh pr <sub> <num> <args...>` for the PR. Prefer the local checkout
-  -- (ctx.repo_path) when present so `gh` infers the repo; otherwise fall back
-  -- to --repo <owner/repo> derived from the PR object.
-  local repo = pr_slug(pr)
-  local number = pr_number(pr)
-  if not number then
-    done(false, "PR has no number")
-    return
-  end
-  local cmd = vim.list_extend({ "gh", "pr", sub, tostring(number) }, args or {})
-  if not ctx.repo_path then
-    if not repo then
-      done(false, "No repo path or repository name to target this PR")
-      return
-    end
-    table.insert(cmd, "--repo")
-    table.insert(cmd, repo)
-  end
-  vim.system(cmd, { cwd = ctx.repo_path, text = true }, function(res)
-    vim.schedule(function()
-      local msg = (res.code == 0) and res.stdout or res.stderr
-      if res.code == 0 then
-        done(true, (msg ~= "" and msg) or nil)
-      else
-        done(false, msg or ("gh " .. sub .. " failed (code " .. tostring(res.code) .. ")"))
-      end
-    end)
-  end)
 end
 
 -- ---------------------------------------------------------------------------
@@ -204,24 +162,6 @@ return {
             or "~/dev/work/lendable/*",
           ["Lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*")
             or "~/dev/work/lendable/*",
-        },
-      },
-      custom_actions = {
-        {
-          id = "close_pr",
-          label = "Close PR",
-          confirmation = true,
-          run = function(pr, ctx, done)
-            gh_pr(pr, ctx, "close", {}, done)
-          end,
-        },
-        {
-          id = "merge_pr",
-          label = "Merge PR (squash)",
-          confirmation = true,
-          run = function(pr, ctx, done)
-            gh_pr(pr, ctx, "merge", { "--squash" }, done)
-          end,
         },
       },
       providers = {
