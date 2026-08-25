@@ -96,37 +96,37 @@ return {
         -- Toggle checkbox (cycles through states: [ ] -> [x] -> etc.)
         -- Note: <CR> (smart_action) already toggles when cursor is ON a checkbox.
         -- This mapping works from anywhere on the line.
-        vim.keymap.set("n", "<leader>oc", "<cmd>Obsidian toggle_checkbox<CR>", {
+        vim.keymap.set("n", "<leader>mCc", "<cmd>Obsidian toggle_checkbox<CR>", {
           buffer = true,
           desc = "Obsidian: Toggle checkbox",
         })
         -- Set specific checkbox state directly
         local actions = require("obsidian.actions")
-        vim.keymap.set("n", "<leader>o<space>", function()
+        vim.keymap.set("n", "<leader>mC<space>", function()
           actions.set_checkbox(" ")
         end, {
           buffer = true,
           desc = "Obsidian: Checkbox unchecked [ ]",
         })
-        vim.keymap.set("n", "<leader>ox", function()
+        vim.keymap.set("n", "<leader>mCx", function()
           actions.set_checkbox("x")
         end, {
           buffer = true,
           desc = "Obsidian: Checkbox done [x]",
         })
-        vim.keymap.set("n", "<leader>o~", function()
+        vim.keymap.set("n", "<leader>mC~", function()
           actions.set_checkbox("~")
         end, {
           buffer = true,
           desc = "Obsidian: Checkbox in progress [~]",
         })
-        vim.keymap.set("n", "<leader>o!", function()
+        vim.keymap.set("n", "<leader>mC!", function()
           actions.set_checkbox("!")
         end, {
           buffer = true,
           desc = "Obsidian: Checkbox important [!]",
         })
-        vim.keymap.set("n", "<leader>o>", function()
+        vim.keymap.set("n", "<leader>mC>", function()
           actions.set_checkbox(">")
         end, {
           buffer = true,

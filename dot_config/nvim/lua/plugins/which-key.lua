@@ -13,6 +13,7 @@ return {
 			{ "<leader>o", group = "obsidian" },
 			{ "<leader>ow", group = "workspace" },
 			{ "<leader>m", group = "markdown" },
+			{ "<leader>mC", group = "checkbox", mode = "n" },
 			{ "<leader>fe", group = "Explorer Oil" },
 			{ "<leader>y", group = "yank" },
 			{ "<leader>gd", group = "diff" },
