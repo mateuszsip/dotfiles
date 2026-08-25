@@ -1,13 +1,17 @@
 return {
   "obsidian-nvim/obsidian.nvim",
   version = "*", -- recommended, use latest release instead of latest commit
+  -- Must load before the note buffer's FileType fires: obsidian registers its
+  -- buffer-local BufEnter hook (which runs the enter_note callback below) from
+  -- a FileType=markdown autocmd. Lazy-loading on `keys` alone means that hook
+  -- is never registered, so none of the enter_note mappings exist.
+  ft = "markdown",
   keys = {
     -- Daily notes (global, work from any buffer)
     { "<leader>odt", "<cmd>Obsidian today<CR>", desc = "Obsidian: Today's note" },
     { "<leader>odr", "<cmd>Obsidian yesterday<CR>", desc = "Obsidian: Yesterday's note" },
     { "<leader>ody", "<cmd>Obsidian tomorrow<CR>", desc = "Obsidian: Tomorrow's note" },
-    { "<leader>od", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
-    { "<leader>ode", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
+    { "<leader>odd", "<cmd>Obsidian dailies -3 2<CR>", desc = "Obsidian: Browse daily notes" },
     -- New note at subpath
     {
       "<leader>oN",
