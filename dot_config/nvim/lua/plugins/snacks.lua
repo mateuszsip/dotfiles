@@ -185,6 +185,11 @@ return {
 						["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
 						["<S-Tab>"] = { "focus_list", mode = { "i", "n" } },
 						["<C-Space>"] = { "select_and_next", mode = { "i", "n" } },
+						-- Ctrl+Space has a legacy terminal encoding (NUL). The kitty keyboard
+						-- protocol keeps using it at the level Neovim requests, so the keypress
+						-- arrives as <Nul>, not <C-Space> — mapping only the latter silently did
+						-- nothing. Map both so the same physical key works either way.
+						["<Nul>"] = { "select_and_next", mode = { "i", "n" } },
 						["<C-S-Space>"] = { "select_and_prev", mode = { "i", "n" } },
 						["<C-S-q>"] = { "loclist", mode = { "i", "n" } },
 						["<A-w>"] = "none",
@@ -200,6 +205,8 @@ return {
 						["<Tab>"] = "focus_preview",
 						["<S-Tab>"] = "focus_list",
 						["<C-Space>"] = { "select_and_next", mode = { "i", "n" } },
+						-- <Nul> is Ctrl+Space's legacy encoding (see input window comment above).
+						["<Nul>"] = { "select_and_next", mode = { "i", "n" } },
 						["<C-S-Space>"] = { "select_and_prev", mode = { "i", "n" } },
 						["<C-S-q>"] = { "loclist", mode = { "i", "n" } },
 						["<A-w>"] = "none",
