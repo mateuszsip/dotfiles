@@ -60,6 +60,87 @@ local function atlas_search_repo()
   require("atlas.pulls.providers.github.completion.search").open("is:pr repo:" .. repo .. " ")
 end
 
+-- Multi-select my open PRs and yank their URLs (one per line) to the `+` register.
+-- Atlas' own `copy_url` (`Y`) only ever copies the PR under the cursor and
+-- overwrites the clipboard, and its PR list has no marking concept — so this
+-- goes straight to `gh` for the data and borrows atlas' picker for the UI.
+--
+-- `atlas.picker` is an internal module (same one atlas uses for its reviewer and
+-- label pickers). Depending on it rather than driving snacks directly keeps the
+-- `ui.picker = "auto"` preference working.
+--
+---@param scope "repo"|"all" limit to the cwd repo, or search every repo
+local function copy_pr_links(scope)
+  local args = {
+    "gh",
+    "search",
+    "prs",
+    "--author=@me",
+    "--state=open",
+    "--limit=100",
+    "--json",
+    "number,title,url,repository",
+  }
+
+  local title = "Copy PR links — all repos"
+  if scope == "repo" then
+    local repo = current_repo() -- notifies and returns nil when not in a GitHub repo
+    if not repo then
+      return
+    end
+    table.insert(args, "--repo=" .. repo)
+    title = "Copy PR links — " .. repo
+  end
+
+  vim.system(args, { text = true }, function(result)
+    -- Back onto the main loop: no vim.* API calls are allowed in the callback.
+    vim.schedule(function()
+      if result.code ~= 0 then
+        local stderr = vim.trim(result.stderr or "")
+        vim.notify("gh search prs failed: " .. (stderr ~= "" and stderr or "exit " .. result.code), vim.log.levels.ERROR)
+        return
+      end
+
+      local ok, prs = pcall(vim.json.decode, result.stdout)
+      if not ok or type(prs) ~= "table" or #prs == 0 then
+        vim.notify("No open PRs found", vim.log.levels.WARN)
+        return
+      end
+
+      require("atlas.picker").multi_select({
+        title = title,
+        items = prs,
+        selected = {},
+        -- URL, not number: PR numbers collide across repos in the "all" scope.
+        key = function(pr)
+          return tostring(pr.url)
+        end,
+        format_item = function(pr)
+          local prefix = "#" .. pr.number
+          if scope ~= "repo" then
+            prefix = (pr.repository and pr.repository.nameWithOwner or "?") .. prefix
+          end
+          return string.format("%s  %s", prefix, pr.title or "")
+        end,
+        on_done = function(selected)
+          -- Cancelling calls on_done with the initial `selected` ({}), so an
+          -- empty list means "cancelled" or "confirmed nothing". Both leave the
+          -- clipboard untouched.
+          if not selected or #selected == 0 then
+            return
+          end
+          local urls = {}
+          for _, pr in ipairs(selected) do
+            urls[#urls + 1] = pr.url
+          end
+          vim.fn.setreg("+", table.concat(urls, "\n"))
+          vim.notify(string.format("Copied %d PR link(s)", #urls))
+        end,
+      })
+    end)
+  end)
+end
+
 -- ---------------------------------------------------------------------------
 -- Views
 --
@@ -255,6 +336,23 @@ return {
       desc = "All my PRs (all repos)",
     },
     { "<leader>gR", atlas_search_repo, desc = "Search PRs (current repo)" },
+
+    -- Multi-select yank of PR URLs (<Tab> marks, <CR> confirms under snacks).
+    -- Mirrors the gm/gM scoping above.
+    {
+      "<leader>gy",
+      function()
+        copy_pr_links("repo")
+      end,
+      desc = "Copy links: my open PRs (current repo)",
+    },
+    {
+      "<leader>gY",
+      function()
+        copy_pr_links("all")
+      end,
+      desc = "Copy links: my open PRs (all repos)",
+    },
 
     -- Jira (replaces letieu/jira.nvim). No board UI — these open atlas's issue list.
     {
