@@ -15,18 +15,30 @@ defaults write com.apple.dock tilesize -int 64
 # Tap to click
 defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
 
-# Disable Mission Control "Move left/right a space" (Ctrl+Left/Right) so those
-# keys reach apps (e.g. Neovim window resize). Bindings preserved (enabled=0).
-defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 '{ enabled = 0; value = { parameters = ( 65535, 123, 262144 ); type = standard; }; }'
-defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 80 '{ enabled = 0; value = { parameters = ( 65535, 123, 393216 ); type = standard; }; }'
-defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{ enabled = 0; value = { parameters = ( 65535, 124, 262144 ); type = standard; }; }'
-defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 '{ enabled = 0; value = { parameters = ( 65535, 124, 393216 ); type = standard; }; }'
-# Disable "Select the previous input source" (Ctrl+Space) so the key reaches
-# apps instead of the system — it shadowed the Snacks picker multi-select
-# toggle in Neovim. Only one keyboard layout is enabled, so no switching is
-# lost, and Ctrl+Option+Space (hotkey 61) still cycles the input menu.
-# Binding preserved (enabled=0).
-defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 '{ enabled = 0; value = { parameters = ( 32, 49, 262144 ); type = standard; }; }'
+# Disable a macOS symbolic hotkey, keeping its binding so it can be re-enabled
+# from System Settings. NOTE: the old-style plist syntax
+#   '{ enabled = 0; value = { parameters = ( 1, 2, 3 ); type = standard; }; }'
+# types every value as a *string*. macOS wants a real boolean and integers, and
+# silently ignores the malformed entry — the shortcut stays live. Compare a
+# System-Settings-written entry (enabled=false, params=[int,int,int]) with a
+# string one to see the difference. So write typed XML instead.
+disable_hotkey() { # <id> <param0> <param1> <param2>
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add "$1" \
+    "<dict><key>enabled</key><false/><key>value</key><dict><key>type</key><string>standard</string><key>parameters</key><array><integer>$2</integer><integer>$3</integer><integer>$4</integer></array></dict></dict>"
+}
+
+# Mission Control "Move left/right a space" (Ctrl+Left/Right, and with Shift) so
+# those keys reach apps (e.g. Neovim window resize).
+disable_hotkey 79 65535 123 262144
+disable_hotkey 80 65535 123 393216
+disable_hotkey 81 65535 124 262144
+disable_hotkey 82 65535 124 393216
+
+# "Select the previous input source" (Ctrl+Space), which shadowed the Snacks
+# picker multi-select toggle in Neovim. Only one keyboard layout is enabled so
+# no switching is lost, and Ctrl+Option+Space (hotkey 61) still cycles the menu.
+disable_hotkey 60 32 49 262144
+
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
 # Symlink nushell config into macOS' Application Support dir, but only when
