@@ -21,6 +21,12 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 '{ en
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 80 '{ enabled = 0; value = { parameters = ( 65535, 123, 393216 ); type = standard; }; }'
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{ enabled = 0; value = { parameters = ( 65535, 124, 262144 ); type = standard; }; }'
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 '{ enabled = 0; value = { parameters = ( 65535, 124, 393216 ); type = standard; }; }'
+# Disable "Select the previous input source" (Ctrl+Space) so the key reaches
+# apps instead of the system — it shadowed the Snacks picker multi-select
+# toggle in Neovim. Only one keyboard layout is enabled, so no switching is
+# lost, and Ctrl+Option+Space (hotkey 61) still cycles the input menu.
+# Binding preserved (enabled=0).
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 '{ enabled = 0; value = { parameters = ( 32, 49, 262144 ); type = standard; }; }'
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
 # Symlink nushell config into macOS' Application Support dir, but only when
