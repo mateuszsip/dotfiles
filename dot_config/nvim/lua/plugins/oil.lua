@@ -26,6 +26,42 @@ return {
       end,
       desc = "Explorer Oil (Root Dir)",
     },
+    {
+      "<leader>fes",
+      function()
+        -- Collect hosts from ~/.ssh/config (Host entries, skip wildcards).
+        local hosts = {}
+        local config = vim.fn.expand("~/.ssh/config")
+        local lines = vim.fn.filereadable(config) == 1 and vim.fn.readfile(config) or {}
+        for _, line in ipairs(lines) do
+          local host = line:match("^%s*[Hh][Oo][Ss][Tt]%s+(%S+)$")
+          if host and not host:find("[*?]") then
+            table.insert(hosts, host)
+          end
+        end
+        if #hosts == 0 then
+          Snacks.notify.warn("No hosts found in ~/.ssh/config")
+          return
+        end
+        Snacks.picker.pick({
+          source = "ssh_hosts",
+          title = " SSH Hosts ",
+          items = vim.tbl_map(function(h)
+            return { text = h, file = "oil-ssh://" .. h .. "/" }
+          end, hosts),
+          confirm = function(picker, item)
+            picker:close()
+            if item then
+              require("oil").open_float("oil-ssh://" .. item.text .. "/", { preview = { vertical = true } })
+            end
+          end,
+          win = {
+            preview = { enabled = false },
+          },
+        })
+      end,
+      desc = "Explorer Oil (SSH)",
+    },
     { "<leader>e", "<leader>fee", desc = "Explorer Oil (file dir)", remap = true },
     { "<leader>E", "<leader>fec", desc = "Explorer Oil (cwd)", remap = true },
   },
