@@ -1,0 +1,11 @@
+Host unraid
+    HostName 192.168.1.51
+    User root
+
+Host steamos-tv
+    HostName 192.168.1.249
+    User deck
+
+Host steamos-claw
+    HostName 192.168.1.79
+    User deck
