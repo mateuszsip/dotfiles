@@ -62,6 +62,13 @@ return {
       end,
       desc = "Explorer Oil (SSH)",
     },
+    {
+      "<leader>feh",
+      function()
+        require("oil").open_float(vim.uv.os_homedir(), { preview = { vertical = true } })
+      end,
+      desc = "Explorer Oil (Home)",
+    },
     { "<leader>e", "<leader>fee", desc = "Explorer Oil (file dir)", remap = true },
     { "<leader>E", "<leader>fec", desc = "Explorer Oil (cwd)", remap = true },
   },
@@ -280,14 +287,14 @@ return {
 
     -- Highlight groups per digit value 0-7 for the operms column.
     local perm_hls = {
-      [0] = "Comment",      -- no perms (---)
+      [0] = "Comment", -- no perms (---)
       [1] = "DiagnosticWarn", -- execute only (--x)
-      [2] = "DiagnosticOk",   -- write only (-w-)
-      [3] = "DiagnosticOk",   -- write+exec (-wx)
-      [4] = "Special",      -- read only (r--)
-      [5] = "Statement",    -- read+exec (r-x)
-      [6] = "Constant",     -- read+write (rw-)
-      [7] = "Error",        -- all perms (rwx)
+      [2] = "DiagnosticOk", -- write only (-w-)
+      [3] = "DiagnosticOk", -- write+exec (-wx)
+      [4] = "Special", -- read only (r--)
+      [5] = "Statement", -- read+exec (r-x)
+      [6] = "Constant", -- read+write (rw-)
+      [7] = "Error", -- all perms (rwx)
     }
     for d = 0, 7 do
       vim.api.nvim_set_hl(0, "OilPermsDigit" .. d, { link = perm_hls[d] })
