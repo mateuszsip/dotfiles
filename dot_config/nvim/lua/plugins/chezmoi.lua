@@ -23,7 +23,7 @@ return {
     end,
     keys = {
       { "<leader>Ca", desc = "Chezmoi add current file" },
-      { "<leader>Ce", desc = "Chezmoi edit source file" },
+      { "<leader>Ce", desc = "Chezmoi jump source/target" },
       { "<leader>Cw", desc = "Chezmoi edit source file (watch)" },
       { "<leader>Cp", desc = "Chezmoi apply current file" },
       { "<leader>CA", desc = "Chezmoi apply all" },
@@ -49,18 +49,37 @@ return {
         return vim.fn.trim(vim.fn.system("chezmoi source-path"))
       end
 
+      local function is_chezmoi_source(file)
+        return vim.startswith(file, chezmoi_source_dir() .. "/")
+      end
+
       map("n", "<leader>Ce", function()
         local file = vim.fn.expand("%:p")
-        if vim.startswith(file, chezmoi_source_dir()) then
-          vim.notify("Already editing chezmoi source file", vim.log.levels.INFO)
+        if file == "" then
           return
         end
-        commands.edit({ targets = { file }, args = {} })
-      end, { desc = "Chezmoi edit source file" })
+
+        if is_chezmoi_source(file) then
+          -- Editing a chezmoi source file: jump to the applied target file
+          local target = vim.fn.trim(vim.fn.system("chezmoi target-path " .. vim.fn.shellescape(file)))
+          if vim.v.shell_error ~= 0 or target == "" then
+            vim.notify("No chezmoi target for " .. file, vim.log.levels.WARN)
+            return
+          end
+          if vim.fn.filereadable(target) == 0 then
+            vim.notify("Target not applied yet: " .. target, vim.log.levels.WARN)
+            return
+          end
+          vim.cmd.edit(vim.fn.fnameescape(target))
+        else
+          -- Editing a target file: jump to the chezmoi source file
+          commands.edit({ targets = { file }, args = {} })
+        end
+      end, { desc = "Chezmoi jump source/target" })
 
       map("n", "<leader>Cw", function()
         local file = vim.fn.expand("%:p")
-        if vim.startswith(file, chezmoi_source_dir()) then
+        if is_chezmoi_source(file) then
           vim.notify("Already editing chezmoi source file", vim.log.levels.INFO)
           return
         end
