@@ -60,6 +60,7 @@ return {
         marksman = {},
         neocmake = {},
         taplo = {},
+        symfony_lsp = {},
         terraformls = {},
         twiggy_language_server = {},
         yamlls = {},
