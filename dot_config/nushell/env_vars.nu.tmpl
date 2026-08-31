@@ -26,3 +26,11 @@ $env.PATH ++= ['/usr/local/bin']
 $env.PATH ++= ['~/.atuin/bin']
 $env.PATH ++= ['~/.antigravity/bin']
 
+
+# GitHub MCP servers (claude-code github plugin, opencode) read this var
+if (which gh | is-not-empty) {
+    let gh_token = (do -i { gh auth token } | complete)
+    if $gh_token.exit_code == 0 and ($gh_token.stdout | str trim | is-not-empty) {
+        $env.GITHUB_PERSONAL_ACCESS_TOKEN = ($gh_token.stdout | str trim)
+    }
+}
