@@ -8,7 +8,14 @@ config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
 # Font
 font-family = "JetBrainsMono Nerd Font Mono"
 font-style = Regular
+{{ if eq .chezmoi.os "darwin" -}}
 font-size = 14
+{{- else -}}
+font-size = 12
+# Auto-switched by ~/.config/hypr/scripts/ghostty-font-monitor.sh when an
+# external monitor is plugged/unplugged (overrides the default above).
+config-file = ?"~/.config/ghostty/display.conf"
+{{- end }}
 
 # Window
 window-theme = ghostty
@@ -29,6 +36,9 @@ shell-integration-features = no-cursor,ssh-env
 # Keyboard bindings
 keybind = shift+insert=paste_from_clipboard
 keybind = control+insert=copy_to_clipboard
+# Manual font size overrides (also: ctrl+= / ctrl+- / ctrl+0 by default)
+keybind = ctrl+shift+1=set_font_size:12
+keybind = ctrl+shift+2=set_font_size:14
 keybind = super+control+shift+alt+arrow_down=resize_split:down,100
 keybind = super+control+shift+alt+arrow_up=resize_split:up,100
 keybind = super+control+shift+alt+arrow_left=resize_split:left,100
