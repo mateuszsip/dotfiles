@@ -1,0 +1,27 @@
+{{- if and (eq .chezmoi.os "linux") (eq .chezmoi.hostname "sipBook-p14s") -}}
+#!/bin/bash
+# Auto-enable keyboard backlight at boot on the ThinkPad P14s Gen 2a.
+#
+# The udev rule writes the level to the tpacpi LED when it appears (boot
+# coldplug, thinkpad_acpi reload), so the backlight is always on regardless
+# of the level it was left at. Only ACTION=="add" is matched: "change"
+# uevents fire on every Fn+Space toggle (brightness_hw_changed) and would
+# fight manual dimming mid-session.
+# Gated to hostname sipBook-p14s; the tpacpi LED only exists on ThinkPads.
+# Levels: 0=off, 1=dim, 2=bright.
+
+LEVEL=2
+UDEV_RULE="ACTION==\"add\", SUBSYSTEM==\"leds\", KERNEL==\"tpacpi::kbd_backlight\", ATTR{brightness}=\"$LEVEL\""
+UDEV_FILE=/etc/udev/rules.d/99-thinkpad-kbd-backlight.rules
+LED=/sys/class/leds/tpacpi::kbd_backlight
+
+# Deploy the udev rule (single-line file fully owned by this script, so an
+# unconditional write doubles as the idempotency check)
+printf '%s\n' "$UDEV_RULE" | sudo tee "$UDEV_FILE" > /dev/null
+sudo udevadm control --reload-rules
+
+# Apply immediately without waiting for reboot
+if [ -d "$LED" ]; then
+    echo "$LEVEL" | sudo tee "$LED/brightness" > /dev/null
+fi
+{{ end -}}
