@@ -5,7 +5,8 @@
 set -eufo pipefail
 
 sudo pacman -S --needed --noconfirm \
-{{ include "packages_arch.txt" | trim | splitList "\n" | join " \\\n  " }}
+{{ include "packages_arch.txt" | trim | splitList "\n" | join " \\\n  " }}{{ if eq .chezmoi.hostname "sipBook-p14s" }} \
+  linux-headers{{ end }}
 
 if ! command -v paru &>/dev/null && ! command -v yay &>/dev/null; then
   sudo pacman -S --needed --noconfirm base-devel git
@@ -18,7 +19,8 @@ fi
 aur_helper=$(command -v paru || command -v yay)
 
 $aur_helper -S --needed --noconfirm \
-{{ include "packages_arch_aur.txt" | trim | splitList "\n" | join " \\\n  " }}
+{{ include "packages_arch_aur.txt" | trim | splitList "\n" | join " \\\n  " }}{{ if eq .chezmoi.hostname "sipBook-p14s" }} \
+  ryzen_smu-dkms-git ryzenadj-git{{ end }}
 {{- else if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 # brew: {{ include "packages_macos.txt" | sha256sum }}

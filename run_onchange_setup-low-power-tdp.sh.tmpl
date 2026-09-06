@@ -1,0 +1,98 @@
+{{- if and (eq .chezmoi.os "linux") (eq .chezmoi.hostname "sipBook-p14s") -}}
+#!/bin/bash
+# Low-power defaults for the ThinkPad P14s Gen 2a (Ryzen 7 PRO 5850U).
+#
+# Layers explicit caps under the existing low-power setup (platform_profile
+# low-power, powerprofilesctl power-saver, amd-pstate-epp EPP=power):
+#   CPU/APU: ryzenadj STAPM/slow 10W, fast 12W, tctl 80C (needs the ryzen_smu
+#            kernel module -> /dev/ryzen_smu)
+#   iGPU:     Vega max SCLK capped at 800MHz via amdgpu pp_od_clk_voltage
+#            (card1, OD range 200-2000MHz; amdgpu resets OD on load, so the
+#            service re-applies at boot and after every resume)
+#
+# Everything written under /etc is fully owned by this script: unconditional
+# writes double as the idempotency check (same pattern as kbd-backlight).
+set -euo pipefail
+
+# 1. Self-heal the ryzen_smu dkms module: the AUR package drops sources in
+#    /usr/src but its dkms registration silently fails when linux-headers
+#    isn't installed yet, leaving /var/lib/dkms empty and no /dev/ryzen_smu.
+src=$(ls -d /usr/src/ryzen_smu-* 2>/dev/null | head -n1 || true)
+if [ -n "$src" ] && [ ! -d /var/lib/dkms/ryzen_smu ]; then
+  ver=$(basename "$src" | sed 's/^ryzen_smu-//')
+  sudo dkms add -m ryzen_smu -v "$ver" || true
+fi
+sudo dkms autoinstall || true
+sudo modprobe ryzen_smu 2>/dev/null || true
+
+# 2. Load the module at boot
+printf 'ryzen_smu\n' | sudo tee /etc/modules-load.d/ryzen_smu.conf > /dev/null
+
+# 3. Applier, run by the boot and resume units (best effort by design:
+#    a missing module or knob must never fail the unit)
+sudo tee /usr/local/sbin/apply-low-power-tdp > /dev/null <<'APPLY'
+#!/bin/bash
+DEV=/dev/ryzen_smu
+GPU=/sys/class/drm/card1/device
+
+# Boot race with systemd-modules-load: wait for the module to appear
+for _ in $(seq 1 10); do
+  [ -e "$DEV" ] && break
+  sleep 1
+done
+
+if [ -e "$DEV" ]; then
+  # 10W sustained (STAPM/slow 10W, short boost 12W, tctl 80C)
+  /usr/bin/ryzenadj --stapm-limit=10000 --slow-limit=10000 \
+    --fast-limit=12000 --tctl-temp=80 || true
+else
+  echo "apply-low-power-tdp: $DEV missing (module not built/loaded)" >&2
+fi
+
+# Vega iGPU: cap max SCLK at 800MHz, then commit. Ignored if unsupported.
+if [ -f "$GPU/pp_od_clk_voltage" ]; then
+  echo 's 1 800Mhz' > "$GPU/pp_od_clk_voltage" 2> /dev/null || true
+  echo c > "$GPU/pp_od_clk_voltage" 2> /dev/null || true
+fi
+echo "applied low-power TDP (stapm/slow 10W, fast 12W, tctl 80C, gfx max 800MHz)"
+APPLY
+sudo chmod 755 /usr/local/sbin/apply-low-power-tdp
+
+# 4. Boot + resume units (SMU limits and the OD cap don't reliably survive
+#    reboot/suspend, hence the resume twin)
+sudo tee /etc/systemd/system/apply-low-power-tdp.service > /dev/null <<'UNIT'
+[Unit]
+Description=Low-power TDP defaults (ryzenadj caps + Vega SCLK ceiling)
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/apply-low-power-tdp
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+sudo tee /etc/systemd/system/apply-low-power-tdp-resume.service > /dev/null <<'UNIT'
+[Unit]
+Description=Re-apply low-power TDP defaults after resume
+After=suspend.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/apply-low-power-tdp
+
+[Install]
+WantedBy=suspend.target
+UNIT
+
+sudo systemctl daemon-reload
+sudo systemctl enable apply-low-power-tdp.service apply-low-power-tdp-resume.service
+
+# Apply immediately (module may not be built yet on first run; boot covers it)
+sudo systemctl restart apply-low-power-tdp.service || true
+
+echo "--- dkms ---"; dkms status || true
+echo "--- gpu od ---"; head -3 /sys/class/drm/card1/device/pp_od_clk_voltage 2> /dev/null || true
+{{ end -}}
