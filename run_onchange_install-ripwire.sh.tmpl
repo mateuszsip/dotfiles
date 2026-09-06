@@ -1,0 +1,21 @@
+#!/bin/bash
+# ripwire (https://github.com/redhat-et/ripwire): v0.3.8
+# Prebuilt release binary -> ~/.local/bin, checksum-verified by upstream's installer.
+# Bump the version below (both the comment and `version=`) to upgrade; chezmoi re-runs
+# this script when its rendered contents change. The installer also (re)stages the
+# agent skills under ~/.local/share/ripwire/skills and re-activates them for every
+# agent it finds (Claude Code, Codex), so a version bump refreshes those too.
+set -eufo pipefail
+
+version="v0.3.8"
+
+# A running ripwire (e.g. the MCP server opencode spawns from opencode.json) makes the
+# installer's final `cp` fail with "Text file busy". Unlink first: the running process
+# keeps its inode, and the installer's failure-prone steps (download, checksum, extract,
+# version check) all happen before that copy.
+rm -f "$HOME/.local/bin/ripwire"
+
+RIPWIRE_REPO=redhat-et/ripwire \
+RIPWIRE_VERSION="$version" \
+RIPWIRE_INSTALL_YES=1 \
+  bash -c "$(curl -fsSL "https://raw.githubusercontent.com/redhat-et/ripwire/${version}/scripts/install.sh")"
