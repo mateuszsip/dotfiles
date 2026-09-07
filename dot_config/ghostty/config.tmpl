@@ -10,6 +10,9 @@ font-family = "JetBrainsMono Nerd Font Mono"
 font-style = Regular
 {{ if eq .chezmoi.os "darwin" -}}
 font-size = 14
+# Auto-switched by the ghostty-display-font LaunchAgent when an external
+# monitor is plugged/unplugged (overrides the default above).
+config-file = ?"~/.config/ghostty/display.conf"
 {{- else -}}
 font-size = 12
 # Auto-switched by ~/.config/hypr/scripts/ghostty-font-monitor.sh when an
@@ -39,6 +42,7 @@ keybind = control+insert=copy_to_clipboard
 # Manual font size overrides (also: ctrl+= / ctrl+- / ctrl+0 by default)
 keybind = ctrl+shift+1=set_font_size:12
 keybind = ctrl+shift+2=set_font_size:14
+keybind = ctrl+shift+3=set_font_size:16
 keybind = super+control+shift+alt+arrow_down=resize_split:down,100
 keybind = super+control+shift+alt+arrow_up=resize_split:up,100
 keybind = super+control+shift+alt+arrow_left=resize_split:left,100

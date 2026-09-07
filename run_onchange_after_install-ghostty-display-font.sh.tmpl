@@ -1,0 +1,51 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Compiles the Ghostty display-font watcher and installs it as a KeepAlive
+# LaunchAgent, so ~/.config/ghostty/display.conf tracks monitor plug/unplug
+# (14pt on the built-in panel, 16pt with an external monitor attached).
+#
+# Reruns whenever the Swift source changes:
+# source hash: {{ include "dot_config/ghostty/ghostty-display-font.swift" | sha256sum }}
+
+set -euo pipefail
+
+SRC="$HOME/.config/ghostty/ghostty-display-font.swift"
+BIN="$HOME/.local/bin/ghostty-display-font"
+LABEL="com.mateusz-sip.ghostty-display-font"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+if ! command -v swiftc > /dev/null; then
+    echo "swiftc not found — install the Xcode command line tools" >&2
+    echo "(xcode-select --install), then re-run chezmoi apply." >&2
+    # Exit non-zero so chezmoi does not record this run and retries next apply.
+    exit 1
+fi
+
+mkdir -p "$(dirname "$BIN")" "$(dirname "$PLIST")"
+swiftc -O -o "$BIN" "$SRC"
+
+cat > "$PLIST" << PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>$LABEL</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$BIN</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Background</string>
+</dict>
+</plist>
+PLIST
+
+# Restart the agent so the freshly built binary is the one running.
+launchctl bootout "gui/$UID/$LABEL" 2> /dev/null || true
+launchctl bootstrap "gui/$UID" "$PLIST"
+{{ end -}}
