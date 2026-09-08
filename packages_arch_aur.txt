@@ -16,6 +16,7 @@ paru
 phpactor
 phpantom-git
 rtk-bin
+ryzenadj-git
 slack-desktop
 subtui-git
 tidal-hifi-bin
