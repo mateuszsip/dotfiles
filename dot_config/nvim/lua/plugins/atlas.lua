@@ -7,7 +7,7 @@
 --
 -- Supporting modules:
 --   lua/utils/atlas_highlights.lua — theme-adaptive highlight palette (WCAG 4.5:1)
---   lua/utils/atlas_sort.lua       — Jira status ordering + flat-view handling
+--   lua/utils/atlas_sort.lua       — Jira status ordering, flat views, PR list order
 
 local highlights = require("utils.atlas_highlights")
 local sort = require("utils.atlas_sort")
@@ -460,5 +460,6 @@ return {
 
     sort.wrap_build_issue_tree()
     sort.disable_relationships_for_flat_views()
+    sort.wrap_fetch_pullrequests()
   end,
 }

@@ -1,4 +1,11 @@
--- Status ordering for atlas.nvim Jira issue lists — "closest to done" first.
+-- Deterministic ordering for atlas.nvim lists, which the plugin itself leaves
+-- to whatever order the provider returned:
+--   * Jira issues — "closest to done" first (status ranking below).
+--   * GitHub PRs  — repository name, then PR number descending.
+--
+-- --------------------------------------------------------------------------
+-- Jira issue status ordering
+-- --------------------------------------------------------------------------
 --
 -- atlas exposes no sort option: it renders issues in exactly the order the
 -- provider returned them (`build_issue_tree` appends roots in input order and
@@ -174,6 +181,95 @@ function M.disable_relationships_for_flat_views()
     end
   else
     vim.notify_once("atlas.nvim: flatten opt-out not applied (jira fetch_issues missing)", vim.log.levels.WARN)
+  end
+end
+
+-- --------------------------------------------------------------------------
+-- GitHub PR list ordering
+-- --------------------------------------------------------------------------
+
+-- GitHub's search API decides the order of a PR list, and that order is not
+-- stable between refreshes: with no `sort:` qualifier the ISSUE search falls
+-- back to relevance ranking, and even `sort:updated-desc` reshuffles rows the
+-- moment anyone comments on a PR. Atlas adds no ordering of its own — the
+-- panel walks `groups` and each `group.prs` in exactly the order the provider
+-- handed them over (`build_compact_table` and the plain renderer just iterate)
+-- — so a fixed order has to be imposed on the way through.
+--
+-- Order: repository name ascending, then PR number descending (newest first).
+-- `pr.id` is the PR *number*, held as a string (the GraphQL node id lives in
+-- `pr._raw.node_id`), so it needs `tonumber` before comparing — otherwise #9
+-- sorts above #10.
+--
+-- The views keep their `sort:` qualifiers: those still decide *which* PRs fall
+-- inside the result limit, they just no longer decide the row order.
+
+---@param pr PullRequest
+---@return number
+local function pr_number(pr)
+  return tonumber(pr and pr.id) or 0
+end
+
+---@param group PullsGroup
+---@return string
+local function group_name(group)
+  local repo = (group and group.repo) or {}
+  return tostring(repo.name or repo.id or "")
+end
+
+-- Sorts in place. The tables come from the provider's memory cache, which
+-- hands back the same objects on the next hit — re-sorting a sorted list is a
+-- no-op, so mutating them is safe and keeps cached views ordered too.
+---@param groups PullsGroup[]|nil
+---@return PullsGroup[]|nil
+local function sort_pull_groups(groups)
+  if type(groups) ~= "table" then
+    return groups
+  end
+  for _, group in ipairs(groups) do
+    if type(group) == "table" and type(group.prs) == "table" then
+      table.sort(group.prs, function(a, b)
+        local na, nb = pr_number(a), pr_number(b)
+        if na ~= nb then
+          return na > nb
+        end
+        return tostring(a.id) < tostring(b.id)
+      end)
+    end
+  end
+  table.sort(groups, function(a, b)
+    return group_name(a) < group_name(b)
+  end)
+  return groups
+end
+
+-- Every PR list path runs through the provider's `fetch_pullrequests`
+-- capability — the main list, view switches and bookmark queries all call it
+-- from `pulls/ui/main/controller.lua`, as does `atlas.commands.review` — so
+-- wrapping it covers the lot, including cache hits, which return previously
+-- fetched groups without touching the API.
+--
+-- As with the Jira patches above, this edits the registered capability table
+-- rather than the provider module's own locals: `capabilities.core` holds a
+-- copy of the function *value*, and `providers.load()` hands out this same
+-- table, so this is the function the controller actually calls.
+function M.wrap_fetch_pullrequests()
+  local ok, github = pcall(require, "atlas.pulls.providers.github")
+  local core = ok and type(github) == "table" and github.capabilities and github.capabilities.core or nil
+  if type(core) == "table" and type(core.fetch_pullrequests) == "function" then
+    if not core.__atlas_pr_sort then
+      local upstream = core.fetch_pullrequests
+      core.fetch_pullrequests = function(view, opts, on_done)
+        return upstream(view, opts, function(groups, err)
+          if type(on_done) == "function" then
+            on_done(sort_pull_groups(groups), err)
+          end
+        end)
+      end
+      core.__atlas_pr_sort = true
+    end
+  else
+    vim.notify_once("atlas.nvim: PR sort not applied (github fetch_pullrequests missing)", vim.log.levels.WARN)
   end
 end
 
