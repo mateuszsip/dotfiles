@@ -167,7 +167,15 @@ local github_pull_views = {
     layout = "compact",
     search = "is:pr is:open review-requested:@me archived:false",
   },
-  { name = "All my PRs", key = "3", layout = "grouped", search = "is:pr author:@me sort:updated-desc archived:false" },
+  {
+    name = "All my PRs",
+    key = "3",
+    layout = "grouped",
+    -- atlas strips state qualifiers into its open/merged/declined filters and
+    -- defaults to open-only when there are none, so spell out all three. Must
+    -- match atlas' own form exactly (providers/github/query.lua) to be parsed.
+    search = "is:pr author:@me (is:open OR is:merged OR is:closed -is:merged) sort:updated-desc archived:false",
+  },
   { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me archived:false" },
   {
     name = "Recently merged",
