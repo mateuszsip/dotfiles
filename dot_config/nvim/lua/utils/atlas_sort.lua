@@ -8,7 +8,7 @@
 -- --------------------------------------------------------------------------
 --
 -- atlas exposes no sort option: it renders issues in exactly the order the
--- provider returned them (`build_issue_tree` appends roots in input order and
+-- provider returned them (its tree builder appends roots in input order and
 -- nothing calls `table.sort` on the list). JQL can't express this either —
 -- `ORDER BY statusCategory` only has three buckets, and the views filter
 -- `statusCategory != Done`, which collapses it to two; `ORDER BY status` sorts
@@ -20,7 +20,7 @@
 -- than jumping to the top.
 --
 -- Wired in from lua/plugins/atlas.lua's `config`, which wraps
--- `atlas.issues.ui.main.helper.build_issue_tree` with `M.wrap_build_issue_tree`.
+-- `atlas.issues.state.set_issues` with `M.wrap_set_issues`.
 
 local M = {}
 
@@ -67,7 +67,7 @@ end
 
 -- Render every issue as its own row, ignoring parent/child nesting.
 --
--- `build_issue_tree` pulls any issue whose parent is also in the result set out
+-- The tree builder pulls any issue whose parent is also in the result set out
 -- of the top level and nests it under that parent, which fights a status
 -- ordering: a Needs QA subtask ends up hidden under a To Do epic instead of
 -- sorting to the top. Views marked `flatten = true` opt out of the nesting.
@@ -83,19 +83,13 @@ local function flat_groups(issues)
   return groups
 end
 
--- Which view is about to be rendered. `current_view` is assigned immediately
--- before every `build_issue_tree` call in the issues controller (including the
--- bookmark and JQL-search paths), so it is the reliable signal here —
--- `active_view` lags behind on those paths.
+-- Which view is being rendered. `search_view()` resolves a selected bookmark
+-- to its own view config, so bookmarks and regular tabs are handled alike.
+---@param issues_state table
 ---@return boolean
-local function current_view_wants_flat()
-  local ok, issues_state = pcall(require, "atlas.issues.state")
-  if not ok or type(issues_state) ~= "table" then
-    return false
-  end
-  ---@type table
-  local view = issues_state.current_view or issues_state.active_view or {}
-  return view.flatten == true
+local function current_view_wants_flat(issues_state)
+  local view = type(issues_state.search_view) == "function" and issues_state.search_view() or issues_state.view
+  return type(view) == "table" and view.flatten == true
 end
 
 -- Sort root issues by status, most-progressed first. `table.sort` is not
@@ -130,41 +124,69 @@ local function sort_groups_by_status(groups)
   return groups
 end
 
--- Order the list by status (closest to done first). `build_issue_tree` is
--- the last thing to touch root order before rendering, and every refresh
--- path in the issues controller goes through it, so wrapping it covers
--- views, bookmarks and JQL searches alike. Children are left in their
--- provider order — subtasks stay grouped under their parent.
-function M.wrap_build_issue_tree()
-  local ok, helper = pcall(require, "atlas.issues.ui.main.helper")
-  if ok and type(helper) == "table" and type(helper.build_issue_tree) == "function" then
-    if not helper.__atlas_status_sort then
-      local upstream = helper.build_issue_tree
-      helper.build_issue_tree = function(issues, ...)
-        if current_view_wants_flat() then
-          return sort_groups_by_status(flat_groups(issues))
+-- Upstream floats starred rows to the top; re-sorting by status breaks that,
+-- so re-apply it afterwards. Stable partition, same rule as atlas' own: a group
+-- is starred if its issue or any child is.
+---@param groups IssuesGroup[]
+---@return IssuesGroup[]
+local function starred_first(groups)
+  local first, rest = {}, {}
+  for _, group in ipairs(groups) do
+    local starred = group.issue and group.issue.is_starred == true
+    for _, child in ipairs(group.children or {}) do
+      starred = starred or child.is_starred == true
+    end
+    table.insert(starred and first or rest, group)
+  end
+  vim.list_extend(first, rest)
+  return first
+end
+
+-- Keys the last flat-view `fetch_issues` actually matched; see
+-- `disable_relationships_for_flat_views`. nil until a flat view has loaded.
+---@type table<string, boolean>|nil
+local flat_matched_keys = nil
+
+-- Order the list by status (closest to done first). `atlas.issues.state`
+-- builds `issue_tree` inside `set_issues` (the builder itself is a local),
+-- and every refresh path in the issues controller goes through it, so
+-- wrapping it covers views, bookmarks and JQL searches alike. Children are
+-- left in their provider order — subtasks stay grouped under their parent.
+function M.wrap_set_issues()
+  local ok, issues_state = pcall(require, "atlas.issues.state")
+  if ok and type(issues_state) == "table" and type(issues_state.set_issues) == "function" then
+    if not issues_state.__atlas_status_sort then
+      local upstream = issues_state.set_issues
+      issues_state.set_issues = function(issues, ...)
+        local flat = current_view_wants_flat(issues_state)
+        if flat and flat_matched_keys and type(issues) == "table" then
+          issues = vim.tbl_filter(function(issue)
+            return flat_matched_keys[issue.key] == true
+          end, issues)
         end
-        return sort_groups_by_status(upstream(issues, ...))
+        upstream(issues, ...)
+        local groups = flat and flat_groups(issues_state.issues) or issues_state.issue_tree
+        issues_state.issue_tree = starred_first(sort_groups_by_status(groups))
       end
-      helper.__atlas_status_sort = true
+      issues_state.__atlas_status_sort = true
     end
   else
-    vim.notify_once("atlas.nvim: status sort not applied (build_issue_tree missing)", vim.log.levels.WARN)
+    vim.notify_once("atlas.nvim: status sort not applied (issues state.set_issues missing)", vim.log.levels.WARN)
   end
 end
 
 -- A flattened view must not pull in parents its own JQL did not match.
--- `enrich_with_parents` appends those to the result list — useful context
--- while nesting, but once the tree is flat they become stray top-level
--- rows, typically a Closed epic that then sorts to the very top of a view
--- filtering `statusCategory != Done`. `relationships_enabled` honours
--- `opts.with_relationships`, so switch it off for these views.
+-- The issues controller appends those (`fetch_missing_parents`) — useful
+-- context while nesting, but once the tree is flat they become stray
+-- top-level rows, typically a Closed epic that then sorts to the very top of
+-- a view filtering `statusCategory != Done`. Upstream only skips that step
+-- for `layout = "compact"`, so instead record which keys the view's own JQL
+-- returned and let `wrap_set_issues` drop everything else.
 --
 -- This patches the registered capability table rather than the provider's
--- own `M`, because the module copies the function *value* into
--- `capabilities.core` at load time — patching `M.fetch_issues` afterwards
--- would never be seen. `providers.load()` hands out this same table, so
--- there is no copy in between.
+-- own locals, because `capabilities.core` holds a copy of the function
+-- *value* — `providers.load()` hands out this same table, so this is the
+-- function the controller actually calls.
 function M.disable_relationships_for_flat_views()
   local ok_jira, jira = pcall(require, "atlas.issues.providers.jira")
   local core = ok_jira and type(jira) == "table" and jira.capabilities and jira.capabilities.core or nil
@@ -172,10 +194,17 @@ function M.disable_relationships_for_flat_views()
     if not core.__atlas_flatten_patched then
       local upstream_fetch = core.fetch_issues
       core.fetch_issues = function(view, opts, on_done)
-        if type(view) == "table" and view.flatten then
-          opts = vim.tbl_extend("force", opts or {}, { with_relationships = false })
+        if not (type(view) == "table" and view.flatten) then
+          return upstream_fetch(view, opts, on_done)
         end
-        return upstream_fetch(view, opts, on_done)
+        return upstream_fetch(view, opts, function(page, err)
+          local keys = {}
+          for _, issue in ipairs((page and page.items) or {}) do
+            keys[issue.key] = true
+          end
+          flat_matched_keys = keys
+          on_done(page, err)
+        end)
       end
       core.__atlas_flatten_patched = true
     end

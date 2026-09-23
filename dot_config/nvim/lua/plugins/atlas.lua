@@ -477,7 +477,7 @@ return {
 
     highlights.apply()
 
-    sort.wrap_build_issue_tree()
+    sort.wrap_set_issues()
     sort.disable_relationships_for_flat_views()
     sort.wrap_fetch_pullrequests()
   end,
