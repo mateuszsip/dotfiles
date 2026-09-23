@@ -266,6 +266,35 @@ local function sort_pulls(page)
   return page
 end
 
+-- Atlas runs one GitHub search per selected state (open/merged/declined) as
+-- aliases of a single GraphQL request, each fetching `pagelen` (hardcoded 50)
+-- PRs with their CI rollup. With all three states on — "All my PRs" — that is
+-- 150 nodes, which blows GitHub's 10s GraphQL timeout and comes back as a 502.
+-- Keep the whole request to ~50 nodes by splitting the page across states:
+-- measured ~5s for 3×16 vs a 502 for 3×50. Pages stay consistent because the
+-- follow-up page requests pass through here too.
+local PR_REQUEST_BUDGET = 50
+
+---@param view table
+---@param opts table|nil
+---@return table|nil
+local function cap_pagelen(view, opts)
+  if type(opts) ~= "table" or type(opts.pagelen) ~= "number" then
+    return opts
+  end
+  local ok, query = pcall(require, "atlas.providers.github.query")
+  if not ok or type(query.queries) ~= "function" then
+    return opts
+  end
+  local ok_q, queries = pcall(query.queries, view)
+  local count = ok_q and type(queries) == "table" and #queries or 1
+  if count <= 1 then
+    return opts
+  end
+  local pagelen = math.min(opts.pagelen, math.floor(PR_REQUEST_BUDGET / count))
+  return vim.tbl_extend("force", opts, { pagelen = pagelen })
+end
+
 -- Every PR list path runs through the provider's `fetch_pullrequests`
 -- capability — the main list, view switches and bookmark queries all call it
 -- from `pulls/ui/dashboard/controller.lua`, as does `atlas.commands.review` — so
@@ -283,6 +312,7 @@ function M.wrap_fetch_pullrequests()
     if not core.__atlas_pr_sort then
       local upstream = core.fetch_pullrequests
       core.fetch_pullrequests = function(view, opts, on_done)
+        opts = cap_pagelen(view, opts)
         return upstream(view, opts, function(page, err)
           if type(on_done) == "function" then
             on_done(sort_pulls(page), err)
