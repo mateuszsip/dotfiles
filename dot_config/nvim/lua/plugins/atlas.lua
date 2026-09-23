@@ -78,6 +78,7 @@ local function copy_pr_links(scope)
     "--author=@me",
     "--state=open",
     "--limit=100",
+    "--archived=false",
     "--json",
     "number,title,url,repository",
   }
@@ -97,7 +98,10 @@ local function copy_pr_links(scope)
     vim.schedule(function()
       if result.code ~= 0 then
         local stderr = vim.trim(result.stderr or "")
-        vim.notify("gh search prs failed: " .. (stderr ~= "" and stderr or "exit " .. result.code), vim.log.levels.ERROR)
+        vim.notify(
+          "gh search prs failed: " .. (stderr ~= "" and stderr or "exit " .. result.code),
+          vim.log.levels.ERROR
+        )
         return
       end
 
@@ -151,17 +155,32 @@ end
 -- ---------------------------------------------------------------------------
 
 local github_pull_views = {
-  { name = "My open PRs", key = "1", layout = "plain", search = "is:pr is:open author:@me sort:updated-desc" },
-  { name = "Review queue", key = "2", layout = "compact", search = "is:pr is:open review-requested:@me" },
-  { name = "All my PRs", key = "3", layout = "plain", search = "is:pr author:@me sort:updated-desc" },
-  { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me" },
-  { name = "Recently merged", key = "5", layout = "plain", search = "is:pr is:merged author:@me sort:updated-desc" },
+  {
+    name = "My open PRs",
+    key = "1",
+    layout = "plain",
+    search = "is:pr is:open author:@me sort:updated-desc archived:false",
+  },
+  {
+    name = "Review queue",
+    key = "2",
+    layout = "compact",
+    search = "is:pr is:open review-requested:@me archived:false",
+  },
+  { name = "All my PRs", key = "3", layout = "plain", search = "is:pr author:@me sort:updated-desc archived:false" },
+  { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me archived:false" },
+  {
+    name = "Recently merged",
+    key = "5",
+    layout = "plain",
+    search = "is:pr is:merged author:@me sort:updated-desc archived:false",
+  },
 }
 
 local github_issue_views = {
-  { name = "Assigned", key = "1", layout = "plain", search = "assignee:@me is:open" },
-  { name = "Created", key = "2", layout = "compact", search = "author:@me is:open" },
-  { name = "Mentions", key = "3", layout = "plain", search = "mentions:@me is:open" },
+  { name = "Assigned", key = "1", layout = "plain", search = "assignee:@me is:open archived:false" },
+  { name = "Created", key = "2", layout = "compact", search = "author:@me is:open archived:false" },
+  { name = "Mentions", key = "3", layout = "plain", search = "mentions:@me is:open archived:false" },
 }
 
 local jira_views = {
