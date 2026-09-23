@@ -264,47 +264,50 @@ return {
             or "~/dev/work/lendable/*",
         },
       },
-      providers = {
-        github = {
-          cache_ttl = 300,
-          views = github_pull_views,
-        },
+      github = {
+        views = github_pull_views,
       },
     },
     issues = {
       max_results = 200,
       with_relationships = true,
-      providers = {
-        github = {
-          cache_ttl = 300,
-          views = github_issue_views,
-        },
-        jira = {
-          base_url = vim.env.LENDABLE_JIRA_BASE_URL or "https://lendable.atlassian.net",
-          email = vim.env.LENDABLE_JIRA_EMAIL or "",
-          token = vim.env.LENDABLE_JIRA_API_TOKEN or "",
-          auth_method = "basic",
-          api_type = "cloud",
-          cache_ttl = 300,
-          project_config = {
+      github = {
+        views = github_issue_views,
+      },
+      jira = {
+        project_config = {
             -- Field holding the T-shirt size estimate on CARD project.
-            CARD = {
-              customfield_11091 = {
-                name = "T-shirt size",
-                hl_group = "AtlasLogInfo",
-              },
-            },
-          },
-          views = jira_views,
-          bookmarks = {
-            items = {
-              ["Backlog"] = "project = CARD AND statusCategory != Done AND (sprint IS EMPTY OR sprint NOT IN openSprints()) ORDER BY Rank ASC",
-              ["Next sprint"] = "project = CARD AND sprint in futureSprints() ORDER BY Rank ASC",
-              ["My open"] = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC",
-              ["Platform blocked"] = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) AND status = Blocked ORDER BY updated DESC",
+          CARD = {
+            customfield_11091 = {
+              name = "T-shirt size",
+              hl_group = "AtlasLogInfo",
             },
           },
         },
+        views = jira_views,
+        bookmarks = {
+          items = {
+            ["Backlog"] = "project = CARD AND statusCategory != Done AND (sprint IS EMPTY OR sprint NOT IN openSprints()) ORDER BY Rank ASC",
+            ["Next sprint"] = "project = CARD AND sprint in futureSprints() ORDER BY Rank ASC",
+            ["My open"] = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC",
+            ["Platform blocked"] = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) AND status = Blocked ORDER BY updated DESC",
+          },
+        },
+      },
+    },
+    -- Shared per-provider settings (auth, cache); views/bookmarks live under
+    -- the pulls/issues sections above.
+    providers = {
+      github = {
+        cache_ttl = 300,
+      },
+      jira = {
+        base_url = vim.env.LENDABLE_JIRA_BASE_URL or "https://lendable.atlassian.net",
+        email = vim.env.LENDABLE_JIRA_EMAIL or "",
+        token = vim.env.LENDABLE_JIRA_API_TOKEN or "",
+        auth_method = "basic",
+        api_type = "cloud",
+        cache_ttl = 300,
       },
     },
   },
