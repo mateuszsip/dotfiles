@@ -65,7 +65,7 @@ end
 -- overwrites the clipboard, and its PR list has no marking concept — so this
 -- goes straight to `gh` for the data and borrows atlas' picker for the UI.
 --
--- `atlas.picker` is an internal module (same one atlas uses for its reviewer and
+-- `atlas.ui.picker` is an internal module (same one atlas uses for its reviewer and
 -- label pickers). Depending on it rather than driving snacks directly keeps the
 -- `ui.picker = "auto"` preference working.
 --
@@ -111,7 +111,7 @@ local function copy_pr_links(scope)
         return
       end
 
-      require("atlas.picker").multi_select({
+      require("atlas.ui.picker").multi_select({
         title = title,
         items = prs,
         selected = {},
