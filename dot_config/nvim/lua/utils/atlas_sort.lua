@@ -221,9 +221,8 @@ end
 -- stable between refreshes: with no `sort:` qualifier the ISSUE search falls
 -- back to relevance ranking, and even `sort:updated-desc` reshuffles rows the
 -- moment anyone comments on a PR. Atlas adds no ordering of its own — the
--- panel walks `groups` and each `group.prs` in exactly the order the provider
--- handed them over (`build_compact_table` and the plain renderer just iterate)
--- — so a fixed order has to be imposed on the way through.
+-- panel renders `page.items` in exactly the order the provider handed them
+-- over — so a fixed order has to be imposed on the way through.
 --
 -- Order: repository name ascending, then PR number descending (newest first).
 -- `pr.id` is the PR *number*, held as a string (the GraphQL node id lives in
@@ -239,44 +238,39 @@ local function pr_number(pr)
   return tonumber(pr and pr.id) or 0
 end
 
----@param group PullsGroup
----@return string
-local function group_name(group)
-  local repo = (group and group.repo) or {}
-  return tostring(repo.name or repo.id or "")
-end
-
 -- Sorts in place. The tables come from the provider's memory cache, which
 -- hands back the same objects on the next hit — re-sorting a sorted list is a
 -- no-op, so mutating them is safe and keeps cached views ordered too.
----@param groups PullsGroup[]|nil
----@return PullsGroup[]|nil
-local function sort_pull_groups(groups)
-  if type(groups) ~= "table" then
-    return groups
+--
+-- The provider returns a flat page (`{ items = PullRequest[] }`); the
+-- `grouped` layout buckets it by `repo_full_name` in first-seen order, so
+-- sorting by repo here also fixes the order of the repo headers.
+---@param page { items: PullRequest[] }|nil
+---@return { items: PullRequest[] }|nil
+local function sort_pulls(page)
+  local items = type(page) == "table" and page.items or nil
+  if type(items) ~= "table" then
+    return page
   end
-  for _, group in ipairs(groups) do
-    if type(group) == "table" and type(group.prs) == "table" then
-      table.sort(group.prs, function(a, b)
-        local na, nb = pr_number(a), pr_number(b)
-        if na ~= nb then
-          return na > nb
-        end
-        return tostring(a.id) < tostring(b.id)
-      end)
+  table.sort(items, function(a, b)
+    local ra, rb = tostring(a.repo_full_name or ""), tostring(b.repo_full_name or "")
+    if ra ~= rb then
+      return ra < rb
     end
-  end
-  table.sort(groups, function(a, b)
-    return group_name(a) < group_name(b)
+    local na, nb = pr_number(a), pr_number(b)
+    if na ~= nb then
+      return na > nb
+    end
+    return tostring(a.id) < tostring(b.id)
   end)
-  return groups
+  return page
 end
 
 -- Every PR list path runs through the provider's `fetch_pullrequests`
 -- capability — the main list, view switches and bookmark queries all call it
--- from `pulls/ui/main/controller.lua`, as does `atlas.commands.review` — so
+-- from `pulls/ui/dashboard/controller.lua`, as does `atlas.commands.review` — so
 -- wrapping it covers the lot, including cache hits, which return previously
--- fetched groups without touching the API.
+-- fetched pages without touching the API.
 --
 -- As with the Jira patches above, this edits the registered capability table
 -- rather than the provider module's own locals: `capabilities.core` holds a
@@ -289,9 +283,9 @@ function M.wrap_fetch_pullrequests()
     if not core.__atlas_pr_sort then
       local upstream = core.fetch_pullrequests
       core.fetch_pullrequests = function(view, opts, on_done)
-        return upstream(view, opts, function(groups, err)
+        return upstream(view, opts, function(page, err)
           if type(on_done) == "function" then
-            on_done(sort_pull_groups(groups), err)
+            on_done(sort_pulls(page), err)
           end
         end)
       end
