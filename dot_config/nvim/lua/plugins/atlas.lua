@@ -158,7 +158,7 @@ local github_pull_views = {
   {
     name = "My open PRs",
     key = "1",
-    layout = "plain",
+    layout = "grouped",
     search = "is:pr is:open author:@me sort:updated-desc archived:false",
   },
   {
@@ -167,12 +167,12 @@ local github_pull_views = {
     layout = "compact",
     search = "is:pr is:open review-requested:@me archived:false",
   },
-  { name = "All my PRs", key = "3", layout = "plain", search = "is:pr author:@me sort:updated-desc archived:false" },
+  { name = "All my PRs", key = "3", layout = "grouped", search = "is:pr author:@me sort:updated-desc archived:false" },
   { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me archived:false" },
   {
     name = "Recently merged",
     key = "5",
-    layout = "plain",
+    layout = "grouped",
     search = "is:pr is:merged author:@me sort:updated-desc archived:false",
   },
 }
