@@ -174,7 +174,7 @@ return {
           if entry and entry.type == "directory" then
             dir = dir .. "/" .. entry.name
           end
-          require("utils.kulala").search_requests_in_dir(dir)
+          require("utils.rest").search_requests_in_dir(dir)
         end,
         desc = "Find HTTP requests in cursor dir",
       },
