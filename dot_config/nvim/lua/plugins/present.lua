@@ -13,8 +13,6 @@ return {
     local create = require("present").create_system_executor
     opts.executors = vim.tbl_deep_extend("force", opts.executors or {}, {
       php = create("php"),
-      bash = create("bash"),
-      sh = create("sh"),
     })
   end,
   config = function(_, opts)

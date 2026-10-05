@@ -99,11 +99,4 @@ return {
       end, { desc = "Find chezmoi managed files" })
     end,
   },
-  {
-    "alker0/chezmoi.vim",
-    lazy = false,
-    init = function()
-      vim.g["chezmoi#use_tmp_buffer"] = 1
-    end,
-  },
 }

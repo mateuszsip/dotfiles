@@ -10,15 +10,7 @@ return {
           hamal.split()
         end,
         desc = "Hamal: line navigation",
-        mode = { "n", "o" },
-      },
-      {
-        "<leader>;",
-        function()
-          hamal.split()
-        end,
-        desc = "Hamal: line navigation",
-        mode = { "v" },
+        mode = { "n", "o", "v" },
       },
     })
   end,

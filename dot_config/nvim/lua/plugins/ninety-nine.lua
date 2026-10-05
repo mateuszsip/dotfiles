@@ -7,7 +7,6 @@ return {
     local basename = vim.fs.basename(cwd)
 
     _99.setup({
-      -- provider = _99.Providers.ClaudeCodeProvider, -- default: OpenCodeProvider
       model = "opencode/glm-5.2",
 
       logger = {
@@ -22,14 +21,8 @@ return {
 
       completion = {
         source = "blink", -- you use blink.cmp
-        custom_rules = {
-          -- "scratch/custom_rules/",
-        },
-        files = {
-          -- enabled = true,
-          -- max_file_size = 102400,
-          -- max_files = 5000,
-        },
+        custom_rules = {},
+        files = {},
       },
 
       -- Auto-load context files found walking up from the current buffer

@@ -7,11 +7,7 @@ return {
     "olimorris/neotest-phpunit",
   },
   config = function()
-    local status_ok, neotest = pcall(require, "neotest")
-    if not status_ok then
-      vim.notify("Failed to load neotest", vim.log.levels.ERROR)
-      return
-    end
+    local neotest = require("neotest")
 
     neotest.setup({
       adapters = {

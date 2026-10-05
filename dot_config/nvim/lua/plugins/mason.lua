@@ -5,7 +5,7 @@
 -- `p:install()` loops racing on the same package and throwing
 -- "Package is already installing." at startup.
 --
--- copilot-language-server is NOT here: LazyVim's copilot-native extra enables
+-- copilot-language-server is NOT here: LazyVim's ai.sidekick extra enables
 -- the lspconfig `copilot` server, so mason-lspconfig already installs it.
 return {
   {

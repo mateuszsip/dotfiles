@@ -48,10 +48,6 @@ return {
             },
           },
         },
-        -- LSP servers installed + enabled via mason-lspconfig (LazyVim
-        -- auto-installs enabled servers whose mason package exists).
-        -- Moved out of mason.nvim `ensure_installed` to avoid two concurrent
-        -- install loops racing on the same package.
         bashls = {},
         docker_compose_language_service = {},
         dockerls = {},

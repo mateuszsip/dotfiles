@@ -21,36 +21,6 @@ local groups = {
 	"CursorLineNr",
 	"NormalNC",
 	"WhichKeyFloat",
-	"TelescopeBorder",
-	"TelescopeNormal",
-	"TelescopePromptBorder",
-	"TelescopePromptTitle",
-	-- neotree
-	"NeoTreeNormal",
-	"NeoTreeNormalNC",
-	"NeoTreeVertSplit",
-	"NeoTreeWinSeparator",
-	"NeoTreeEndOfBuffer",
-	-- nvim-tree
-	"NvimTreeNormal",
-	"NvimTreeVertSplit",
-	"NvimTreeEndOfBuffer",
-	-- notify
-	"NotifyINFOBody",
-	"NotifyERRORBody",
-	"NotifyWARNBody",
-	"NotifyTRACEBody",
-	"NotifyDEBUGBody",
-	"NotifyINFOTitle",
-	"NotifyERRORTitle",
-	"NotifyWARNTitle",
-	"NotifyTRACETitle",
-	"NotifyDEBUGTitle",
-	"NotifyINFOBorder",
-	"NotifyERRORBorder",
-	"NotifyWARNBorder",
-	"NotifyTRACEBorder",
-	"NotifyDEBUGBorder",
 }
 
 for _, name in ipairs(groups) do

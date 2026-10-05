@@ -34,8 +34,9 @@ end
 -- Terminal passthrough is handled in the TermOpen autocmd below
 
 -- Shifted jkl; layout: j=left, k=down, l=up, ;=right
-map({ "n", "x" }, "j", "h", { desc = "Left" })
-map({ "n", "x" }, ";", "l", { desc = "Right" })
+-- n-mode j/; are owned by the origami fold maps below, so register x-mode only
+map("x", "j", "h", { desc = "Left" })
+map("x", ";", "l", { desc = "Right" })
 map({ "n", "x", "o" }, "h", function()
   require("flash.plugins.char").jump(";")
 end, { desc = "Repeat f/t forward" })
@@ -192,10 +193,6 @@ end, { desc = "Buffer Picker" })
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
-map("n", "<leader>CA", function()
-  Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
-end, { desc = "Chezmoi Apply All" })
-
 -- Override LazyVim's terminal labels
 map("n", "<leader>ft", function()
   Snacks.terminal(nil, { cwd = vim.fn.getcwd() })
@@ -232,7 +229,7 @@ map("n", "ZZ", "<cmd>wqall<cr>", { desc = "Save all and quit" })
 map("n", "Zz", "<cmd>qall<cr>", { desc = "Quit all" })
 
 -- Copy relative path of current buffer
-map("n", "<leader>yr", function()
+local function copy_rel_path(base)
   local name = vim.api.nvim_buf_get_name(0)
   if name == "" or name:match("://") then
     return Snacks.notify.warn("Buffer has no readable file")
@@ -240,15 +237,11 @@ map("n", "<leader>yr", function()
   if vim.fn.filereadable(name) == 0 and vim.fn.isdirectory(name) == 0 then
     return Snacks.notify.warn("Buffer has no readable file")
   end
-  require("utils.path").copy_relative(name, vim.uv.cwd())
+  require("utils.path").copy_relative(name, base)
+end
+map("n", "<leader>yr", function()
+  copy_rel_path(vim.uv.cwd())
 end, { desc = "Copy relative path (cwd)" })
 map("n", "<leader>yR", function()
-  local name = vim.api.nvim_buf_get_name(0)
-  if name == "" or name:match("://") then
-    return Snacks.notify.warn("Buffer has no readable file")
-  end
-  if vim.fn.filereadable(name) == 0 and vim.fn.isdirectory(name) == 0 then
-    return Snacks.notify.warn("Buffer has no readable file")
-  end
-  require("utils.path").copy_relative(name, LazyVim.root())
+  copy_rel_path(LazyVim.root())
 end, { desc = "Copy relative path (root)" })

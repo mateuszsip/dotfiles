@@ -15,7 +15,7 @@ return {
     -- sign priorities for each group of marks - builtin marks, lowercase marks , uppercase marks, bookmark groups.
     sign_priority = { lower = 10, upper = 15, builtin = 8, bookmark = 20 },
     -- excluded filetypes / buftypes
-    excluded_filetypes = { "NvimTree", "neo-tree", "oil", "gitcommit", "snacks_picker_input" },
+    excluded_filetypes = { "oil", "gitcommit", "snacks_picker_input" },
     excluded_buftypes = { "terminal", "nofile" },
     mappings = {},
   },

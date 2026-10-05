@@ -9,9 +9,6 @@ return {
       -- Guard against nil command in malformed DAP responses (e.g. some Xdebug versions)
       local safe_mt = {
         __index = function(tbl, key)
-          if key == nil then
-            return {}
-          end
           rawset(tbl, key, {})
           return rawget(tbl, key)
         end,
