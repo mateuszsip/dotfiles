@@ -135,20 +135,26 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Wipe directory buffers, and oil buffers too when a session is about to
+-- read or write them, to keep the restored window layout stable.
+local function wipe_session_bufs(oil_too)
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      local bufname = vim.api.nvim_buf_get_name(buf)
+      if vim.fn.isdirectory(bufname) == 1 or (oil_too and bufname:match("^oil://")) then
+        pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      end
+    end
+  end
+end
+
 -- Wipeout directory and oil buffers before saving/loading session to prevent window size/layout distortion
 vim.api.nvim_create_autocmd("User", {
   pattern = { "PersistenceSavePre", "PersistenceLoadPre" },
   group = vim.api.nvim_create_augroup("PersistenceBufferCleanup", { clear = true }),
   desc = "Wipeout directory and oil buffers before saving or loading session",
   callback = function()
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(buf) then
-        local bufname = vim.api.nvim_buf_get_name(buf)
-        if vim.fn.isdirectory(bufname) == 1 or bufname:match("^oil://") then
-          pcall(vim.api.nvim_buf_delete, buf, { force = true })
-        end
-      end
-    end
+    wipe_session_bufs(true)
   end,
 })
 
@@ -158,15 +164,7 @@ vim.api.nvim_create_autocmd("User", {
   group = vim.api.nvim_create_augroup("PersistenceDirectoryCleanup", { clear = true }),
   desc = "Clean directory buffers after session load",
   callback = function()
-    -- Wipeout directory buffers restored by the session
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(buf) then
-        local bufname = vim.api.nvim_buf_get_name(buf)
-        if vim.fn.isdirectory(bufname) == 1 then
-          pcall(vim.api.nvim_buf_delete, buf, { force = true })
-        end
-      end
-    end
+    wipe_session_bufs(false)
   end,
 })
 

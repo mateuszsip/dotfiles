@@ -1,3 +1,36 @@
+-- Close the oil float from its list buffer or a preview buffer.
+local close_oil = function()
+  vim.cmd("close")
+end
+
+-- Oil directory of the cursor entry, descending into a directory entry.
+local function cursor_dir()
+  local oil = require("oil")
+  local dir = oil.get_current_dir()
+  if not dir then
+    return nil
+  end
+  local entry = oil.get_cursor_entry()
+  if entry and entry.type == "directory" then
+    dir = dir .. "/" .. entry.name
+  end
+  return dir
+end
+
+-- Path of the cursor entry, plus whether it is a directory.
+local function cursor_path()
+  local oil = require("oil")
+  local dir = oil.get_current_dir()
+  if not dir then
+    return nil
+  end
+  local entry = oil.get_cursor_entry()
+  if not entry then
+    return nil
+  end
+  return dir .. "/" .. entry.name, entry.type == "directory"
+end
+
 return {
   "stevearc/oil.nvim",
   lazy = false,
@@ -93,18 +126,8 @@ return {
       -- default `` ` `` (backtick) = actions.cd  -> change cwd to current dir
 
       -- q / <Esc> = close oil window (float or split)
-      ["q"] = {
-        callback = function()
-          vim.cmd("close")
-        end,
-        desc = "Close oil",
-      },
-      ["<Esc>"] = {
-        callback = function()
-          vim.cmd("close")
-        end,
-        desc = "Close oil",
-      },
+      ["q"] = { callback = close_oil, desc = "Close oil" },
+      ["<Esc>"] = { callback = close_oil, desc = "Close oil" },
 
       -- <Tab> = toggle focus between oil list and preview
       ["<Tab>"] = {
@@ -135,14 +158,9 @@ return {
       },
       ["<leader>sf"] = {
         callback = function()
-          local oil = require("oil")
-          local dir = oil.get_current_dir()
+          local dir = cursor_dir()
           if not dir then
             return
-          end
-          local entry = oil.get_cursor_entry()
-          if entry and entry.type == "directory" then
-            dir = dir .. "/" .. entry.name
           end
           Snacks.picker.files({ cwd = dir })
         end,
@@ -150,14 +168,9 @@ return {
       },
       ["<leader>sg"] = {
         callback = function()
-          local oil = require("oil")
-          local dir = oil.get_current_dir()
+          local dir = cursor_dir()
           if not dir then
             return
-          end
-          local entry = oil.get_cursor_entry()
-          if entry and entry.type == "directory" then
-            dir = dir .. "/" .. entry.name
           end
           Snacks.picker.grep({ cwd = dir })
         end,
@@ -165,14 +178,9 @@ return {
       },
       ["<leader>RF"] = {
         callback = function()
-          local oil = require("oil")
-          local dir = oil.get_current_dir()
+          local dir = cursor_dir()
           if not dir then
             return
-          end
-          local entry = oil.get_cursor_entry()
-          if entry and entry.type == "directory" then
-            dir = dir .. "/" .. entry.name
           end
           require("utils.rest").search_requests_in_dir(dir)
         end,
@@ -180,33 +188,21 @@ return {
       },
       ["<leader>yr"] = {
         callback = function()
-          local oil = require("oil")
-          local dir = oil.get_current_dir()
-          if not dir then
+          local path, is_dir = cursor_path()
+          if not path then
             return
           end
-          local entry = oil.get_cursor_entry()
-          if not entry then
-            return
-          end
-          local path = dir .. "/" .. entry.name
-          require("utils.path").copy_relative(path, vim.uv.cwd(), { dir = entry.type == "directory" })
+          require("utils.path").copy_relative(path, vim.uv.cwd(), { dir = is_dir })
         end,
         desc = "Copy relative path (cwd)",
       },
       ["<leader>yR"] = {
         callback = function()
-          local oil = require("oil")
-          local dir = oil.get_current_dir()
-          if not dir then
+          local path, is_dir = cursor_path()
+          if not path then
             return
           end
-          local entry = oil.get_cursor_entry()
-          if not entry then
-            return
-          end
-          local path = dir .. "/" .. entry.name
-          require("utils.path").copy_relative(path, LazyVim.root(), { dir = entry.type == "directory" })
+          require("utils.path").copy_relative(path, LazyVim.root(), { dir = is_dir })
         end,
         desc = "Copy relative path (root)",
       },

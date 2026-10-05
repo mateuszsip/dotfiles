@@ -143,25 +143,19 @@ local function open_haunt_picker(filter_current_buf)
 			end,
 		},
 		win = {
-			input = {
-				keys = {
-					["<c-e>"] = { "edit_annotation", desc = "Edit annotation", mode = { "n", "i" } },
-					["<c-d>"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n", "i" } },
-					["e"] = { "edit_annotation", desc = "Edit annotation", mode = { "n" } },
-					["d"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n" } },
-				},
-			},
-			list = {
-				keys = {
-					["<c-e>"] = { "edit_annotation", desc = "Edit annotation", mode = { "n", "i" } },
-					["<c-d>"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n", "i" } },
-					["e"] = { "edit_annotation", desc = "Edit annotation", mode = { "n" } },
-					["d"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n" } },
-				},
-			},
+			input = { keys = picker_keys },
+			list = { keys = picker_keys },
 		},
 	})
 end
+
+-- Edit/delete from both the input and the list window of the haunt picker.
+local picker_keys = {
+	["<c-e>"] = { "edit_annotation", desc = "Edit annotation", mode = { "n", "i" } },
+	["<c-d>"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n", "i" } },
+	["e"] = { "edit_annotation", desc = "Edit annotation", mode = { "n" } },
+	["d"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n" } },
+}
 
 return {
 	"TheNoeTrevino/haunt.nvim",
