@@ -67,6 +67,18 @@ local keys = {
 	-- Disable snacks picker git_diff maps; <leader>gd is a diff subgroup (see diffview.lua)
 	{ "<leader>gd", false },
 	{ "<leader>gD", false },
+	-- LazyVim 16 auto-defaults enable the snacks_picker and snacks_explorer
+	-- extras. Their git pickers and explorer keys collide with atlas (gI/gS/
+	-- gi/gp, see atlas.lua) and oil (fe/fE/e/E, see oil.lua), and the winner
+	-- flips per launch. Disable them so the user specs own the keys.
+	{ "<leader>gI", false },
+	{ "<leader>gS", false },
+	{ "<leader>gi", false },
+	{ "<leader>gp", false },
+	{ "<leader>fe", false },
+	{ "<leader>fE", false },
+	{ "<leader>e", false },
+	{ "<leader>E", false },
 	-- Diff hunks via snacks picker (replaces the disabled top-level maps above)
 	{
 		"<leader>gdd",
@@ -116,6 +128,9 @@ return {
 		},
 		scroll = {
 			enabled = false, -- Disable scrolling animations (neoscroll.nvim handles smooth scroll)
+		},
+		explorer = {
+			enabled = false, -- oil.nvim owns the explorer; skip the snacks module load
 		},
 		image = {
 			enabled = true,

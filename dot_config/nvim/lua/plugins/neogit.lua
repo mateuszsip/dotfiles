@@ -3,7 +3,7 @@ return {
     "NeogitOrg/neogit",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "sindrets/diffview.nvim",
+      "dlyongemallo/diffview-plus.nvim",
     },
     cmd = "Neogit",
     opts = {
