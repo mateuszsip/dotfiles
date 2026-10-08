@@ -36,6 +36,28 @@ return {
         end,
         desc = "CodeCompanion Rename Chat",
       },
+      {
+        "<leader>zl",
+        function()
+          local entries = vim.tbl_filter(function(e)
+            return e.interaction == "chat"
+          end, require("codecompanion.interactions.shared.registry").list())
+          if #entries == 0 then
+            return vim.notify("No open CodeCompanion chats", vim.log.levels.INFO)
+          end
+          vim.ui.select(entries, {
+            prompt = "Open chats",
+            format_item = function(e)
+              return e.name
+            end,
+          }, function(e)
+            if e then
+              e.open()
+            end
+          end)
+        end,
+        desc = "CodeCompanion Open Chats",
+      },
       { "<leader>za", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
       { "<leader>zi", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
       { "<leader>zs", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
