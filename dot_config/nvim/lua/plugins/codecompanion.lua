@@ -45,16 +45,23 @@ return {
           if #entries == 0 then
             return vim.notify("No open CodeCompanion chats", vim.log.levels.INFO)
           end
-          vim.ui.select(entries, {
-            prompt = "Open chats",
-            format_item = function(e)
-              return e.name
+          Snacks.picker({
+            title = "Open chats",
+            items = vim.tbl_map(function(e)
+              local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
+              return { text = e.name, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
+            end, entries),
+            preview = "preview",
+            format = function(item)
+              return { { item.text } }
             end,
-          }, function(e)
-            if e then
-              e.open()
-            end
-          end)
+            confirm = function(picker, item)
+              picker:close()
+              if item then
+                item.entry.open()
+              end
+            end,
+          })
         end,
         desc = "CodeCompanion Open Chats",
       },
