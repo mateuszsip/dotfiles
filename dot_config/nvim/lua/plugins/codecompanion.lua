@@ -1,7 +1,7 @@
 -- Experimental: https://github.com/olimorris/codecompanion.nvim
 -- Chat uses an ACP agent picked per machine: opencode2 when it's on PATH
 -- (private laptop), otherwise Claude Code (work, subscription; needs
--- `npm i -g @zed-industries/claude-agent-acp`). Inline/cmd interactions
+-- `npm i -g @agentclientprotocol/claude-agent-acp`). Inline/cmd interactions
 -- only support HTTP adapters, so they stay on Copilot.
 local chat_adapter = vim.fn.executable("opencode2") == 1 and "opencode" or "claude_code"
 
