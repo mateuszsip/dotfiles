@@ -49,7 +49,10 @@ return {
             title = "Open chats",
             items = vim.tbl_map(function(e)
               local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
-              return { text = e.name, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
+              -- prefer the chat title (set by <leader>zt or the agent's session_info_update)
+              local chat = require("codecompanion").buf_get_chat(e.bufnr)
+              local title = chat and chat.title ~= "" and chat.title or e.name
+              return { text = title, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
             end, entries),
             preview = "preview",
             format = function(item)
