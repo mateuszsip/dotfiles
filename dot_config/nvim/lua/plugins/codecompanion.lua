@@ -29,6 +29,8 @@ return {
           vim.ui.input({ prompt = "Chat title: ", default = chat.title or "" }, function(input)
             if input and input ~= "" then
               chat:set_title(input)
+              -- the snacks action palette lists chats by registry name ("Chat N"), not title
+              require("codecompanion.interactions.shared.registry").update(chat.bufnr, { name = input })
             end
           end)
         end,
