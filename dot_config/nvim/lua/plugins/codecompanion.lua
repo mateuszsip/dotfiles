@@ -17,6 +17,23 @@ return {
     keys = {
       { "<leader>zz", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "x" }, desc = "CodeCompanion Chat" },
       { "<leader>zn", ":CodeCompanionChat<cr>", mode = { "n", "x" }, desc = "CodeCompanion New Chat" },
+      {
+        "<leader>zt",
+        function()
+          -- /rename is HTTP-only, but Chat:set_title works for ACP chats too
+          local cc = require("codecompanion")
+          local chat = cc.buf_get_chat(0) or cc.last_chat()
+          if not chat then
+            return vim.notify("No CodeCompanion chat to rename", vim.log.levels.WARN)
+          end
+          vim.ui.input({ prompt = "Chat title: ", default = chat.title or "" }, function(input)
+            if input and input ~= "" then
+              chat:set_title(input)
+            end
+          end)
+        end,
+        desc = "CodeCompanion Rename Chat",
+      },
       { "<leader>za", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
       { "<leader>zi", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
       { "<leader>zs", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
