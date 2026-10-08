@@ -249,6 +249,16 @@ return {
     "MeanderingProgrammer/render-markdown.nvim",
   },
   opts = {
+    keymaps = {
+      ui = {
+        -- Match the shifted jkl; layout (see config/keymaps.lua). Atlas binds
+        -- `j`=next / `k`=previous buffer-locally, which shadows the global remap:
+        -- `k` (Down) moved up, `l` (Up) did nothing, `j` (Left) moved down.
+        -- Rebinding frees `j`, so it falls through to the global Left again.
+        next_item = "k",
+        previous_item = "l",
+      },
+    },
     pulls = {
       -- Lendable repos disable merge commits and rebases (squash only), and
       -- atlas defaults to `--merge` — which fails with "Merge commits are not
