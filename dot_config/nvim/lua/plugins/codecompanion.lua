@@ -68,6 +68,22 @@ return {
         end,
         desc = "CodeCompanion Open Chats",
       },
+      {
+        "<leader>zq",
+        function()
+          local cc = require("codecompanion")
+          local chat = cc.buf_get_chat(0) or cc.last_chat()
+          if not chat then
+            return vim.notify("No CodeCompanion chat to close", vim.log.levels.WARN)
+          end
+          -- move to the next chat (same order as `}`) before closing this one
+          if #cc.buf_get_chat() > 1 then
+            require("codecompanion.interactions.chat.keymaps").next_chat.callback(chat)
+          end
+          chat:close()
+        end,
+        desc = "CodeCompanion Close Chat",
+      },
       { "<leader>za", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
       { "<leader>zi", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
       { "<leader>zs", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
