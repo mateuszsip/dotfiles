@@ -16,6 +16,7 @@ return {
     cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionCmd", "CodeCompanionCodeReview" },
     keys = {
       { "<leader>zz", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "x" }, desc = "CodeCompanion Chat" },
+      { "<leader>zn", ":CodeCompanionChat<cr>", mode = { "n", "x" }, desc = "CodeCompanion New Chat" },
       { "<leader>za", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
       { "<leader>zi", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
       { "<leader>zs", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
