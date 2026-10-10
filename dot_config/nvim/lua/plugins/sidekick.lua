@@ -62,7 +62,7 @@ return {
 			desc = "Sidekick: Send All Haunt Bookmarks",
 		},
 		{
-			"<A-;>",
+			"<A-n>",
 			function()
 				require("sidekick").nes_jump_or_apply()
 			end,

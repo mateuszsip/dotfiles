@@ -69,8 +69,9 @@ return {
       keymaps = {
         ["<C-k>"] = false,
         ["<C-j>"] = false,
-        ["K"] = "keymap.scroll_output_up",
-        ["L"] = "keymap.scroll_output_down",
+        -- shifted jkl; layout: K = Down, L = Up (see config/keymaps.lua)
+        ["K"] = "keymap.scroll_output_down",
+        ["L"] = "keymap.scroll_output_up",
       },
     },
   },

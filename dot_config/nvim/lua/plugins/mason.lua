@@ -19,6 +19,7 @@ return {
         "markdownlint",
         "php-cs-fixer",
         "phpcs",
+        "phpstan",
         "shellcheck",
         "shfmt",
         "sqlfluff",
