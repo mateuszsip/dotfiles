@@ -70,6 +70,50 @@ return {
 			desc = "Sidekick: Send All Haunt Bookmarks",
 		},
 		{
+			"<leader>aSa",
+			function()
+				require("sidekick.cli").toggle()
+			end,
+			desc = "Sidekick Toggle CLI",
+		},
+		{
+			"<leader>aSs",
+			function()
+				require("sidekick.cli").select()
+			end,
+			desc = "Select CLI",
+		},
+		{
+			"<leader>aSd",
+			function()
+				require("sidekick.cli").close()
+			end,
+			desc = "Detach a CLI Session",
+		},
+		{
+			"<leader>aSt",
+			function()
+				require("sidekick.cli").send({ msg = "{this}" })
+			end,
+			mode = { "x", "n" },
+			desc = "Send This",
+		},
+		{
+			"<leader>aSf",
+			function()
+				require("sidekick.cli").send({ msg = "{file}" })
+			end,
+			desc = "Send File",
+		},
+		{
+			"<leader>aSv",
+			function()
+				require("sidekick.cli").send({ msg = "{selection}" })
+			end,
+			mode = { "x" },
+			desc = "Send Visual Selection",
+		},
+		{
 			"<A-n>",
 			function()
 				require("sidekick").nes_jump_or_apply()
