@@ -2,35 +2,35 @@ return {
 	"folke/sidekick.nvim",
 	keys = {
 		{
-			"<leader>ac",
+			"<leader>aSc",
 			function()
 				require("sidekick.cli").toggle({ name = "claude", focus = true })
 			end,
 			desc = "Sidekick Toggle Claude",
 		},
 		{
-			"<leader>ao",
+			"<leader>aSo",
 			function()
 				require("sidekick.cli").toggle({ name = "opencode2", focus = true })
 			end,
 			desc = "Sidekick Toggle OpenCode 2",
 		},
 		{
-			"<leader>ag",
+			"<leader>aSg",
 			function()
 				require("sidekick.cli").toggle({ name = "antigravity", focus = true })
 			end,
 			desc = "Sidekick Toggle Antigravity",
 		},
 		{
-			"<leader>ap",
+			"<leader>aSp",
 			function()
 				require("sidekick.cli").toggle({ name = "pi", focus = true })
 			end,
 			desc = "Sidekick Toggle Pi",
 		},
 		{
-			"<leader>aP",
+			"<leader>aSP",
 			function()
 				require("sidekick.cli").prompt()
 			end,
@@ -38,7 +38,7 @@ return {
 			desc = "Sidekick Select Prompt",
 		},
 		{
-			"<leader>ab",
+			"<leader>aSb",
 			function()
 				local locs = require("haunt.sidekick").get_locations({ current_buffer = true })
 				if locs and #locs > 0 then
@@ -50,7 +50,7 @@ return {
 			desc = "Sidekick: Send Buffer Haunt Bookmarks",
 		},
 		{
-			"<leader>aB",
+			"<leader>aSB",
 			function()
 				local locs = require("haunt.sidekick").get_locations()
 				if locs and #locs > 0 then
@@ -73,7 +73,7 @@ return {
 		cli = {
 			win = {
 				-- disable default `<c-p>` terminal-mode prompt keymap;
-				-- `<leader>aP` already opens the prompt picker
+				-- `<leader>aSP` already opens the prompt picker
 				keys = { prompt = false },
 				split = {
 					width = 80,

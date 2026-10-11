@@ -13,12 +13,18 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
-    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionCmd", "CodeCompanionCodeReview" },
+    cmd = {
+      "CodeCompanion",
+      "CodeCompanionChat",
+      "CodeCompanionActions",
+      "CodeCompanionCmd",
+      "CodeCompanionCodeReview",
+    },
     keys = {
-      { "<leader>zz", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "x" }, desc = "CodeCompanion Chat" },
-      { "<leader>zn", ":CodeCompanionChat<cr>", mode = { "n", "x" }, desc = "CodeCompanion New Chat" },
+      { "<leader>az", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "x" }, desc = "CodeCompanion Chat" },
+      { "<leader>an", ":CodeCompanionChat<cr>", mode = { "n", "x" }, desc = "CodeCompanion New Chat" },
       {
-        "<leader>zt",
+        "<leader>at",
         function()
           -- /rename is HTTP-only, but Chat:set_title works for ACP chats too
           local cc = require("codecompanion")
@@ -37,7 +43,7 @@ return {
         desc = "CodeCompanion Rename Chat",
       },
       {
-        "<leader>zl",
+        "<leader>al",
         function()
           local entries = vim.tbl_filter(function(e)
             return e.interaction == "chat"
@@ -49,7 +55,7 @@ return {
             title = "Open chats",
             items = vim.tbl_map(function(e)
               local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
-              -- prefer the chat title (set by <leader>zt or the agent's session_info_update)
+              -- prefer the chat title (set by <leader>at or the agent's session_info_update)
               local chat = require("codecompanion").buf_get_chat(e.bufnr)
               local title = chat and chat.title ~= "" and chat.title or e.name
               return { text = title, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
@@ -69,7 +75,7 @@ return {
         desc = "CodeCompanion Open Chats",
       },
       {
-        "<leader>zq",
+        "<leader>aq",
         function()
           local cc = require("codecompanion")
           local chat = cc.buf_get_chat(0) or cc.last_chat()
@@ -84,12 +90,17 @@ return {
         end,
         desc = "CodeCompanion Close Chat",
       },
-      { "<leader>za", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
-      { "<leader>zi", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
-      { "<leader>zs", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
-      { "<leader>zr", "<cmd>CodeCompanionCodeReview<cr>", desc = "CodeCompanion Review Agent Changes" },
-      { "<leader>zR", "<cmd>CodeCompanionCodeReview Branch<cr>", desc = "CodeCompanion Review Branch" },
-      { "<leader>zc", ":CodeCompanionCodeReview Comment<cr>", mode = { "n", "x" }, desc = "CodeCompanion Review Comment" },
+      { "<leader>aa", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
+      { "<leader>ai", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
+      { "<leader>as", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
+      { "<leader>ar", "<cmd>CodeCompanionCodeReview<cr>", desc = "CodeCompanion Review Agent Changes" },
+      { "<leader>aR", "<cmd>CodeCompanionCodeReview Branch<cr>", desc = "CodeCompanion Review Branch" },
+      {
+        "<leader>am",
+        ":CodeCompanionCodeReview Comment<cr>",
+        mode = { "n", "x" },
+        desc = "CodeCompanion Review Comment",
+      },
     },
     opts = {
       adapters = {
@@ -105,6 +116,11 @@ return {
         chat = { adapter = chat_adapter },
         inline = { adapter = "copilot" },
         cmd = { adapter = "copilot" },
+        code_review = {
+          keymaps = {
+            close = { modes = { n = "q" }, callback = "close", description = "Close review" },
+          },
+        },
       },
     },
   },
@@ -118,6 +134,11 @@ return {
   },
   {
     "folke/which-key.nvim",
-    opts = { spec = { { "<leader>z", group = "codecompanion", mode = { "n", "x" } } } },
+    opts = {
+      spec = {
+        { "<leader>a", group = "ai", mode = { "n", "x" } },
+        { "<leader>aS", group = "sidekick" },
+      },
+    },
   },
 }
