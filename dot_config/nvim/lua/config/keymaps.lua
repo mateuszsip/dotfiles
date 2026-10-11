@@ -190,6 +190,38 @@ map("n", "<leader>be", function()
   Snacks.picker.buffers()
 end, { desc = "Buffer Picker" })
 
+map("n", "<leader><tab>p", function()
+  local current = vim.api.nvim_get_current_tabpage()
+  local items = {}
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    local name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(vim.api.nvim_tabpage_get_win(tab)))
+    items[#items + 1] = {
+      tab = tab,
+      tabnr = vim.api.nvim_tabpage_get_number(tab),
+      file = name ~= "" and name or nil,
+      text = name ~= "" and name or "[No Name]",
+      current = tab == current,
+    }
+  end
+  Snacks.picker.pick({
+    source = "tabs",
+    title = "Tabs",
+    items = items,
+    format = function(item, _)
+      local ret = {}
+      ret[#ret + 1] = { tostring(item.tabnr) .. (item.current and "*" or " ") .. " ", "SnacksPickerIcon" }
+      local icon, icon_hl = Snacks.util.icon(item.file or "", "file")
+      ret[#ret + 1] = { icon .. " ", icon_hl }
+      ret[#ret + 1] = { vim.fn.fnamemodify(item.text, ":~:."), "SnacksPickerFile" }
+      return ret
+    end,
+    confirm = function(picker, item)
+      picker:close()
+      vim.api.nvim_set_current_tabpage(item.tab)
+    end,
+  })
+end, { desc = "Tab Picker" })
+
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
 
