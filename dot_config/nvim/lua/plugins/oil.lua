@@ -123,7 +123,8 @@ return {
     ssh = { border = "rounded" },
     keymaps_help = { border = "rounded" },
     keymaps = {
-      -- default `` ` `` (backtick) = actions.cd  -> change cwd to current dir
+      -- ` (backtick) = :tcd to the current oil directory (tab-local cwd)
+      ["`"] = { "actions.cd", opts = { scope = "tab" }, desc = "tcd to oil dir" },
 
       -- q / <Esc> = close oil window (float or split)
       ["q"] = { callback = close_oil, desc = "Close oil" },
