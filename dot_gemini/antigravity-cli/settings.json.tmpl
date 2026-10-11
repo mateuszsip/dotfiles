@@ -1,6 +1,36 @@
 {
+  "allowNonWorkspaceAccess": true,
   "colorScheme": "light",
+  "permissions": {
+    "allow": [
+      "command(antigravity)",
+      "command(find)",
+      "command(antigravity-cli)",
+      "command(which)",
+      "command(git diff)",
+      "command(git status)",
+      "command(git add)",
+      "command(git commit)",
+      "command(git log)",
+      "command(git checkout)",
+      "command(git show)",
+      "command(ls)",
+      "command(cat)",
+      "command(chezmoi)",
+      "command(grep)",
+      "command(lazygit)",
+      "command(git config)",
+      "command(delta)",
+      "command(env)",
+      "command(git init)",
+      "command(cd)",
+      "command(git difftool)"
+    ]
+  },
   "trustedWorkspaces": [
-    "{{ .chezmoi.homeDir }}"
+    "{{ .chezmoi.homeDir }}",
+    "{{ .chezmoi.homeDir }}/dev/forks/sidekick.nvim",
+    "{{ .chezmoi.homeDir }}/.local/share/chezmoi",
+    "{{ .chezmoi.homeDir }}/.config"
   ]
 }
