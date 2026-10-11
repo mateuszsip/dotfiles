@@ -125,6 +125,8 @@ return {
     keymaps = {
       -- ` (backtick) = :tcd to the current oil directory (tab-local cwd)
       ["`"] = { "actions.cd", opts = { scope = "tab" }, desc = "tcd to oil dir" },
+      -- g` = :cd to the current oil directory (global, Oil's default for `)
+      ["g`"] = { "actions.cd", desc = "cd to oil dir (global)" },
 
       -- q / <Esc> = close oil window (float or split)
       ["q"] = { callback = close_oil, desc = "Close oil" },
