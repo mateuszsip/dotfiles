@@ -190,7 +190,11 @@ map("n", "<leader>be", function()
   Snacks.picker.buffers()
 end, { desc = "Buffer Picker" })
 
-map("n", "<leader><tab>p", function()
+-- LazyVim maps <leader><tab>l to "Last Tab"; free the "l" for listing tabs.
+vim.keymap.del("n", "<leader><tab>l")
+map("n", "<leader><tab>-", "<cmd>tablast<cr>", { desc = "Last Tab" })
+
+map("n", "<leader><tab>l", function()
   local current = vim.api.nvim_get_current_tabpage()
   local items = {}
   for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
@@ -220,7 +224,7 @@ map("n", "<leader><tab>p", function()
       vim.api.nvim_set_current_tabpage(item.tab)
     end,
   })
-end, { desc = "Tab Picker" })
+end, { desc = "List Tabs" })
 
 map("n", "<leader><space>", LazyVim.pick("files", { root = false }), { desc = "Find Files (cwd)" })
 map("n", "<leader>/", LazyVim.pick("grep", { root = false }), { desc = "Grep (cwd)" })
