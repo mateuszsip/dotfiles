@@ -52,6 +52,7 @@ tailscale
 tldr
 tmux
 tree-sitter
+tree-sitter-cli
 vault-cli
 wget
 yazi
