@@ -113,7 +113,13 @@ return {
         },
       },
       interactions = {
-        chat = { adapter = chat_adapter },
+        chat = {
+          adapter = chat_adapter,
+          keymaps = {
+            -- default `gx` (clear chat) shadows Neovim's open-link mapping
+            clear = { modes = { n = "gX" } },
+          },
+        },
         inline = { adapter = "copilot" },
         cmd = { adapter = "copilot" },
         code_review = {
