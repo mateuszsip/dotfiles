@@ -8,9 +8,11 @@
 -- Supporting modules:
 --   lua/utils/atlas_highlights.lua — theme-adaptive highlight palette (WCAG 4.5:1)
 --   lua/utils/atlas_sort.lua       — Jira status ordering, flat views, PR list order
+--   lua/utils/atlas_lendable.lua   — Lendable-specific paths (AtlasDiff LSP vendor links)
 
 local highlights = require("utils.atlas_highlights")
 local sort = require("utils.atlas_sort")
+local lendable = require("utils.atlas_lendable")
 
 -- Synchronously resolve the "owner/repo" of the current working directory.
 -- Returns nil and notifies on failure. Uses `gh repo view` so it honours the
@@ -191,36 +193,7 @@ local github_issue_views = {
   { name = "Mentions", key = "3", layout = "plain", search = "mentions:@me is:open archived:false" },
 }
 
-local jira_views = {
-  {
-    name = "My tasks",
-    key = "1",
-    layout = "plain",
-    jql = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC",
-  },
-  {
-    name = "My board tasks",
-    key = "2",
-    layout = "compact",
-    jql = "project = CARD AND assignee = currentUser() AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done ORDER BY created DESC",
-  },
-  {
-    name = "Active sprint",
-    key = "3",
-    layout = "plain",
-    -- Flat list: subtasks stand on their own rather than nesting under their
-    -- parent, so the status ordering above applies to every row.
-    flatten = true,
-    jql = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) AND statusCategory != Done AND assignee is not EMPTY ORDER BY created DESC",
-  },
-  {
-    name = "All platform",
-    key = "4",
-    layout = "compact",
-    jql = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) ORDER BY created DESC",
-  },
-  { name = "All CARD", key = "5", layout = "plain", jql = "project = CARD ORDER BY created DESC" },
-}
+local jira_views = lendable.jira_views
 
 ---Look a view up by its `name`, so keymaps don't depend on list order.
 ---@param views table[]
@@ -263,24 +236,26 @@ return {
       -- Lendable repos disable merge commits and rebases (squash only), and
       -- atlas defaults to `--merge` — which fails with "Merge commits are not
       -- allowed on this repository" from the GraphQL mergePullRequest call.
-      default_merge_method = "squash",
+      default_merge_method = lendable.default_merge_method,
       diff = {
         open_cmd = "AtlasDiff",
         layout = "inline",
         compact = true,
+        -- Backs the new side of the diff with a detached worktree at the PR head so
+        -- LSP servers attach to real files. Worktrees live under stdpath("cache")/atlas.
+        lsp = {
+          enabled = true,
+          link = lendable.vendor_links,
+        },
         explorer = { grouped = true, show_commits = true, width = 40 },
       },
       -- AtlasDiff resolves owner/repo → local checkout via this map. Without it
       -- you'll see "no repo_paths mapping for '<owner>/<repo>'". The wildcard
       -- form maps everything under <root>; explicit entries always win.
       repo_config = {
-        paths = {
+        paths = vim.tbl_extend("force", {
           ["mateuszsip/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/prv/*") or "~/dev/prv/*",
-          ["lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*")
-            or "~/dev/work/lendable/*",
-          ["Lendable/*"] = vim.env.ATLAS_REPOS_ROOT and (vim.env.ATLAS_REPOS_ROOT .. "/work/lendable/*")
-            or "~/dev/work/lendable/*",
-        },
+        }, lendable.repo_paths),
       },
       github = {
         views = github_pull_views,
@@ -293,23 +268,10 @@ return {
         views = github_issue_views,
       },
       jira = {
-        project_config = {
-            -- Field holding the T-shirt size estimate on CARD project.
-          CARD = {
-            customfield_11091 = {
-              name = "T-shirt size",
-              hl_group = "AtlasLogInfo",
-            },
-          },
-        },
+        project_config = lendable.jira_project_config,
         views = jira_views,
         bookmarks = {
-          items = {
-            ["Backlog"] = "project = CARD AND statusCategory != Done AND (sprint IS EMPTY OR sprint NOT IN openSprints()) ORDER BY Rank ASC",
-            ["Next sprint"] = "project = CARD AND sprint in futureSprints() ORDER BY Rank ASC",
-            ["My open"] = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC",
-            ["Platform blocked"] = "project = CARD AND labels in (Platform, DevOps, Scalability, Technical) AND status = Blocked ORDER BY updated DESC",
-          },
+          items = lendable.jira_bookmarks,
         },
       },
     },
@@ -319,14 +281,7 @@ return {
       github = {
         cache_ttl = 300,
       },
-      jira = {
-        base_url = vim.env.LENDABLE_JIRA_BASE_URL or "https://lendable.atlassian.net",
-        email = vim.env.LENDABLE_JIRA_EMAIL or "",
-        token = vim.env.LENDABLE_JIRA_API_TOKEN or "",
-        auth_method = "basic",
-        api_type = "cloud",
-        cache_ttl = 300,
-      },
+      jira = lendable.jira_provider,
     },
   },
   keys = {
