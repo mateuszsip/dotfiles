@@ -1,8 +1,9 @@
 -- Experimental: https://github.com/olimorris/codecompanion.nvim
 -- Chat uses an ACP agent picked per machine: opencode2 when it's on PATH
 -- (private laptop), otherwise Claude Code (work, subscription; needs
--- `npm i -g @agentclientprotocol/claude-agent-acp`). Inline/cmd interactions
--- only support HTTP adapters, so they stay on Copilot.
+-- `npm i -g @agentclientprotocol/claude-agent-acp`). Muse is also selectable
+-- per chat via the `muse` adapter below. Inline/cmd interactions only
+-- support HTTP adapters, so they stay on Copilot.
 local chat_adapter = vim.fn.executable("opencode2") == 1 and "opencode" or "claude_code"
 
 return {
@@ -116,6 +117,50 @@ return {
             return require("codecompanion.adapters").extend("opencode", {
               commands = { default = { "opencode2", "acp" } },
             })
+          end,
+          -- Muse speaks MSP, not ACP, so this goes through the muse-acp
+          -- bridge (installed by run_onchange_install-muse-acp.sh.tmpl);
+          -- run `muse login` once first. Selectable, never the default.
+          muse = function()
+            return {
+              name = "muse",
+              formatted_name = "Muse",
+              type = "acp",
+              roles = {
+                llm = "assistant",
+                user = "user",
+              },
+              opts = {
+                vision = true,
+              },
+              commands = {
+                default = { "muse-acp" },
+              },
+              defaults = {
+                auth_method = "muse-login",
+                mcpServers = {},
+                timeout = 20000, -- 20 seconds
+              },
+              parameters = {
+                protocolVersion = 1,
+                clientCapabilities = {
+                  fs = { readTextFile = true, writeTextFile = true },
+                },
+                clientInfo = {
+                  name = "CodeCompanion.nvim",
+                  version = "1.0.0",
+                },
+              },
+              handlers = {
+                setup = function(self)
+                  return true
+                end,
+                form_messages = function(self, messages, capabilities)
+                  return require("codecompanion.adapters.acp.helpers").form_messages(self, messages, capabilities)
+                end,
+                on_exit = function(self, code) end,
+              },
+            }
           end,
         },
       },

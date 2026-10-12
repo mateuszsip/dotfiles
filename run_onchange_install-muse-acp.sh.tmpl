@@ -1,0 +1,15 @@
+#!/bin/bash
+# muse-acp (https://github.com/BrokkAi/muse-acp): v0.12.1
+# ACP bridge for Muse Code: `muse serve` speaks MSP, not ACP, so this
+# provides the `muse-acp` binary behind the `muse` CodeCompanion chat
+# adapter. Prebuilt release binary -> ~/.local/bin, checksum-verified by
+# upstream's installer. Bump the version below (both the comment and
+# `version=`) to upgrade; chezmoi re-runs this script when its rendered
+# contents change.
+set -eufo pipefail
+
+version="v0.12.1"
+
+curl --proto '=https' --tlsv1.2 -LsSf \
+  "https://github.com/BrokkAi/muse-acp/releases/download/${version}/install.sh" \
+  | MUSE_ACP_VERSION="$version" sh
