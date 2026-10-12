@@ -53,15 +53,6 @@ local function atlas_pulls_repo(query_suffix)
   })
 end
 
--- Open the atlas GitHub search prompt prefilled with `is:pr repo:<current>`.
-local function atlas_search_repo()
-  local repo = current_repo()
-  if not repo then
-    return
-  end
-  require("atlas.pulls.providers.github.completion.search").open("is:pr repo:" .. repo .. " ")
-end
-
 -- Multi-select my open PRs and yank their URLs (one per line) to the `+` register.
 -- Atlas' own `copy_url` (`Y`) only ever copies the PR under the cursor and
 -- overwrites the clipboard, and its PR list has no marking concept — so this
@@ -286,24 +277,31 @@ return {
   },
   keys = {
     -- <leader>g* — search/PR/jira binds (replaces LazyVim octo extra + user's octo.lua).
-    { "<leader>gp", "<cmd>AtlasSearch github<CR>", desc = "Search PRs/issues (Atlas)" },
-    { "<leader>gi", "<cmd>AtlasIssues github<CR>", desc = "List GitHub Issues (Atlas)" },
-    { "<leader>gI", "<cmd>AtlasSearch github<CR>", desc = "Search GitHub Issues (Atlas)" },
+    { "<leader>gp", "<cmd>Atlas search github<CR>", desc = "Search PRs/issues (Atlas)" },
+    { "<leader>gi", "<cmd>Atlas issues github<CR>", desc = "List GitHub Issues (Atlas)" },
+    {
+      "<leader>gI",
+      function()
+        local provider = require("atlas.providers").load("github", "issues")
+        require("atlas.issues.actions").run("search", { provider = provider })
+      end,
+      desc = "Search GitHub Issues (Atlas)",
+    },
     -- `gr` (Octo repo list) has no atlas equivalent — opening the panel shows repos.
-    { "<leader>gS", "<cmd>AtlasSearch github<CR>", desc = "Search (Atlas)" },
-    { "<leader>gC", "<cmd>AtlasCreatePR<CR>", desc = "Create PR (Atlas)" },
+    { "<leader>gS", "<cmd>Atlas search github<CR>", desc = "Search (Atlas)" },
+    { "<leader>gC", "<cmd>Atlas create pr<CR>", desc = "Create PR (Atlas)" },
     {
       "<leader>gD",
       function()
-        vim.ui.input({ prompt = "AtlasDiff (URL or base...head): " }, function(input)
+        vim.ui.input({ prompt = "Atlas diff (URL or base...head): " }, function(input)
           if input and input ~= "" then
-            vim.cmd("AtlasDiff " .. input)
+            vim.cmd("Atlas diff " .. input)
           end
         end)
       end,
-      desc = "AtlasDiff (review PR/range)",
+      desc = "Atlas diff (review PR/range)",
     },
-    { "<leader>gO", "<cmd>AtlasNotes<CR>", desc = "Local review notes (Atlas)" },
+    { "<leader>gO", "<cmd>Atlas notes<CR>", desc = "Local review notes (Atlas)" },
 
     -- Current-repo scoped (mirror old octo binds that used get_remote_name).
     {
@@ -330,7 +328,13 @@ return {
       open_view("pulls", "github", github_pull_views, "All my PRs"),
       desc = "All my PRs (all repos)",
     },
-    { "<leader>gR", atlas_search_repo, desc = "Search PRs (current repo)" },
+    {
+      "<leader>gR",
+      function()
+        atlas_pulls_repo(nil)
+      end,
+      desc = "Search PRs (current repo)",
+    },
 
     -- Multi-select yank of PR URLs (<Tab> marks, <CR> confirms under snacks).
     -- Mirrors the gm/gM scoping above.
@@ -355,7 +359,7 @@ return {
       function()
         vim.ui.input({ prompt = "Issue key: ", default = "CARD-" }, function(key)
           if key and key ~= "" then
-            vim.cmd("AtlasOpen " .. key)
+            vim.cmd("Atlas open " .. key)
           end
         end)
       end,
@@ -364,34 +368,12 @@ return {
     { "<leader>jj", open_view("issues", "jira", jira_views, "My tasks"), desc = "Jira: My tasks (Atlas)" },
     { "<leader>jb", open_view("issues", "jira", jira_views, "My board tasks"), desc = "Jira: My board tasks (Atlas)" },
     { "<leader>js", open_view("issues", "jira", jira_views, "Active sprint"), desc = "Jira: Active sprint (Atlas)" },
-    { "<leader>je", "<cmd>AtlasIssues jira<CR>", desc = "Jira: Edit issue (press ge in panel)" },
-    {
-      "<leader>jc",
-      function()
-        require("atlas.issues.providers.jira.actions").run("create_issue", {}, function(_, err)
-          if err then
-            vim.notify("Jira create issue failed: " .. tostring(err), vim.log.levels.ERROR)
-          end
-        end)
-      end,
-      desc = "Jira: Create issue (Atlas, bypasses provider prompt)",
-    },
+    { "<leader>je", "<cmd>Atlas issues jira<CR>", desc = "Jira: Edit issue (press ge in panel)" },
+    { "<leader>jc", "<cmd>Atlas create issue<CR>", desc = "Jira: Create issue (Atlas)" },
     -- jira.nvim's auth login/info have no atlas equivalent; checkhealth reports creds.
     { "<leader>jl", "<cmd>checkhealth atlas<CR>", desc = "Atlas: Check Jira/GitHub auth" },
-    { "<leader>ja", "<cmd>checkhealth atlas<CR>", desc = "Atlas: Check Jira/GitHub auth" },
   },
-  cmd = {
-    "AtlasPulls",
-    "AtlasIssues",
-    "AtlasDiff",
-    "AtlasSearch",
-    "AtlasCreatePR",
-    "AtlasCreateIssue",
-    "AtlasNotes",
-    "AtlasOpen",
-    "AtlasClearCache",
-    "AtlasLogs",
-  },
+  cmd = { "Atlas" },
   init = function()
     highlights.apply()
     vim.api.nvim_create_autocmd("ColorScheme", { callback = highlights.apply })
@@ -438,7 +420,6 @@ return {
       "atlas.pulls.ui.highlights",
       "atlas.pulls.providers.github.highlights",
       "atlas.issues.providers.github.highlights",
-      "atlas.issues.providers.jira.highlights",
     }) do
       local ok, mod = pcall(require, name)
       if ok and type(mod) == "table" and type(mod.setup) == "function" and not mod.__atlas_hl_chained then
