@@ -61,7 +61,7 @@ return {
     },
     keys = {
       { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit (status)" },
-      { "<leader>gG", "<cmd>Neogit cwd<cr>", desc = "Neogit (cwd)" },
+      { "<leader>gG", "<cmd>Neogit cwd=%:p:h<cr>", desc = "Neogit (current file's repo)" },
       { "<leader>gc", "<cmd>Neogit commit<cr>", desc = "Neogit Commit" },
       { "<leader>gb", "<cmd>Neogit branch<cr>", desc = "Neogit Branch" },
       { "<leader>gl", "<cmd>Neogit log<cr>", desc = "Neogit Log" },
