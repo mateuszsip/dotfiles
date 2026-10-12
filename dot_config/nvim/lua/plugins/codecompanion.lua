@@ -67,7 +67,14 @@ return {
             confirm = function(picker, item)
               picker:close()
               if item then
-                item.entry.open()
+                -- the picker restores focus to the previous window on close, so open and focus afterwards
+                vim.schedule(function()
+                  item.entry.open()
+                  local win = vim.fn.bufwinid(item.entry.bufnr)
+                  if win ~= -1 then
+                    vim.api.nvim_set_current_win(win)
+                  end
+                end)
               end
             end,
           })
