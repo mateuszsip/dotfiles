@@ -98,8 +98,18 @@ return {
               end,
             },
             win = {
-              input = { keys = { ["<c-x>"] = { "close_chat", mode = { "i", "n" } } } },
-              list = { keys = { ["<c-x>"] = "close_chat" } },
+              input = {
+                keys = {
+                  ["<c-x>"] = { "close_chat", mode = { "i", "n" } },
+                  ["<c-d>"] = { "close_chat", mode = { "i", "n" } },
+                },
+              },
+              list = {
+                keys = {
+                  ["<c-x>"] = "close_chat",
+                  ["<c-d>"] = "close_chat",
+                },
+              },
             },
             preview = "preview",
             format = function(item)
