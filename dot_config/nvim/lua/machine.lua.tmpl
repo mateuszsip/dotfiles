@@ -1,0 +1,4 @@
+-- Rendered by chezmoi from .chezmoi.toml.tmpl data; do not edit the deployed file.
+return {
+  work = {{ if hasKey . "work_machine" }}{{ .work_machine }}{{ else }}false{{ end }},
+}

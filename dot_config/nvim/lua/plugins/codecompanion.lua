@@ -6,6 +6,22 @@
 -- support HTTP adapters, so they stay on Copilot.
 local chat_adapter = vim.fn.executable("opencode2") == 1 and "opencode" or "claude_code"
 
+-- MCP servers (stdio only). Jira/Datadog are remote HTTP servers reached via the
+-- mcp-remote bridge (browser OAuth on first start) and only enabled on work machines.
+local mcp_servers = {
+  github = {
+    cmd = { "docker", "run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server" },
+    env = { GITHUB_PERSONAL_ACCESS_TOKEN = "cmd:gh auth token" },
+  },
+}
+-- machine.lua is rendered by chezmoi (work_machine flag); absent until `chezmoi apply`
+local has_machine, machine = pcall(require, "machine")
+if has_machine and machine.work then
+  mcp_servers.jira = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse" } }
+  mcp_servers.datadog =
+    { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp" } }
+end
+
 return {
   {
     "olimorris/codecompanion.nvim",
@@ -111,6 +127,10 @@ return {
       },
     },
     opts = {
+      mcp = {
+        servers = mcp_servers,
+        opts = { default_servers = vim.tbl_keys(mcp_servers) },
+      },
       adapters = {
         acp = {
           opencode = function()
