@@ -75,7 +75,7 @@ return {
             return vim.notify("No open CodeCompanion chats", vim.log.levels.INFO)
           end
           Snacks.picker({
-            title = "Open chats (<c-d> close)",
+            title = "Open chats (<m-d> close)",
             finder = function()
               return vim.tbl_map(function(e)
                 local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
@@ -100,12 +100,12 @@ return {
             win = {
               input = {
                 keys = {
-                  ["<c-d>"] = { "close_chat", mode = { "i", "n" } },
+                  ["<m-d>"] = { "close_chat", mode = { "i", "n" } },
                 },
               },
               list = {
                 keys = {
-                  ["<c-d>"] = "close_chat",
+                  ["<m-d>"] = "close_chat",
                 },
               },
             },

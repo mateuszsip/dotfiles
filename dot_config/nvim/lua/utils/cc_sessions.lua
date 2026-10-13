@@ -23,7 +23,7 @@ local function make_picker(sessions, utils)
     end
 
     Snacks.picker({
-      title = "Resume Session (<c-d> delete)",
+      title = "Resume Session (<m-d> delete)",
       finder = function()
         return vim.tbl_map(function(s)
           return { text = sessions.format(s), stem = s.stem }
@@ -42,8 +42,8 @@ local function make_picker(sessions, utils)
         end,
       },
       win = {
-        input = { keys = { ["<c-d>"] = { "delete_session", mode = { "i", "n" } } } },
-        list = { keys = { ["<c-d>"] = "delete_session" } },
+        input = { keys = { ["<m-d>"] = { "delete_session", mode = { "i", "n" } } } },
+        list = { keys = { ["<m-d>"] = "delete_session" } },
       },
       preview = false,
       confirm = function(picker, item)
