@@ -75,7 +75,7 @@ return {
             return vim.notify("No open CodeCompanion chats", vim.log.levels.INFO)
           end
           Snacks.picker({
-            title = "Open chats (<c-x> close)",
+            title = "Open chats (<c-d> close)",
             finder = function()
               return vim.tbl_map(function(e)
                 local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
