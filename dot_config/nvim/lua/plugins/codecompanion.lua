@@ -31,6 +31,9 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
+    init = function()
+      require("utils.cc_chats").setup()
+    end,
     cmd = {
       "CodeCompanion",
       "CodeCompanionChat",
@@ -63,21 +66,41 @@ return {
       {
         "<leader>al",
         function()
-          local entries = vim.tbl_filter(function(e)
-            return e.interaction == "chat"
-          end, require("codecompanion.interactions.shared.registry").list())
-          if #entries == 0 then
+          local function chat_entries()
+            return vim.tbl_filter(function(e)
+              return e.interaction == "chat"
+            end, require("codecompanion.interactions.shared.registry").list())
+          end
+          if #chat_entries() == 0 then
             return vim.notify("No open CodeCompanion chats", vim.log.levels.INFO)
           end
           Snacks.picker({
-            title = "Open chats",
-            items = vim.tbl_map(function(e)
-              local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
-              -- prefer the chat title (set by <leader>at or the agent's session_info_update)
-              local chat = require("codecompanion").buf_get_chat(e.bufnr)
-              local title = chat and chat.title ~= "" and chat.title or e.name
-              return { text = title, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
-            end, entries),
+            title = "Open chats (<c-x> close)",
+            finder = function()
+              return vim.tbl_map(function(e)
+                local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
+                -- prefer the chat title (set by <leader>at or the agent's session_info_update)
+                local chat = require("codecompanion").buf_get_chat(e.bufnr)
+                local title = chat and chat.title ~= "" and chat.title or e.name
+                return { text = title, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
+              end, chat_entries())
+            end,
+            actions = {
+              close_chat = function(picker, item)
+                if not item then
+                  return
+                end
+                local chat = require("codecompanion").buf_get_chat(item.entry.bufnr)
+                if chat then
+                  chat:close()
+                end
+                picker:find()
+              end,
+            },
+            win = {
+              input = { keys = { ["<c-x>"] = { "close_chat", mode = { "i", "n" } } } },
+              list = { keys = { ["<c-x>"] = "close_chat" } },
+            },
             preview = "preview",
             format = function(item)
               return { { item.text } }
@@ -98,6 +121,13 @@ return {
           })
         end,
         desc = "CodeCompanion Open Chats",
+      },
+      {
+        "<leader>aL",
+        function()
+          require("utils.cc_chats").restore()
+        end,
+        desc = "CodeCompanion Restore Last Chats",
       },
       {
         "<leader>aq",
