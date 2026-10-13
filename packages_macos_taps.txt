@@ -1,3 +1,2 @@
-datadog-labs/pack/pup
 floatpane/matcha/matcha-nightly
 mutagen-io/mutagen/mutagen

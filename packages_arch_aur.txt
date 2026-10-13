@@ -16,7 +16,6 @@ paru
 phpactor
 rtk-bin
 ryzenadj-git
-slack-desktop
 subtui-git
 tidal-hifi-bin
 vial-appimage

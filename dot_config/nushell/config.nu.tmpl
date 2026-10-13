@@ -20,7 +20,9 @@
 source aliases.nu
 source env_vars.nu
 source completions.nu
+{{ if and (hasKey . "work_machine") .work_machine -}}
 source lendable.nu
+{{ end }}
 
 mkdir ($nu.data-dir | path join "vendor/autoload")
 starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")

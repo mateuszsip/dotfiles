@@ -1,7 +1,5 @@
 argocd
 atuin
-awscli
-aws-sso-cli
 bat
 chezmoi
 colima
@@ -25,19 +23,15 @@ htop
 imagemagick
 jq
 k6
-k9s
-kubectl
 lazydocker
 lazygit
 luarocks
 maccy
 mermaid-cli
 mise
-mysql
 neovim
 nushell
 opencode
-openjdk@25
 phpantom-lsp
 php@8.5
 phpstan
@@ -53,7 +47,6 @@ tldr
 tmux
 tree-sitter
 tree-sitter-cli
-vault-cli
 wget
 yazi
 yq

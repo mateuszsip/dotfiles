@@ -25,3 +25,13 @@ dot_config/systemd
 {{- end }}
 {{- end }}
 
+
+{{- $work := false }}
+{{- if hasKey . "work_machine" }}{{ $work = .work_machine }}{{ end }}
+{{- if not $work }}
+.config/nushell/lendable.nu
+.config/nvim/lua/db/lendable
+{{- end }}
+{{- /* package lists are only read by the install script; never deploy these */}}
+packages_macos_work.txt
+packages_macos_work_taps.txt

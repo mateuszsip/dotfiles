@@ -22,9 +22,17 @@ $aur_helper -S --needed --noconfirm \
 {{ include "packages_arch_aur.txt" | trim | splitList "\n" | join " \\\n  " }}{{ if eq .chezmoi.hostname "sipBook-p14s" }} \
   ryzen_smu-dkms-git ryzenadj-git{{ end }}
 {{- else if eq .chezmoi.os "darwin" -}}
+{{- $brew := include "packages_macos.txt" | trim -}}
+{{- $taps := include "packages_macos_taps.txt" | trim -}}
+{{- if hasKey . "work_machine" -}}
+{{- if .work_machine -}}
+{{- $brew = print $brew "\n" (include "packages_macos_work.txt" | trim) -}}
+{{- $taps = print $taps "\n" (include "packages_macos_work_taps.txt" | trim) -}}
+{{- end -}}
+{{- end -}}
 #!/bin/bash
-# brew: {{ include "packages_macos.txt" | sha256sum }}
-# taps: {{ include "packages_macos_taps.txt" | sha256sum }}
+# brew: {{ $brew | sha256sum }}
+# taps: {{ $taps | sha256sum }}
 set -eufo pipefail
 
 if ! command -v brew &>/dev/null; then
@@ -32,7 +40,7 @@ if ! command -v brew &>/dev/null; then
 fi
 
 brew install \
-{{ include "packages_macos.txt" | trim | splitList "\n" | join " \\\n  " }}
+{{ $brew | splitList "\n" | join " \\\n  " }}
 
 while IFS= read -r formula; do
   [ -z "$formula" ] && continue
@@ -40,17 +48,17 @@ while IFS= read -r formula; do
   brew trust --formula "$formula"
   brew install "$formula"
 done <<'TAPS'
-{{ include "packages_macos_taps.txt" | trim }}
+{{ $taps }}
 TAPS
 
 tapped_short=$(cat <<'TAPS' | sed 's|.*/||'
-{{ include "packages_macos_taps.txt" | trim }}
+{{ $taps }}
 TAPS
 )
 
 expected=$(printf '%s\n%s' \
   "$(sort <<'EOF'
-{{ include "packages_macos.txt" | trim }}
+{{ $brew }}
 EOF
 )" \
   "$tapped_short" | sort)

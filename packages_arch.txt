@@ -1,5 +1,4 @@
 atuin
-aws-cli-v2
 bat
 bitwarden
 bitwarden-cli
@@ -24,8 +23,6 @@ helm
 htop
 imagemagick
 jq
-k9s
-kubectl
 lazydocker
 lazygit
 less
@@ -65,7 +62,6 @@ tmux
 tree-sitter-cli
 ttf-jetbrains-mono-nerd
 unzip
-vault
 waybar
 whois
 yaru-icon-theme

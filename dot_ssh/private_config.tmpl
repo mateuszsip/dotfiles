@@ -1,3 +1,7 @@
+{{ if lookPath "colima" -}}
+Include {{ .chezmoi.homeDir }}/.colima/ssh_config
+
+{{ end -}}
 Host unraid
     HostName 192.168.1.51
     User root
