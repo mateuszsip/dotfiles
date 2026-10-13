@@ -33,6 +33,7 @@ return {
     init = function()
       require("utils.cc_chats").setup()
       require("utils.cc_sessions").setup()
+      require("utils.cc_acp").setup()
     end,
     cmd = {
       "CodeCompanion",
