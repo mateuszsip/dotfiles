@@ -39,7 +39,7 @@ local function make_picker(sessions, utils)
             picker:close()
             utils.notify("No saved sessions found", vim.log.levels.INFO)
           else
-            picker:find()
+            picker:refresh()
           end
         end,
       },
