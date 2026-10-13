@@ -17,9 +17,9 @@ local mcp_servers = {
 -- machine.lua is rendered by chezmoi (work_machine flag); absent until `chezmoi apply`
 local has_machine, machine = pcall(require, "machine")
 if has_machine and machine.work then
-  mcp_servers.jira = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse" } }
+  mcp_servers.jira = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v2/mcp" } }
   mcp_servers.datadog =
-    { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp" } }
+    { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/v1/mcp" } }
 end
 
 return {
