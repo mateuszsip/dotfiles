@@ -11,7 +11,8 @@ local chat_adapter = vim.fn.executable("opencode2") == 1 and "opencode" or "clau
 local mcp_servers = {
   github = {
     cmd = { "docker", "run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server" },
-    env = { GITHUB_PERSONAL_ACCESS_TOKEN = "cmd:gh auth token" },
+    -- no `env` here: ACP adapters receive it raw (the `cmd:` prefix isn't resolved), so the
+    -- token is inherited from the shell instead (nushell exports it from `gh auth token`)
   },
 }
 -- machine.lua is rendered by chezmoi (work_machine flag); absent until `chezmoi apply`
@@ -136,6 +137,12 @@ return {
           opencode = function()
             return require("codecompanion.adapters").extend("opencode", {
               commands = { default = { "opencode2", "acp" } },
+              defaults = { mcpServers = "inherit_from_config" },
+            })
+          end,
+          claude_code = function()
+            return require("codecompanion.adapters").extend("claude_code", {
+              defaults = { mcpServers = "inherit_from_config" },
             })
           end,
           -- Muse speaks MSP, not ACP, so this goes through the muse-acp
