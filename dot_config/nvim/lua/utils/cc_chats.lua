@@ -56,7 +56,10 @@ local function restore_one(entry)
   if not ok then
     return vim.notify("CodeCompanion: unknown adapter " .. entry.adapter, vim.log.levels.WARN)
   end
-  local chat = require("codecompanion.interactions.chat").new({ adapter = adapter })
+  local chat = require("codecompanion.interactions.chat").new({
+    adapter = adapter,
+    buffer_context = require("codecompanion.utils.context").get(vim.api.nvim_get_current_buf()),
+  })
   if not chat then
     return
   end
