@@ -19,8 +19,7 @@ local mcp_servers = {
 local has_machine, machine = pcall(require, "machine")
 if has_machine and machine.work then
   mcp_servers.jira = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v2/mcp" } }
-  mcp_servers.datadog =
-    { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/v1/mcp" } }
+  mcp_servers.datadog = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/v1/mcp" } }
 end
 
 return {
@@ -33,6 +32,7 @@ return {
     },
     init = function()
       require("utils.cc_chats").setup()
+      require("utils.cc_sessions").setup()
     end,
     cmd = {
       "CodeCompanion",
