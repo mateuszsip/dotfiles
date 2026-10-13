@@ -27,7 +27,7 @@ local function make_picker(sessions, utils)
       finder = function()
         return vim.tbl_map(function(s)
           return { text = sessions.format(s), stem = s.stem }
-        end, list)
+        end, sessions.list())
       end,
       actions = {
         delete_session = function(picker, item)
@@ -35,10 +35,12 @@ local function make_picker(sessions, utils)
             return
           end
           sessions.delete(item.stem, { notify = false })
-          picker:close()
-          vim.schedule(function()
-            open(opts)
-          end)
+          if vim.tbl_isempty(sessions.list()) then
+            picker:close()
+            utils.notify("No saved sessions found", vim.log.levels.INFO)
+          else
+            picker:find()
+          end
         end,
       },
       win = {
