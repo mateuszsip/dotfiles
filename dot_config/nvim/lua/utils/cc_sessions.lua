@@ -34,7 +34,7 @@ local function make_picker(sessions, utils)
           if not item then
             return
           end
-          sessions.delete(item.stem)
+          sessions.delete(item.stem, { notify = false })
           picker:close()
           vim.schedule(function()
             open(opts)
