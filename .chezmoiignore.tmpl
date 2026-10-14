@@ -2,6 +2,15 @@
 .config/nushell/env.nu
 key.txt.age
 
+{{- /* repo meta: instructions and data, never deploy to $HOME */}}
+AGENTS.md
+CLAUDE.md
+docs
+packages_arch.txt
+packages_arch_aur.txt
+packages_macos.txt
+packages_macos_taps.txt
+
 {{- if eq .chezmoi.os "darwin" }}
 dot_config/pacsea
 .config/omarchy
