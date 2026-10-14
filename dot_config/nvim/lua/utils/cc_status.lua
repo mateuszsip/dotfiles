@@ -95,7 +95,9 @@ function M.cond()
 end
 
 function M.component()
-  return M.text(current_chat())
+  -- Escape % for the statusline: "(11%)" would otherwise start an
+  -- unbalanced %-group and lualine fails the whole refresh with E542.
+  return M.text(current_chat()):gsub("%%", "%%%%")
 end
 
 function M.setup()
