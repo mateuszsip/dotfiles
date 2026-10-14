@@ -56,13 +56,14 @@ return {
       table.insert(opts.sections.lualine_b, { grapple_status })
     end
 
-    -- CodeCompanion usage/cost readout (lualine_x): visible only in chat
-    -- buffers via cc_status.cond. The readout must live here, not in a
-    -- window-local statusline: LazyVim uses laststatus=3 (global statusline),
-    -- which ignores per-window values.
+    -- CodeCompanion usage/cost readout: appended to lualine_b (left side).
+    -- Left-side placement matters: when the line overflows, Neovim cuts the
+    -- right, so a component in lualine_x can lose its usage/cost tail while
+    -- adapter+model still show. Must not be window-local: LazyVim uses
+    -- laststatus=3 (global statusline), which ignores per-window values.
     local cc_status = require("utils.cc_status")
     cc_status.setup()
-    table.insert(opts.sections.lualine_x, 1, { cc_status.component, cond = cc_status.cond })
+    table.insert(opts.sections.lualine_b, { cc_status.component, cond = cc_status.cond })
 
     -- Drop LazyVim's clock to leave room for the CodeCompanion readout.
     opts.sections.lualine_z = {}

@@ -1,4 +1,4 @@
--- Readout for CodeCompanion chat buffers: adapter, model, context usage, cost.
+-- Readout for CodeCompanion chat buffers: model, context usage, cost.
 -- Shown in lualine (global statusline, bottom of the editor) for chat buffers
 -- only, via M.component/M.cond registered from plugins/lualine.lua. A
 -- window-local statusline can't work here: LazyVim uses laststatus=3 (single
@@ -49,7 +49,9 @@ function M.text(chat)
   if not chat then
     return ""
   end
-  local parts = { chat.adapter and chat.adapter.formatted_name or "?" }
+  -- No adapter name: it costs ~10 columns and the chat buffer already shows
+  -- which adapter is active; model + numbers are what matter here.
+  local parts = {}
 
   local conn = chat.acp_connection
   local ok, models = pcall(function()
