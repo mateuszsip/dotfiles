@@ -34,7 +34,6 @@ return {
       require("utils.cc_chats").setup()
       require("utils.cc_sessions").setup()
       require("utils.cc_acp").setup()
-      require("utils.cc_status").setup()
     end,
     cmd = {
       "CodeCompanion",

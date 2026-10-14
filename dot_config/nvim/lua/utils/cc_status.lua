@@ -1,13 +1,12 @@
 -- Readout for CodeCompanion chat buffers: adapter, model, context usage, cost.
--- Shown as a window-local statusline at the bottom of each chat window
--- (registered here via setup(); this overrides lualine for chat windows, so
--- there is no lualine component). ACP chats only: usage comes from the
--- agent's usage_update, captured in full ({used, size, cost?}) by
--- utils.cc_acp onto chat.cc_usage. Upstream only keeps `used` as
--- chat.tokens, so fall back to that when no update arrived yet (or the
--- agent never sends one). The model comes from the ACP session config.
--- Note: a window statusline is always a single line, so the readout stays a
--- compact one-liner.
+-- Shown in lualine (global statusline, bottom of the editor) for chat buffers
+-- only, via M.component/M.cond registered from plugins/lualine.lua. A
+-- window-local statusline can't work here: LazyVim uses laststatus=3 (single
+-- global statusline), which silently ignores per-window values.
+-- ACP chats only: usage comes from the agent's usage_update, captured in full
+-- ({used, size, cost?}) by utils.cc_acp onto chat.cc_usage. Upstream only
+-- keeps `used` as chat.tokens, so fall back to that when no update arrived yet
+-- (or the agent never sends one). The model comes from the ACP session config.
 local M = {}
 
 local function fmt_tokens(n)
@@ -36,6 +35,13 @@ local function chat_for(bufnr)
   end
   local ok2, chat = pcall(cc.buf_get_chat, bufnr or 0)
   return ok2 and chat or nil
+end
+
+local function current_chat()
+  if vim.bo.filetype ~= "codecompanion" then
+    return nil
+  end
+  return chat_for(0)
 end
 
 ---Build the readout string for a chat object. Pure: safe to call for any buffer.
@@ -82,35 +88,25 @@ function M.text(chat)
   return table.concat(parts, " · ")
 end
 
--- Window-local statusline: repaint every chat window with its own buffer's
--- readout, shown at the bottom of the window. Overrides the global (lualine)
--- statusline for chat windows only. The statusline interprets % codes, so
--- escape literal % (e.g. "44%").
-local function refresh_bottom()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local ok, buf = pcall(vim.api.nvim_win_get_buf, win)
-    if ok and vim.bo[buf].filetype == "codecompanion" then
-      local s = M.text(chat_for(buf))
-      if s ~= "" then
-        vim.w[win].cc_status = true
-        vim.wo[win].statusline = " " .. s:gsub("%%", "%%%%") .. " "
-      end
-    end
-  end
+function M.cond()
+  return current_chat() ~= nil
 end
 
-local function clear_bottom(win)
-  if vim.w[win].cc_status then
-    vim.w[win].cc_status = nil
-    pcall(vim.api.nvim_set_option_value, "statusline", "", { scope = "local", win = win })
-  end
+function M.component()
+  return M.text(current_chat())
 end
 
 function M.setup()
   local group = vim.api.nvim_create_augroup("cc_status", { clear = true })
 
+  -- lualine repaints on its own events, but not on ours: nudge it when a
+  -- chat finishes, is submitted/cleared, or a usage update lands.
   local function refresh_all()
-    refresh_bottom()
+    vim.schedule(function()
+      pcall(function()
+        require("lualine").refresh()
+      end)
+    end)
   end
 
   vim.api.nvim_create_autocmd("User", {
@@ -123,25 +119,6 @@ function M.setup()
       "CodeCompanionUsageUpdate",
     },
     callback = refresh_all,
-  })
-
-  vim.api.nvim_create_autocmd("FileType", {
-    group = group,
-    pattern = "codecompanion",
-    callback = refresh_all,
-  })
-
-  -- Repaint on focus (covers a stale statusline render), and clear when the
-  -- window moves on to a non-chat buffer so a dead readout doesn't linger.
-  vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
-    group = group,
-    callback = function(ev)
-      if vim.bo[ev.buf].filetype == "codecompanion" then
-        refresh_all()
-      else
-        clear_bottom(vim.api.nvim_get_current_win())
-      end
-    end,
   })
 end
 
