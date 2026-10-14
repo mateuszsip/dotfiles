@@ -2,7 +2,8 @@
 -- Chat uses an ACP agent picked per machine: opencode2 when it's on PATH
 -- (private laptop), otherwise Claude Code (work, subscription; needs
 -- `npm i -g @agentclientprotocol/claude-agent-acp`). Muse is also selectable
--- per chat via the `muse` adapter below. Inline/cmd interactions only
+-- per chat via the `muse` adapter below; Antigravity via `antigravity`
+-- (personal machines only). Inline/cmd interactions only
 -- support HTTP adapters, so they stay on Copilot.
 local chat_adapter = vim.fn.executable("opencode2") == 1 and "opencode" or "claude_code"
 
@@ -17,7 +18,8 @@ local mcp_servers = {
 }
 -- machine.lua is rendered by chezmoi (work_machine flag); absent until `chezmoi apply`
 local has_machine, machine = pcall(require, "machine")
-if has_machine and machine.work then
+local is_work = has_machine and machine.work == true
+if is_work then
   mcp_servers.jira = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v2/mcp" } }
   mcp_servers.datadog = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/v1/mcp" } }
 end
@@ -235,9 +237,10 @@ return {
           end,
           -- `agy` has no native `--acp` flag, so this goes through the
           -- antigravity-acp bridge (installed by
-          -- run_onchange_install-antigravity-acp.sh.tmpl); run `agy login`
-          -- once first. Selectable, never the default.
-          antigravity = function()
+          -- run_onchange_install-antigravity-acp.sh.tmpl, personal machines
+          -- only); run `agy login` once first. Selectable, never the default.
+          -- `nil` on work machines drops the key, hiding the adapter.
+          antigravity = not is_work and function()
             return {
               name = "antigravity",
               formatted_name = "Antigravity",
@@ -276,7 +279,7 @@ return {
                 on_exit = function(self, code) end,
               },
             }
-          end,
+          end or nil,
         },
       },
       interactions = {

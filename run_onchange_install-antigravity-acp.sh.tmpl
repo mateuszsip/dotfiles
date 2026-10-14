@@ -1,8 +1,20 @@
+{{- $work := false }}
+{{- if hasKey . "work_machine" }}{{ $work = .work_machine }}{{ end }}
+{{- if $work }}
+#!/bin/bash
+# antigravity-acp: skipped on work (Lendable) machines — personal only.
+set -eufo pipefail
+
+# Remove the bridge if the machine was reclassified as work.
+rm -f "$HOME/.local/bin/agy-acp"
+echo "antigravity-acp skipped on work machine."
+{{- else }}
 #!/bin/bash
 # antigravity-acp (https://github.com/shubzkothekar/antigravity-acp): v1.2.0
 # ACP bridge for Antigravity: `agy` has no native `--acp` flag, so this
 # provides the `agy-acp` binary behind the `antigravity` CodeCompanion chat
-# adapter. Prebuilt release binary -> ~/.local/bin/agy-acp.
+# adapter. Personal (non-Lendable) machines only — see $work gating above.
+# Prebuilt release binary -> ~/.local/bin/agy-acp.
 # Bump the version below (both the comment and `version=`) to upgrade;
 # chezmoi re-runs this script when its rendered contents change.
 set -eufo pipefail
@@ -42,3 +54,4 @@ mkdir -p "$(dirname "$bin")"
 curl -fsSL -o "$bin" "$url"
 chmod +x "$bin"
 echo "antigravity-acp installed to $bin"
+{{- end }}
