@@ -60,6 +60,9 @@ return {
     cc_status.setup()
     table.insert(opts.sections.lualine_x, 1, { cc_status.component, cond = cc_status.cond })
 
+    -- Drop LazyVim's clock to leave room for the CodeCompanion usage/cost readout.
+    opts.sections.lualine_z = {}
+
     return opts
   end,
 }
