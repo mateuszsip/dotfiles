@@ -1,0 +1,44 @@
+#!/bin/bash
+# antigravity-acp (https://github.com/shubzkothekar/antigravity-acp): v1.2.0
+# ACP bridge for Antigravity: `agy` has no native `--acp` flag, so this
+# provides the `agy-acp` binary behind the `antigravity` CodeCompanion chat
+# adapter. Prebuilt release binary -> ~/.local/bin/agy-acp.
+# Bump the version below (both the comment and `version=`) to upgrade;
+# chezmoi re-runs this script when its rendered contents change.
+set -eufo pipefail
+
+version="v1.2.0"
+
+bin="$HOME/.local/bin/agy-acp"
+
+if [ -x "$bin" ] && "$bin" --version 2>/dev/null | grep -q "${version#v}"; then
+  echo "antigravity-acp ${version} already installed."
+  exit 0
+fi
+
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+case "$arch" in
+  x86_64) arch="x64" ;;
+  aarch64 | arm64) arch="arm64" ;;
+  *)
+    echo "Unsupported arch: $arch" >&2
+    exit 1
+    ;;
+esac
+case "$os" in
+  darwin | linux) ;;
+  *)
+    echo "Unsupported OS: $os" >&2
+    exit 1
+    ;;
+esac
+
+asset="agy-acp-${os}-${arch}"
+url="https://github.com/shubzkothekar/antigravity-acp/releases/download/${version}/${asset}"
+
+echo "Installing antigravity-acp ${version} (${asset})..."
+mkdir -p "$(dirname "$bin")"
+curl -fsSL -o "$bin" "$url"
+chmod +x "$bin"
+echo "antigravity-acp installed to $bin"

@@ -233,6 +233,50 @@ return {
               },
             }
           end,
+          -- `agy` has no native `--acp` flag, so this goes through the
+          -- antigravity-acp bridge (installed by
+          -- run_onchange_install-antigravity-acp.sh.tmpl); run `agy login`
+          -- once first. Selectable, never the default.
+          antigravity = function()
+            return {
+              name = "antigravity",
+              formatted_name = "Antigravity",
+              type = "acp",
+              roles = {
+                llm = "assistant",
+                user = "user",
+              },
+              opts = {
+                vision = true,
+              },
+              commands = {
+                default = { "agy-acp" },
+              },
+              defaults = {
+                mcpServers = {},
+                timeout = 20000, -- 20 seconds
+              },
+              parameters = {
+                protocolVersion = 1,
+                clientCapabilities = {
+                  fs = { readTextFile = true, writeTextFile = true },
+                },
+                clientInfo = {
+                  name = "CodeCompanion.nvim",
+                  version = "1.0.0",
+                },
+              },
+              handlers = {
+                setup = function(self)
+                  return true
+                end,
+                form_messages = function(self, messages, capabilities)
+                  return require("codecompanion.adapters.acp.helpers").form_messages(self, messages, capabilities)
+                end,
+                on_exit = function(self, code) end,
+              },
+            }
+          end,
         },
       },
       interactions = {
