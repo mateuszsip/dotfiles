@@ -171,6 +171,11 @@ return {
         servers = mcp_servers,
         opts = { default_servers = vim.tbl_keys(mcp_servers) },
       },
+      display = {
+        chat = {
+          fold_context = true,
+        },
+      },
       adapters = {
         acp = {
           opencode = function()
