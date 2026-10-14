@@ -49,9 +49,7 @@ function M.text(chat)
   if not chat then
     return ""
   end
-  -- No adapter name: it costs ~10 columns and the chat buffer already shows
-  -- which adapter is active; model + numbers are what matter here.
-  local parts = {}
+  local parts = { chat.adapter and chat.adapter.formatted_name or "?" }
 
   local conn = chat.acp_connection
   local ok, models = pcall(function()
