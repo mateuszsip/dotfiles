@@ -86,25 +86,6 @@
       }
     ]
   },
-  "permissions": {
-    "allow": [
-      "Bash(git add:*)",
-      "Read({{ .chezmoi.homeDir }}/.config/**)",
-      "Edit({{ .chezmoi.homeDir }}/.config/**)",
-      "Read({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)",
-      "Edit({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)"
-    ],
-    "ask": [
-      "Bash(gh pr create:*)",
-      "Bash(git commit:*)"
-    ],
-    "defaultMode": "auto",
-    "deny": [
-      "Read(*.env)",
-      "Bash(rm:*)",
-      "Bash(curl:*)"
-    ]
-  },
   "statusLine": {
     "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh",
     "type": "command"
