@@ -56,14 +56,32 @@ return {
       table.insert(opts.sections.lualine_b, { grapple_status })
     end
 
-    -- CodeCompanion usage/cost readout: appended to lualine_b (left side).
-    -- Left-side placement matters: when the line overflows, Neovim cuts the
-    -- right, so a component in lualine_x can lose its usage/cost tail while
-    -- adapter+model still show. Must not be window-local: LazyVim uses
+    -- CodeCompanion usage/cost readout: in place of the buffer title
+    -- (lualine_c pretty_path). The path is meaningless in chat buffers, and
+    -- this spot survives overflow better than the right side (Neovim cuts the
+    -- right when the line is too long). Must not be window-local: LazyVim uses
     -- laststatus=3 (global statusline), which ignores per-window values.
+    -- Distinct color so it doesn't blend with git/mode sections (our theme
+    -- override paints every section with the Normal background).
     local cc_status = require("utils.cc_status")
     cc_status.setup()
-    table.insert(opts.sections.lualine_b, { cc_status.component, cond = cc_status.cond })
+    -- pretty_path is the sole lualine_c entry that is a bare function with no
+    -- cond; everything else (root_dir, diagnostics, filetype, trouble symbols)
+    -- carries its own cond.
+    for _, entry in ipairs(opts.sections.lualine_c or {}) do
+      if type(entry) == "table" and type(entry[1]) == "function" and entry.cond == nil then
+        entry.cond = function()
+          return vim.bo.filetype ~= "codecompanion"
+        end
+      end
+    end
+    table.insert(opts.sections.lualine_c, 1, {
+      cc_status.component,
+      cond = cc_status.cond,
+      color = function()
+        return { fg = Snacks.util.color("Special") }
+      end,
+    })
 
     -- Drop LazyVim's clock to leave room for the CodeCompanion readout.
     opts.sections.lualine_z = {}
