@@ -4,6 +4,28 @@
     "lua-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true
   },
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh run:*)",
+      "Bash(gh api:*)",
+      "Read({{ .chezmoi.homeDir }}/.config/**)",
+      "Edit({{ .chezmoi.homeDir }}/.config/**)",
+      "Read({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)",
+      "Edit({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)"
+    ],
+    "deny": [
+      "Read(*.env)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(curl:*)"
+    ],
+    "defaultMode": "auto"
+  },
   "hooks": {
     "PostToolUse": [
       {
