@@ -83,6 +83,45 @@ function M.setup()
     end
     return disconnect(self)
   end
+
+  -- Capture the full ACP usage_update ({used, size, cost?}) onto the chat.
+  -- Upstream only keeps `used` (chat.tokens) and drops `size`/`cost`
+  -- (acp/init.lua DISPATCH), so stash the whole payload for the statusline
+  -- and refresh it live.
+  if not Connection._cc_capture_usage then
+    Connection._cc_capture_usage = true
+    local handle_incoming = Connection.handle_incoming_request_or_notification
+    Connection.handle_incoming_request_or_notification = function(self, notification)
+      local result = handle_incoming(self, notification)
+      local params = type(notification) == "table" and notification.params or nil
+      local update = params and params.update or nil
+      if
+        type(notification) == "table"
+        and notification.method == "session/update"
+        and type(update) == "table"
+        and update.sessionUpdate == "usage_update"
+        and update.used
+      then
+        local chat
+        if self.get_chat then
+          pcall(function()
+            chat = self:get_chat(params.sessionId)
+          end)
+        end
+        chat = chat or self.chat
+        if chat then
+          chat.cc_usage = { used = update.used, size = update.size, cost = update.cost }
+          vim.schedule(function()
+            pcall(vim.api.nvim_exec_autocmds, "User", {
+              pattern = "CodeCompanionUsageUpdate",
+              modeline = false,
+            })
+          end)
+        end
+      end
+      return result
+    end
+  end
 end
 
 return M

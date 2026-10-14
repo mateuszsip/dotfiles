@@ -1,6 +1,8 @@
--- Statusline component for CodeCompanion chat buffers: adapter, model, context tokens.
--- ACP chats only: tokens come from the agent's usage_update (chat.tokens), the model
--- from the ACP session config options.
+-- Statusline component for CodeCompanion chat buffers: adapter, model, context usage, cost.
+-- ACP chats only: usage comes from the agent's usage_update, captured in full
+-- ({used, size, cost?}) by utils.cc_acp onto chat.cc_usage. Upstream only
+-- keeps `used` as chat.tokens, so fall back to that when no update arrived yet
+-- (or the agent never sends one). The model comes from the ACP session config.
 local M = {}
 
 local function fmt_tokens(n)
@@ -10,6 +12,16 @@ local function fmt_tokens(n)
     return string.format("%.1fk", n / 1000)
   end
   return tostring(n)
+end
+
+local function fmt_cost(cost)
+  if type(cost) ~= "table" or type(cost.amount) ~= "number" then
+    return nil
+  end
+  if cost.currency and cost.currency ~= "" and cost.currency ~= "USD" then
+    return string.format("%g %s", cost.amount, cost.currency)
+  end
+  return string.format("$%g", cost.amount)
 end
 
 local function current_chat()
@@ -44,7 +56,21 @@ function M.component()
     table.insert(parts, name)
   end
 
-  if type(chat.tokens) == "number" then
+  local usage = chat.cc_usage
+  if type(usage) == "table" and type(usage.used) == "number" then
+    if type(usage.size) == "number" and usage.size > 0 then
+      table.insert(
+        parts,
+        string.format("%s/%s (%d%%)", fmt_tokens(usage.used), fmt_tokens(usage.size), math.floor(usage.used / usage.size * 100 + 0.5))
+      )
+    else
+      table.insert(parts, fmt_tokens(usage.used) .. " tok")
+    end
+    local cost = fmt_cost(usage.cost)
+    if cost then
+      table.insert(parts, cost)
+    end
+  elseif type(chat.tokens) == "number" then
     table.insert(parts, fmt_tokens(chat.tokens) .. " tok")
   end
   return table.concat(parts, " · ")
@@ -58,6 +84,7 @@ function M.setup()
       "CodeCompanionChatSubmitted",
       "CodeCompanionChatACPModeChanged",
       "CodeCompanionChatCleared",
+      "CodeCompanionUsageUpdate",
     },
     callback = function()
       vim.schedule(function()
