@@ -56,6 +56,10 @@ return {
       table.insert(opts.sections.lualine_b, { grapple_status })
     end
 
+    local cc_status = require("utils.cc_status")
+    cc_status.setup()
+    table.insert(opts.sections.lualine_x, 1, { cc_status.component, cond = cc_status.cond })
+
     return opts
   end,
 }
