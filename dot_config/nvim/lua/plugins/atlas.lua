@@ -172,7 +172,13 @@ local github_pull_views = {
     -- match atlas' own form exactly (providers/github/query.lua) to be parsed.
     search = "is:pr author:@me (is:open OR is:merged OR is:closed -is:merged) sort:updated-desc archived:false",
   },
-  { name = "Mentioned", key = "4", layout = "compact", search = "is:pr is:open mentions:@me archived:false" },
+  {
+    name = "Mentioned",
+    key = "4",
+    layout = "compact",
+    search = "is:pr is:open mentions:@me archived:false",
+    exclude_title_prefixes = { "chore: [release]" },
+  },
   {
     name = "Recently merged",
     key = "5",
