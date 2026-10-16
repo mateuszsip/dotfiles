@@ -159,6 +159,9 @@ local github_pull_views = {
     key = "2",
     layout = "compact",
     search = "is:pr is:open review-requested:@me archived:false",
+    -- Filtered client-side (utils/atlas_sort.lua): GitHub search can't anchor a
+    -- title prefix and drops the punctuation in "chore: [release]".
+    exclude_title_prefixes = { "chore: [release]" },
   },
   {
     name = "All my PRs",

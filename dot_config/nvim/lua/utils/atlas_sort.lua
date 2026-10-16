@@ -295,6 +295,33 @@ local function cap_pagelen(view, opts)
   return vim.tbl_extend("force", opts, { pagelen = pagelen })
 end
 
+-- Views may set `exclude_title_prefixes` (a custom field, ignored by atlas) to
+-- hide PRs whose title starts with any of the given strings — e.g. release-bot
+-- PRs in the review queue. Atlas passes the configured view table itself to
+-- `fetch_pullrequests`, so the field survives. Builds a new list rather than
+-- mutating: the page comes from the provider cache, and the same cached page
+-- may be served to a view without the filter.
+---@param view table
+---@param page { items: PullRequest[] }|nil
+---@return { items: PullRequest[] }|nil
+local function exclude_titles(view, page)
+  local prefixes = type(view) == "table" and view.exclude_title_prefixes or nil
+  local items = type(page) == "table" and page.items or nil
+  if type(prefixes) ~= "table" or #prefixes == 0 or type(items) ~= "table" then
+    return page
+  end
+  local kept = vim.tbl_filter(function(pr)
+    local title = tostring(pr.title or "")
+    for _, prefix in ipairs(prefixes) do
+      if vim.startswith(title, prefix) then
+        return false
+      end
+    end
+    return true
+  end, items)
+  return vim.tbl_extend("force", page, { items = kept })
+end
+
 -- Every PR list path runs through the provider's `fetch_pullrequests`
 -- capability — the main list, view switches and bookmark queries all call it
 -- from `pulls/ui/dashboard/controller.lua`, as does `atlas.commands.review` — so
@@ -315,7 +342,7 @@ function M.wrap_fetch_pullrequests()
         opts = cap_pagelen(view, opts)
         return upstream(view, opts, function(page, err)
           if type(on_done) == "function" then
-            on_done(sort_pulls(page), err)
+            on_done(sort_pulls(exclude_titles(view, page)), err)
           end
         end)
       end
