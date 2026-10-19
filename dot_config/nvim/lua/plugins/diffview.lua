@@ -27,6 +27,8 @@ return {
       end,
       desc = "Diff vs origin/main/master",
     },
+    { "<leader>gdu", "<cmd>DiffviewOpen<cr>", desc = "Diff uncommitted (vs HEAD)" },
+    { "<leader>gdc", "<cmd>DiffviewOpen HEAD~1..HEAD<cr>", desc = "Diff last commit" },
     { "<leader>gdh", "<cmd>DiffviewFileHistory %<cr>", desc = "File History" },
     { "<leader>gdH", "<cmd>DiffviewFileHistory<cr>", desc = "Repo History" },
   },
