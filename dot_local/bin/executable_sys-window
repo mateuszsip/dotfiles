@@ -1,0 +1,99 @@
+#!/bin/bash
+# Window actions for the focused window / all windows.
+#
+#   sys-window close-all                  close every open window, go to workspace 1
+#   sys-window pop [width height x y]     pop the focused tile out (float, pin, keep on top)
+#   sys-window transparency               toggle opacity on the focused window
+#   sys-window gaps                       toggle window gaps + borders
+#   sys-window square-aspect              toggle single-window square aspect ratio
+
+TOGGLES="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/toggles"
+
+toggle_conf() { # toggle_conf <name> <conf-content>
+  local file="$TOGGLES/$1.conf"
+  if [[ -f $file ]]; then
+    rm -f "$file"
+    printf '%s disabled\n' "$2"
+  else
+    mkdir -p "$TOGGLES"
+    printf '%s\n' "$3" >"$file"
+    printf '%s enabled\n' "$2"
+  fi
+  hyprctl reload >/dev/null
+}
+
+close_all() {
+  hyprctl clients -j | jq -r '.[].address' | xargs -r -I{} hyprctl dispatch closewindow address:{}
+  hyprctl dispatch workspace 1 >/dev/null
+}
+
+pop() {
+  local width=${1:-1300} height=${2:-900} x=${3:-} y=${4:-}
+  local active pinned address
+
+  active=$(hyprctl activewindow -j)
+  pinned=$(jq -r '.pinned' <<<"$active")
+  address=$(jq -r '.address' <<<"$active")
+
+  if [[ $pinned == true ]]; then
+    hyprctl -q --batch \
+      "dispatch pin address:$address;" \
+      "dispatch togglefloating address:$address;" \
+      "dispatch tagwindow -pop address:$address;"
+  elif [[ -n $address && $address != null ]]; then
+    hyprctl dispatch togglefloating "address:$address"
+    hyprctl dispatch resizeactive exact "$width" "$height" "address:$address"
+
+    if [[ -n $x && -n $y ]]; then
+      hyprctl dispatch moveactive "$x" "$y" "address:$address"
+    else
+      hyprctl dispatch centerwindow "address:$address"
+    fi
+
+    hyprctl -q --batch \
+      "dispatch pin address:$address;" \
+      "dispatch alterzorder top address:$address;" \
+      "dispatch tagwindow +pop address:$address;"
+  fi
+}
+
+transparency() {
+  hyprctl dispatch setprop "address:$(hyprctl activewindow -j | jq -r '.address')" opaque toggle
+}
+
+gaps() {
+  toggle_conf window-no-gaps "Window gaps" '# Remove all window gaps and borders
+general {
+    gaps_out = 0
+    gaps_in = 0
+    border_size = 0
+}
+
+decoration {
+    rounding = 0
+}'
+  notify-send -u low "Window gaps: $( [[ -f $TOGGLES/window-no-gaps.conf ]] && echo off || echo on )"
+}
+
+square_aspect() {
+  toggle_conf single-window-aspect-ratio "Single-window aspect ratio" '# Avoid overly wide single-window layouts on wide screens
+layout {
+    single_window_aspect_ratio = 1 1
+}'
+  notify-send -u low "Single-window aspect ratio: $( [[ -f $TOGGLES/single-window-aspect-ratio.conf ]] && echo on || echo off )"
+}
+
+case ${1:-} in
+close-all) close_all ;;
+pop)
+  shift
+  pop "$@"
+  ;;
+transparency) transparency ;;
+gaps) gaps ;;
+square-aspect) square_aspect ;;
+*)
+  echo "Usage: $(basename "$0") {close-all|pop|transparency|gaps|square-aspect}" >&2
+  exit 2
+  ;;
+esac

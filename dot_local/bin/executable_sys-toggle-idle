@@ -1,0 +1,15 @@
+#!/bin/bash
+# Toggle hypridle (idle locking).
+
+SIGNAL=9 # waybar custom module: RTMIN+9
+
+if pgrep -x hypridle >/dev/null; then
+  pkill -x hypridle
+  notify-send -u low "Stop locking computer when idle"
+else
+  setsid uwsm-app -- hypridle >/dev/null 2>&1 &
+  notify-send -u low "Now locking computer when idle"
+fi
+
+pkill -RTMIN+"$SIGNAL" waybar 2>/dev/null
+exit 0

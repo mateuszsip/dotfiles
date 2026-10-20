@@ -1,0 +1,40 @@
+#!/bin/bash
+# Share the clipboard, a file, or a folder with LocalSend.
+#
+#   sys-share clipboard
+#   sys-share file [path...]
+#   sys-share folder [path]
+
+set -uo pipefail
+
+if (($# == 0)); then
+  echo "Usage: $(basename "$0") {clipboard|file|folder} [path...]" >&2
+  exit 1
+fi
+
+mode=$1
+shift
+
+if [[ $mode == clipboard ]]; then
+  temp_file=$(mktemp --suffix=.txt)
+  wl-paste >"$temp_file"
+  files=$temp_file
+else
+  if (($# > 0)); then
+    files="$*"
+  else
+    if [[ $mode == folder ]]; then
+      files=$(find "$HOME" -type d 2>/dev/null | fzf)
+    else
+      files=$(find "$HOME" -type f 2>/dev/null | fzf --multi)
+    fi
+    [[ -z $files ]] && exit 0
+  fi
+fi
+
+if [[ $mode != clipboard ]] && grep -q $'\n' <<<"$files"; then
+  readarray -t file_array <<<"$files"
+  systemd-run --user --quiet --collect localsend --headless send "${file_array[@]}"
+else
+  systemd-run --user --quiet --collect localsend --headless send "$files"
+fi

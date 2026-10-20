@@ -1,0 +1,191 @@
+#!/bin/bash
+# Launch helpers: app launcher, browsers, terminals, and focus-or-launch.
+#
+#   sys-launch apps [walker args]        application launcher
+#   sys-launch emoji                     emoji picker
+#   sys-launch browser [--private] [url] default browser
+#   sys-launch editor [path]             $EDITOR, TUI editors in a terminal
+#   sys-launch webapp <url> [args]       url as a chromium web app
+#   sys-launch tui <command> [args]      command in a terminal with a stable app id
+#   sys-launch focus <pattern> <command...>  focus a matching window or launch
+#   sys-launch float <command> [args]    command in a floating terminal
+#   sys-launch wifi|bluetooth|audio      rfkill unblock + TUI control panel
+
+app_id_prefix=org.sip
+
+browser_exec() {
+  local desktop exec_path
+  desktop=$(xdg-settings get default-web-browser)
+  exec_path=$(sed -n 's/^Exec=\([^ ]*\).*/\1/p' \
+    ~/.local/share/applications/"$desktop" \
+    /usr/share/applications/"$desktop" 2>/dev/null | head -1)
+  printf '%s' "$exec_path"
+}
+
+apps() {
+  exec sys-walker --width 644 --maxheight 300 --minheight 300 "$@"
+}
+
+clipboard() {
+  exec sys-walker -m clipboard
+}
+
+emoji() {
+  local list="${SYS_EMOJI_LIST:-$HOME/.local/share/sys/emojis.txt}"
+
+  if [[ ! -f $list ]]; then
+    notify-send -u low "Emoji list not found" "$list"
+    exit 1
+  fi
+
+  local choice emoji
+  choice=$(sys-walker --dmenu -p 'Emoji' --width 360 --minheight 1 --maxheight 420 <"$list") || exit 0
+  [[ -z $choice ]] && exit 0
+
+  emoji=${choice%% *}
+
+  if command -v wtype >/dev/null; then
+    wtype "$emoji"
+  else
+    printf '%s' "$emoji" | wl-copy
+    notify-send -u low "Copied $emoji to the clipboard" "Install wtype to insert it directly"
+  fi
+}
+
+browser() {
+  local exec_path private_flag arg
+  local args=()
+
+  exec_path=$(browser_exec)
+  if [[ -z $exec_path ]]; then
+    notify-send -u low "No default browser configured"
+    exit 1
+  fi
+
+  if $exec_path --help 2>/dev/null | grep -q MOZ_LOG; then
+    private_flag=--private-window
+  elif [[ $exec_path =~ edge ]]; then
+    private_flag=--inprivate
+  else
+    private_flag=--incognito
+  fi
+
+  for arg in "$@"; do
+    [[ $arg == --private ]] && arg=$private_flag
+    args+=("$arg")
+  done
+
+  exec setsid uwsm-app -- "$exec_path" "${args[@]}"
+}
+
+tui() {
+  local name
+  name=$(basename "$1")
+  exec setsid uwsm-app -- xdg-terminal-exec --app-id="$app_id_prefix.$name" -e "$@"
+}
+
+editor() {
+  local editor=${EDITOR:-nvim}
+  case $editor in
+  nvim | vim | nano | micro | hx | helix | fresh) tui "$editor" "$@" ;;
+  *) exec setsid uwsm-app -- "$editor" "$@" ;;
+  esac
+}
+
+webapp() {
+  local url=$1
+  shift
+
+  local desktop exec_path
+  desktop=$(xdg-settings get default-web-browser)
+  case $desktop in
+  google-chrome* | brave* | microsoft-edge* | opera* | vivaldi* | helium*) ;;
+  *) desktop=chromium.desktop ;;
+  esac
+
+  exec_path=$(sed -n 's/^Exec=\([^ ]*\).*/\1/p' \
+    ~/.local/share/applications/"$desktop" \
+    /usr/share/applications/"$desktop" 2>/dev/null | head -1)
+
+  if [[ -z $exec_path ]]; then
+    notify-send -u low "No chromium-based browser found for web apps"
+    exit 1
+  fi
+
+  exec setsid uwsm-app -- "$exec_path" --app="$url" "$@"
+}
+
+focus() {
+  local pattern=$1
+  shift
+
+  local address
+  address=$(hyprctl clients -j | jq -r --arg p "$pattern" '
+    .[] | select((.class | test("\\b" + $p + "\\b"; "i")) or (.title | test("\\b" + $p + "\\b"; "i")))
+    | .address' | head -n1)
+
+  if [[ -n $address ]]; then
+    hyprctl dispatch focuswindow "address:$address" >/dev/null
+    return 0
+  fi
+
+  exec setsid "$@"
+}
+
+float() {
+  exec setsid uwsm-app -- xdg-terminal-exec --app-id="$app_id_prefix.float" --title=Float -e "$@"
+}
+
+wifi() {
+  rfkill unblock wifi
+  focus impala sys-launch tui impala
+}
+
+bluetooth() {
+  rfkill unblock bluetooth
+  focus bluetui sys-launch tui bluetui
+}
+
+audio() {
+  focus wiremix sys-launch tui wiremix
+}
+
+case ${1:-} in
+apps)
+  shift
+  apps "$@"
+  ;;
+emoji) emoji ;;
+clipboard) clipboard ;;
+browser)
+  shift
+  browser "$@"
+  ;;
+editor)
+  shift
+  editor "$@"
+  ;;
+webapp)
+  shift
+  webapp "$@"
+  ;;
+tui)
+  shift
+  tui "$@"
+  ;;
+focus)
+  shift
+  focus "$@"
+  ;;
+float)
+  shift
+  float "$@"
+  ;;
+wifi) wifi ;;
+bluetooth) bluetooth ;;
+audio) audio ;;
+*)
+  echo "Usage: $(basename "$0") {apps|emoji|browser|editor|webapp|tui|focus|float|wifi|bluetooth|audio} ..." >&2
+  exit 2
+  ;;
+esac

@@ -1,0 +1,27 @@
+#!/bin/bash
+# Flip a named toggle flag, or query it.
+#
+#   sys-toggle <flag>            flip it and print the new state
+#   sys-toggle enabled <flag>    exit 0 when set
+#   sys-toggle disabled <flag>   exit 0 when unset
+
+DIR="${XDG_STATE_HOME:-$HOME/.local/state}/sys/toggles"
+
+case ${1:-} in
+"")
+  echo "Usage: $(basename "$0") [enabled|disabled] <flag>" >&2
+  exit 2
+  ;;
+enabled) [[ -f $DIR/$2 ]] ;;
+disabled) [[ ! -f $DIR/$2 ]] ;;
+*)
+  if [[ -f $DIR/$1 ]]; then
+    rm -f "$DIR/$1"
+    echo "off"
+  else
+    mkdir -p "$DIR"
+    : >"$DIR/$1"
+    echo "on"
+  fi
+  ;;
+esac

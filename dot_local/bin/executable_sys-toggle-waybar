@@ -1,0 +1,13 @@
+#!/bin/bash
+# Toggle Waybar visibility. The hidden state is remembered across sessions.
+
+DIR="${XDG_STATE_HOME:-$HOME/.local/state}/sys/toggles"
+
+if pgrep -x waybar >/dev/null; then
+  pkill -9 -x waybar
+  mkdir -p "$DIR"
+  : >"$DIR/waybar-off"
+else
+  rm -f "$DIR/waybar-off"
+  setsid uwsm-app -- waybar >/dev/null 2>&1 &
+fi

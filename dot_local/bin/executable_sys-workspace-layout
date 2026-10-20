@@ -1,0 +1,13 @@
+#!/bin/bash
+# Toggle the layout of the focused workspace between dwindle and scrolling.
+
+workspace=$(hyprctl activeworkspace -j | jq -r '.id')
+current=$(hyprctl activeworkspace -j | jq -r '.tiledLayout')
+
+case $current in
+dwindle) new=scrolling ;;
+*) new=dwindle ;;
+esac
+
+hyprctl keyword workspace "$workspace, layout:$new" >/dev/null
+notify-send -u low "Workspace layout set to $new"

@@ -1,0 +1,5 @@
+#!/bin/bash
+# Wake the display and restore the keyboard backlight.
+
+sys-brightness on
+sys-brightness --keyboard restore

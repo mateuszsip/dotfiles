@@ -1,0 +1,185 @@
+#!/bin/bash
+# Laptop display helpers.
+#
+#   sys-monitor internal <on|off|toggle|recover>   disable/enable the internal panel
+#   sys-monitor mirror   <on|off|toggle|recover>   mirror the internal panel to an external one
+#   sys-monitor scaling  [--reverse]               cycle the focused monitor scale
+#   sys-monitor external                           exit 0 when an external monitor is connected
+#   sys-monitor watch                              recover toggles when a monitor is unplugged
+#
+# The disabled/mirrored state is persisted as Hyprland config in the toggles
+# directory, which hyprland.conf sources last.
+
+TOGGLES="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/toggles"
+DISABLE=internal-monitor-disable
+MIRROR=internal-monitor-mirror
+
+internal_monitor() {
+  hyprctl monitors -j | jq -r '.[] | select(.name | contains("eDP")) | .name' | head -n1
+}
+
+external_monitor() {
+  hyprctl monitors -j | jq -r '.[] | select(.name | contains("eDP") | not) | .name' | head -n1
+}
+
+has_external_monitor() {
+  local status
+  for status in /sys/class/drm/card*-*/status; do
+    [[ $status == *-eDP-*/status ]] && continue
+    [[ $(<"$status") == connected ]] && return 0
+  done
+  return 1
+}
+
+set_toggle() { # set_toggle <name> <content>
+  mkdir -p "$TOGGLES"
+  printf '%s\n' "$2" >"$TOGGLES/$1.conf"
+  hyprctl reload >/dev/null
+}
+
+clear_toggle() { # clear_toggle <name>
+  rm -f "$TOGGLES/$1.conf"
+  hyprctl reload >/dev/null
+}
+
+internal() {
+  local panel
+  panel=$(internal_monitor)
+
+  case ${1:-toggle} in
+  on)
+    [[ -f $TOGGLES/$DISABLE.conf ]] && notify-send -u low "Laptop display enabled"
+    clear_toggle "$DISABLE"
+    ;;
+  off)
+    if ! has_external_monitor; then
+      notify-send -u low "Can't disable the only active display"
+      exit 1
+    fi
+    if [[ ! -f $TOGGLES/$DISABLE.conf && ! -f $TOGGLES/$MIRROR.conf ]]; then
+      set_toggle "$DISABLE" "monitor=$panel,disable"
+      notify-send -u low "Laptop display disabled"
+    fi
+    ;;
+  toggle)
+    if [[ -f $TOGGLES/$DISABLE.conf ]]; then internal on; else internal off; fi
+    ;;
+  recover)
+    if ! has_external_monitor && [[ -f $TOGGLES/$DISABLE.conf ]]; then
+      clear_toggle "$DISABLE"
+    fi
+    ;;
+  *)
+    echo "Usage: $(basename "$0") internal {on|off|toggle|recover}" >&2
+    exit 2
+    ;;
+  esac
+}
+
+mirror() {
+  local panel external
+  panel=$(internal_monitor)
+  external=$(external_monitor)
+
+  case ${1:-toggle} in
+  on)
+    if [[ -z $external ]]; then
+      notify-send -u low "No external monitors found for mirror"
+      exit 1
+    fi
+    if [[ -z $panel ]]; then
+      notify-send -u low "No laptop monitor found to mirror"
+      exit 1
+    fi
+
+    rm -f "$TOGGLES/$DISABLE.conf"
+    set_toggle "$MIRROR" "monitor=$external, preferred, auto, 1, mirror, $panel"
+    notify-send -u low "Mirroring enabled ($external)"
+    ;;
+  off)
+    if [[ -f $TOGGLES/$MIRROR.conf ]]; then
+      clear_toggle "$MIRROR"
+      notify-send -u low "Extended mode restored"
+    fi
+    ;;
+  toggle)
+    if [[ -f $TOGGLES/$MIRROR.conf ]]; then mirror off; else mirror on; fi
+    ;;
+  recover)
+    if ! has_external_monitor && [[ -f $TOGGLES/$MIRROR.conf ]]; then
+      clear_toggle "$MIRROR"
+    fi
+    ;;
+  *)
+    echo "Usage: $(basename "$0") mirror {on|off|toggle|recover}" >&2
+    exit 2
+    ;;
+  esac
+}
+
+scaling() {
+  local info monitor current width height rate index new_index new_scale
+  local scales=(1 1.25 1.6 2 3 4)
+
+  info=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true)')
+  monitor=$(jq -r '.name' <<<"$info")
+  current=$(jq -r '.scale' <<<"$info")
+  width=$(jq -r '.width' <<<"$info")
+  height=$(jq -r '.height' <<<"$info")
+  rate=$(jq -r '.refreshRate' <<<"$info")
+
+  # Hyprland may snap fractional scales, so match the closest entry.
+  index=$(awk -v s="$current" -v list="${scales[*]}" 'BEGIN {
+    n = split(list, arr, " "); best = 0; diff = 1e9
+    for (i = 1; i <= n; i++) {
+      d = s - arr[i]; if (d < 0) d = -d
+      if (d < diff) { diff = d; best = i - 1 }
+    }
+    print best
+  }')
+
+  if [[ ${1:-} == --reverse ]]; then
+    new_index=$(((index - 1 + ${#scales[@]}) % ${#scales[@]}))
+  else
+    new_index=$(((index + 1) % ${#scales[@]}))
+  fi
+  new_scale=${scales[$new_index]}
+
+  hyprctl keyword monitor "$monitor,${width}x${height}@${rate},auto,$new_scale" >/dev/null
+  notify-send -u low "Display scaling set to ${new_scale}x (not persisted)"
+}
+
+watch() {
+  local socket
+  socket="${XDG_RUNTIME_DIR}/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock"
+
+  socat -U - "UNIX-CONNECT:$socket" | while read -r event; do
+    case $event in
+    monitorremoved\>\>* | monitorremovedv2\>\>*)
+      internal recover
+      mirror recover
+      ;;
+    esac
+  done
+}
+
+case ${1:-} in
+internal)
+  shift
+  internal "$@"
+  ;;
+mirror)
+  shift
+  mirror "$@"
+  ;;
+scaling)
+  shift
+  scaling "$@"
+  ;;
+external) has_external_monitor ;;
+watch) watch ;;
+*)
+  echo "Usage: $(basename "$0") {internal|mirror|scaling|external|watch} ..." >&2
+  exit 2
+  ;;
+esac

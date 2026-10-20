@@ -1,0 +1,137 @@
+#!/bin/bash
+# Display and keyboard backlight control with a SwayOSD readout.
+#
+#   sys-brightness +5%           display, brightnessctl syntax
+#   sys-brightness 5%-
+#   sys-brightness 50%
+#   sys-brightness off|on        DPMS off/on
+#   sys-brightness --keyboard up|down|cycle|off|restore
+
+osd() { # osd <icon> <percent>
+  local progress
+  progress=$(awk -v p="$2" 'BEGIN { printf "%.2f", p / 100 }')
+  [[ $progress == "0.00" ]] && progress="0.01"
+  sys-osd --custom-icon "$1" --custom-progress "$progress" --custom-progress-text "$2%"
+}
+
+display_device() {
+  local device candidate
+  device=$(ls -1 /sys/class/backlight 2>/dev/null | head -n1)
+  for candidate in amdgpu_bl* intel_backlight acpi_video*; do
+    if [[ -e /sys/class/backlight/$candidate ]]; then
+      device=$candidate
+      break
+    fi
+  done
+  printf '%s' "$device"
+}
+
+display_percent() {
+  brightnessctl -d "$1" -m | cut -d',' -f4 | tr -d '%'
+}
+
+adjust_display() {
+  local step=${1:-+5%} device current target
+
+  device=$(display_device)
+  if [[ -z $device ]]; then
+    echo "No backlight device found" >&2
+    exit 1
+  fi
+
+  case $step in
+  off)
+    hyprctl dispatch dpms off >/dev/null 2>&1
+    return 0
+    ;;
+  on)
+    hyprctl dispatch dpms on >/dev/null 2>&1
+    return 0
+    ;;
+  esac
+
+  # Finer steps at the low end, absolute targets elsewhere: raw backlight
+  # rounding makes relative percentages uneven on some panels.
+  current=$(display_percent "$device")
+  case $step in
+  +5%)
+    target=$((current < 5 ? current + 1 : current + 5))
+    ((target > 100)) && target=100
+    step="${target}%"
+    ;;
+  5%-)
+    target=$((current <= 5 ? current - 1 : current - 5))
+    ((target < 1)) && target=1
+    step="${target}%"
+    ;;
+  esac
+
+  brightnessctl -d "$device" set "$step" >/dev/null
+  osd display-brightness-symbolic "$(display_percent "$device")"
+}
+
+adjust_keyboard() {
+  local direction=${1:-up} device candidate max current step new percent
+
+  for candidate in /sys/class/leds/*kbd_backlight*; do
+    if [[ -e $candidate ]]; then
+      device=$(basename "$candidate")
+      break
+    fi
+  done
+
+  if [[ -z $device ]]; then
+    echo "No keyboard backlight device found" >&2
+    exit 1
+  fi
+
+  case $direction in
+  off)
+    brightnessctl -sd "$device" set 0 >/dev/null
+    return 0
+    ;;
+  restore)
+    brightnessctl -rd "$device" >/dev/null
+    return 0
+    ;;
+  esac
+
+  max=$(brightnessctl -d "$device" max)
+  current=$(brightnessctl -d "$device" get)
+
+  # 10% of the range, but at least one step for keyboards with few levels.
+  step=$((max / 10))
+  ((step < 1)) && step=1
+
+  case $direction in
+  cycle)
+    new=$((current + step))
+    ((new > max)) && new=0
+    ;;
+  down)
+    new=$((current - step))
+    ((new < 0)) && new=0
+    ;;
+  *)
+    new=$((current + step))
+    ((new > max)) && new=max
+    ;;
+  esac
+
+  brightnessctl -d "$device" set "$new" >/dev/null
+  percent=$((new * 100 / max))
+  osd keyboard-brightness-symbolic "$percent"
+}
+
+case ${1:-} in
+--keyboard)
+  shift
+  adjust_keyboard "$@"
+  ;;
+"")
+  adjust_display +5%
+  ;;
+*)
+  adjust_display "$@"
+  ;;
+esac

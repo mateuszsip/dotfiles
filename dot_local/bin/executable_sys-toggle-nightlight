@@ -1,0 +1,20 @@
+#!/bin/bash
+# Toggle nightlight (hyprsunset) screen temperature.
+
+ON_TEMP=4000
+OFF_TEMP=6000
+
+if ! pgrep -x hyprsunset >/dev/null; then
+  setsid uwsm-app -- hyprsunset >/dev/null 2>&1 &
+  sleep 1 # let it register with the compositor
+fi
+
+current=$(hyprctl hyprsunset temperature 2>/dev/null | grep -oE '[0-9]+')
+
+if [[ $current == "$OFF_TEMP" ]]; then
+  hyprctl hyprsunset temperature "$ON_TEMP" >/dev/null
+  notify-send -u low "Nightlight on"
+else
+  hyprctl hyprsunset temperature "$OFF_TEMP" >/dev/null
+  notify-send -u low "Nightlight off"
+fi

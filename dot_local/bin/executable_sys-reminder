@@ -1,0 +1,127 @@
+#!/bin/bash
+# Lightweight desktop notification reminders.
+#
+#   sys-reminder <minutes> [message]
+#   sys-reminder show
+#   sys-reminder clear
+
+set -uo pipefail
+
+REMINDER_DIR="${XDG_RUNTIME_DIR:-/tmp}/sys-reminders"
+
+format_remaining() {
+  local seconds=$1
+  local minutes=$((seconds / 60))
+  local remainder=$((seconds % 60))
+
+  if ((minutes > 0 && remainder > 0)); then
+    echo "${minutes}m ${remainder}s"
+  elif ((minutes > 0)); then
+    echo "${minutes}m"
+  else
+    echo "${remainder}s"
+  fi
+}
+
+# Seconds from a systemd monotonic timespan such as "5h 3min 2.1s".
+parse_systemd_timespan() {
+  local total=0 value unit whole
+
+  while read -r value unit; do
+    whole=${value%.*}
+    case $unit in
+    d) total=$((total + whole * 86400)) ;;
+    h) total=$((total + whole * 3600)) ;;
+    min) total=$((total + whole * 60)) ;;
+    s) total=$((total + whole)) ;;
+    esac
+  done < <(grep -oE '[0-9]+([.][0-9]+)?(d|h|min|s)' <<<"$1" | sed -E 's/^([0-9.]+)([a-z]+)$/\1 \2/')
+
+  echo "$total"
+}
+
+show_reminders() {
+  local timers timer next next_seconds uptime remaining name minutes set_at message body=""
+
+  timers=$(systemctl --user list-timers --all --no-legend --no-pager "sys-reminder-*.timer" 2>/dev/null | awk '{ print $(NF - 1) }')
+  uptime=${SECONDS_SINCE_BOOT:-$(awk '{ print int($1) }' /proc/uptime)}
+
+  for timer in $timers; do
+    next=$(systemctl --user show -P NextElapseUSecMonotonic "$timer" 2>/dev/null || true)
+    [[ -z $next ]] && continue
+
+    next_seconds=$(parse_systemd_timespan "$next")
+    ((next_seconds <= uptime)) && continue
+
+    remaining=$((next_seconds - uptime))
+    name=${timer%.timer}
+    name=${name#sys-reminder-}
+    set_at=${name##*-}
+    minutes=${name%%m-*}
+    message=""
+    [[ -f $REMINDER_DIR/${timer%.timer}.message ]] && message=$(<"$REMINDER_DIR/${timer%.timer}.message")
+
+    if [[ -n $message ]]; then
+      body+="$message in $(format_remaining "$remaining") ($(date -d "@$((set_at + minutes * 60))" +%-H:%M))"$'\n'
+    else
+      body+="${minutes}-min reminder in $(format_remaining "$remaining") ($(date -d "@$((set_at + minutes * 60))" +%-H:%M))"$'\n'
+    fi
+  done
+
+  if [[ -z $body ]]; then
+    notify-send -u low "Upcoming reminders" "No outstanding reminders"
+  else
+    notify-send -u low "Upcoming reminders" "${body%$'\n'}"
+  fi
+}
+
+clear_reminders() {
+  local units
+  units=$(systemctl --user list-timers --all --no-legend --no-pager "sys-reminder-*.timer" 2>/dev/null | awk '{ print $(NF - 1), $NF }')
+
+  [[ -n $units ]] && xargs -r systemctl --user stop <<<"$units" || true
+
+  rm -f "$REMINDER_DIR"/sys-reminder-*.message 2>/dev/null || true
+  notify-send -u low "All reminders have been cleared"
+}
+
+case ${1:-} in
+show | list)
+  show_reminders
+  exit 0
+  ;;
+clear)
+  clear_reminders
+  exit 0
+  ;;
+esac
+
+minutes=${1:-}
+shift || true
+message="$*"
+
+if [[ -z $minutes ]] || [[ ! $minutes =~ ^[0-9]+$ ]] || ((minutes == 0)); then
+  echo "Usage: $(basename "$0") <minutes> [message]" >&2
+  echo "       $(basename "$0") show|clear" >&2
+  exit 1
+fi
+
+[[ -z $message ]] && message="Your ${minutes} minutes are up"
+
+set_at=$(date +%s)
+remind_at=$(date -d "+${minutes} minutes" +%H:%M)
+unit="sys-reminder-${minutes}m-${set_at}"
+message_file="$REMINDER_DIR/$unit.message"
+title="Reminder set for ${minutes} minutes"
+
+mkdir -p "$REMINDER_DIR"
+
+if [[ -n ${message:-} && $message != "Your ${minutes} minutes are up" ]]; then
+  printf "%s" "$message" >"$message_file"
+  title="$message in ${minutes} minutes"
+fi
+
+systemd-run --user --quiet --collect --on-active="${minutes}m" --unit="$unit" \
+  bash -c 'notify-send "Reminder" "$1" -u critical; rm -f "$2"' bash "$message" "$message_file"
+
+notify-send -u low "$title" "You'll be reminded at $remind_at"

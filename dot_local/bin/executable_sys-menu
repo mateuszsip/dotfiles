@@ -1,0 +1,222 @@
+#!/bin/bash
+# Desktop menu, walker based.
+#
+#   sys-menu                       main menu
+#   sys-menu system|toggle|hardware|capture|screenrecord|reminders|setup|keybindings
+#   sys-menu reminder-set
+#   sys-menu background|theme      pending the theme migration
+
+menu() { # menu <prompt> <option>...
+  local prompt=$1
+  shift
+  printf '%s\n' "$@" | sys-walker --dmenu -p "$prompt" --width 480 --minheight 1 --maxheight 630
+}
+
+ask() { # ask <prompt>
+  sys-walker --dmenu -p "$1" --width 480 --minheight 1 --maxheight 120 </dev/null
+}
+
+main_menu() {
+  local choice
+  choice=$(menu "Menu" \
+    "System" \
+    "Toggle" \
+    "Hardware" \
+    "Capture" \
+    "Reminders" \
+    "Setup" \
+    "Keybindings") || exit 0
+
+  case $choice in
+  System) system_menu ;;
+  Toggle) toggle_menu ;;
+  Hardware) hardware_menu ;;
+  Capture) capture_menu ;;
+  Reminders) reminder_menu ;;
+  Setup) setup_menu ;;
+  Keybindings) sys-keybindings ;;
+  *) exit 0 ;;
+  esac
+}
+
+system_menu() {
+  local choice
+  choice=$(menu "System" "Lock" "Suspend" "Logout" "Reboot" "Shutdown") || exit 0
+
+  case $choice in
+  Lock) sys-lock ;;
+  Suspend) systemctl suspend ;;
+  Logout) uwsm stop ;;
+  Reboot) systemctl reboot ;;
+  Shutdown) systemctl poweroff ;;
+  esac
+}
+
+toggle_menu() {
+  local choice
+  choice=$(menu "Toggle" \
+    "Nightlight" \
+    "Idle lock" \
+    "Notifications" \
+    "Top bar" \
+    "Workspace layout" \
+    "Window gaps" \
+    "Single-window ratio" \
+    "Monitor scaling") || exit 0
+
+  case $choice in
+  Nightlight) sys-toggle-nightlight ;;
+  "Idle lock") sys-toggle-idle ;;
+  Notifications) sys-toggle-notifications ;;
+  "Top bar") sys-toggle-waybar ;;
+  "Workspace layout") sys-workspace-layout ;;
+  "Window gaps") sys-window gaps ;;
+  "Single-window ratio") sys-window square-aspect ;;
+  "Monitor scaling") sys-monitor scaling ;;
+  esac
+}
+
+hardware_menu() {
+  local choice
+  choice=$(menu "Hardware" "Laptop display" "Mirror display" "Touchpad" "Monitor scaling") || exit 0
+
+  case $choice in
+  "Laptop display") sys-monitor internal toggle ;;
+  "Mirror display") sys-monitor mirror toggle ;;
+  Touchpad) sys-touchpad ;;
+  "Monitor scaling") sys-monitor scaling ;;
+  esac
+}
+
+capture_menu() {
+  local choice
+  choice=$(menu "Capture" "Screenshot" "Screenrecord" "Text extraction" "Color picker") || exit 0
+
+  case $choice in
+  Screenshot) sys-screenshot ;;
+  Screenrecord) screenrecord_menu ;;
+  "Text extraction") sys-ocr ;;
+  "Color picker") pkill hyprpicker || hyprpicker -a ;;
+  esac
+}
+
+screenrecord_menu() {
+  # Already recording: the first call stops it and returns success.
+  sys-screenrecord --stop-recording && exit 0
+
+  local choice
+  choice=$(menu "Screenrecord" \
+    "No audio" \
+    "Desktop audio" \
+    "Desktop + microphone" \
+    "Desktop + microphone + webcam") || exit 0
+
+  case $choice in
+  "No audio") sys-screenrecord ;;
+  "Desktop audio") sys-screenrecord --with-desktop-audio ;;
+  "Desktop + microphone") sys-screenrecord --with-desktop-audio --with-microphone-audio ;;
+  "Desktop + microphone + webcam")
+    local device
+    device=$(webcam_select) || exit 0
+    sys-screenrecord --with-desktop-audio --with-microphone-audio --with-webcam --webcam-device="$device"
+    ;;
+  esac
+}
+
+webcam_select() {
+  local choice
+  local -a devices=()
+
+  while IFS= read -r line; do
+    devices+=("$line")
+  done < <(v4l2-ctl --list-devices 2>/dev/null |
+    awk '/^[^[:space:]]/ { name = $0 } /^[[:space:]]*\/dev\/video/ && !seen { print $1 "\t" name; seen = 1 } /^$/ { seen = 0 }')
+
+  if ((${#devices[@]} == 0)); then
+    notify-send -u critical "No webcam devices found"
+    return 1
+  fi
+
+  if ((${#devices[@]} == 1)); then
+    cut -f1 <<<"${devices[0]}"
+    return 0
+  fi
+
+  choice=$(menu "Select webcam" "${devices[@]}") || return 1
+  cut -f1 <<<"$choice"
+}
+
+reminder_menu() {
+  local choice
+  choice=$(menu "Reminder" "Set one" "Show all" "Clear all") || exit 0
+
+  case $choice in
+  "Set one") reminder_set ;;
+  "Show all") sys-reminder show ;;
+  "Clear all") sys-reminder clear ;;
+  esac
+}
+
+reminder_set() {
+  local minutes message
+  minutes=$(ask "Remind in minutes") || exit 0
+  [[ $minutes =~ ^[0-9]+$ ]] && ((minutes > 0)) || exit 0
+
+  message=$(ask "Reminder message (optional)" 2>/dev/null)
+  sys-reminder "$minutes" "$message"
+}
+
+setup_menu() {
+  local choice
+  choice=$(menu "Setup" "Audio" "Wifi" "Bluetooth" "Power profile" "Monitors") || exit 0
+
+  case $choice in
+  Audio) sys-launch audio ;;
+  Wifi) sys-launch wifi ;;
+  Bluetooth) sys-launch bluetooth ;;
+  "Power profile") powerprofile_menu ;;
+  Monitors) sys-launch editor ~/.config/hypr/monitors.conf ;;
+  esac
+}
+
+share_menu() {
+  local choice
+  choice=$(menu "Share" "Clipboard" "File" "Folder") || exit 0
+
+  case $choice in
+  Clipboard) sys-share clipboard ;;
+  File) sys-launch tui sys-share file ;;
+  Folder) sys-launch tui sys-share folder ;;
+  esac
+}
+
+powerprofile_menu() {
+  local choice
+  local -a profiles=()
+
+  mapfile -t profiles < <(powerprofilesctl list | awk '/^[[:space:]]*[a-z0-9-]+:/ { gsub(/:$/, ""); gsub(/^[[:space:]]+/, ""); print }')
+
+  choice=$(menu "Power profile" "${profiles[@]}") || exit 0
+  [[ -n $choice ]] && powerprofilesctl set "$choice"
+}
+
+case ${1:-} in
+"") main_menu ;;
+system) system_menu ;;
+toggle) toggle_menu ;;
+hardware) hardware_menu ;;
+capture) capture_menu ;;
+screenrecord) screenrecord_menu ;;
+reminders) reminder_menu ;;
+reminder-set) reminder_set ;;
+share) share_menu ;;
+setup) setup_menu ;;
+keybindings) sys-keybindings ;;
+background | theme)
+  notify-send -u low "Theme migration pending" "This menu lands with the theme phase."
+  ;;
+*)
+  echo "Usage: $(basename "$0") [main|system|toggle|hardware|capture|screenrecord|reminders|share|setup|keybindings]" >&2
+  exit 2
+  ;;
+esac

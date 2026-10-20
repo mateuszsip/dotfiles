@@ -1,0 +1,13 @@
+#!/bin/bash
+# swayosd-client wrapper that targets the focused Hyprland monitor.
+#
+#   sys-osd --output-volume raise
+#   sys-osd --custom-message "Mic muted" --custom-icon microphone-sensitivity-muted-symbolic
+
+monitor=$(hyprctl monitors -j | jq -r 'first(.[] | select(.focused)) | .name // empty')
+
+if [[ -n $monitor ]]; then
+  exec swayosd-client --monitor "$monitor" "$@"
+fi
+
+exec swayosd-client "$@"

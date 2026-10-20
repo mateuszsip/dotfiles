@@ -1,0 +1,76 @@
+#!/bin/bash
+# Audio helpers.
+#
+#   sys-audio input-mute      toggle the default microphone
+#   sys-audio output-switch   cycle through the available sinks
+
+input_mute() {
+  local icon message value
+
+  wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+
+  if wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q '\[MUTED\]'; then
+    value=1
+    icon=microphone-sensitivity-muted-symbolic
+    message="Microphone muted"
+  else
+    value=0
+    icon=audio-input-microphone-symbolic
+    message="Microphone on"
+  fi
+
+  # Drive the hardware mic-mute LED on laptops that expose one.
+  if [[ -e /sys/class/leds/platform::micmute/brightness ]]; then
+    brightnessctl --device=platform::micmute set "$value" >/dev/null 2>&1 || true
+  fi
+
+  sys-osd --custom-message "$message" --custom-icon "$icon"
+}
+
+output_switch() {
+  local sinks count current index name description volume muted icon
+
+  sinks=$(pactl -f json list sinks | jq '[.[] | select((.ports | length == 0) or ([.ports[]? | .availability != "not available"] | any))]')
+  count=$(jq 'length' <<<"$sinks")
+
+  if ((count == 0)); then
+    sys-osd --custom-message "No audio devices found"
+    exit 1
+  fi
+
+  current=$(pactl get-default-sink)
+  index=$(jq -r --arg name "$current" 'map(.name) | index($name) // -1' <<<"$sinks")
+  index=$(((index + 1) % count))
+
+  name=$(jq -r ".[$index].name" <<<"$sinks")
+  description=$(jq -r ".[$index] | .description // .properties.\"device.description\" // .name" <<<"$sinks")
+  [[ $description == "null" || $description == "(null)" ]] && description=$name
+
+  volume=$(jq -r ".[$index].volume | to_entries[0].value.value_percent | sub(\"%\"; \"\")" <<<"$sinks")
+  muted=$(jq -r ".[$index].mute" <<<"$sinks")
+
+  if [[ $muted == true ]] || ((${volume%.*} <= 0)); then
+    icon=sink-volume-muted-symbolic
+  elif ((${volume%.*} <= 33)); then
+    icon=sink-volume-low-symbolic
+  elif ((${volume%.*} <= 66)); then
+    icon=sink-volume-medium-symbolic
+  else
+    icon=sink-volume-high-symbolic
+  fi
+
+  if [[ $name != "$current" ]]; then
+    wpctl set-default "$(jq -r ".[$index].properties.\"object.id\"" <<<"$sinks")"
+  fi
+
+  sys-osd --custom-message "$description" --custom-icon "$icon"
+}
+
+case ${1:-} in
+input-mute) input_mute ;;
+output-switch) output_switch ;;
+*)
+  echo "Usage: $(basename "$0") {input-mute|output-switch}" >&2
+  exit 2
+  ;;
+esac

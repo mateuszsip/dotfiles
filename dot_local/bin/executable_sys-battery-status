@@ -1,0 +1,20 @@
+#!/bin/bash
+# Print a one-line battery status: percentage, time, and power draw.
+
+info=$(upower -i "$(upower -e | grep -m1 BAT)")
+[[ -z $info ]] && exit 1
+
+percentage=$(awk '/percentage/ { print int($2); exit }' <<<"$info")
+rate=$(awk '/energy-rate/ { printf "%.1f", $2; exit }' <<<"$info")
+state=$(awk '/state/ { print $2; exit }' <<<"$info")
+time=$(awk '/time to (empty|full)/ { print $4, $5; exit }' <<<"$info")
+
+if [[ -z $percentage ]]; then
+  exit 1
+fi
+
+if [[ $state == charging ]]; then
+  echo "Battery ${percentage}%  ·  ${time:-?} to full  ·  ${rate}W"
+else
+  echo "Battery ${percentage}%  ·  ${time:-?} left  ·  ${rate}W"
+fi
