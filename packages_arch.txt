@@ -64,6 +64,7 @@ ttf-jetbrains-mono-nerd
 unzip
 waybar
 whois
+wtype
 yaru-icon-theme
 yazi
 yq
