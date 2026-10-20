@@ -12,7 +12,6 @@ packages_macos.txt
 packages_macos_taps.txt
 
 {{- if eq .chezmoi.os "darwin" }}
-dot_config/pacsea
 .config/omarchy
 .config/waybar
 .config/hypr
@@ -25,16 +24,16 @@ dot_config/pacsea
 .config/nvim/lua/plugins/omarchy-theme-hotreload.lua
 .config/nvim/lua/plugins/all-themes.lua
 .config/nvim/lua/plugins/theme.lua
-dot_docker/modify_config.json
-dot_config/environment.d
-dot_config/systemd
+.docker/config.json
+.config/environment.d
+.config/systemd
 {{ else }}
 .aerospace.toml
 .config/ghostty/ghostty-display-font.swift
 .config/nvim/lua/plugins/mac_theme.lua
 {{- if ne .chezmoi.osRelease.id "archarm" }}
-dot_config/environment.d
-dot_config/systemd
+.config/environment.d
+.config/systemd
 {{- end }}
 {{- end }}
 
