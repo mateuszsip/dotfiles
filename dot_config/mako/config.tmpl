@@ -1,0 +1,40 @@
+# Mako notification daemon.
+#
+# Vendored from Omarchy's default/mako/core.ini (Omarchy 3.8.5), merged with
+# the palette colors; omarchy's first-run button handlers are gone (those
+# notifications are no longer sent).
+#
+# Colors come from .chezmoidata/palette.toml — change them there, not here.
+
+anchor=top-center
+group-by=app-name,summary,body
+default-timeout=5000
+width=420
+outer-margin=20
+padding=10,15
+border-size=2
+border-radius=12
+max-icon-size=32
+font=sans-serif 14px
+
+text-color={{ .palette.fg }}
+border-color={{ .palette.fg }}
+background-color={{ .palette.bg }}
+
+[app-name=Spotify]
+invisible=1
+
+[mode=do-not-disturb]
+invisible=true
+
+[mode=do-not-disturb app-name=notify-send]
+invisible=false
+
+[urgency=critical]
+default-timeout=0
+layer=overlay
+
+# sys-screenshot: show the thumbnail large
+[summary~="Screenshot saved to clipboard and file"]
+max-icon-size=80
+format=<b>%s</b>\n%b

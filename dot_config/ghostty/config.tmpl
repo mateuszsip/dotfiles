@@ -1,9 +1,5 @@
-# Dynamic theme colors
-{{- if eq .chezmoi.os "darwin" }}
-config-file = ~/.config/ghostty/flexoki-2.conf
-{{- else }}
-config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
-{{- end }}
+# Dynamic theme colors (generated from .chezmoidata/palette.toml)
+config-file = ?"~/.config/ghostty/theme.conf"
 
 # Font
 font-family = "JetBrainsMono Nerd Font Mono"
