@@ -9,8 +9,8 @@
 -- plugin's `config` (see lua/plugins/atlas.lua) so ours always runs last.
 --
 -- Every colour is pushed to a WCAG contrast ratio against the surface it sits
--- on (4.5:1), so this reads on flexoki-light here and on whatever omarchy
--- picks on Linux.
+-- on (4.5:1), so this reads on flexoki-light, the fixed palette on both macOS
+-- and Linux.
 
 local M = {}
 

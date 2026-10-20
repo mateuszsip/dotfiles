@@ -48,6 +48,10 @@ color15 = "#FFFCF0"
 # Extras the app themes want on top of base16
 dim = "#6F6E69"
 
+# NeoVim colorscheme (LazyVim `opts.colorscheme`) — nvim themes are their own
+# plugins, so this only names the one that matches the palette.
+neovim_colorscheme = "flexoki-light"
+
 [palette.extra]
 red = "#AF3029"
 orange = "#BC5215"

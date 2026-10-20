@@ -1,0 +1,14 @@
+-- Colorscheme — generated from .chezmoidata/palette.toml by chezmoi.
+-- One fixed theme, no switcher (see the de-omarchy migration notes).
+return {
+  {
+    "kepano/flexoki-neovim",
+    priority = 1000,
+  },
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "{{ .palette.neovim_colorscheme }}",
+    },
+  },
+}
