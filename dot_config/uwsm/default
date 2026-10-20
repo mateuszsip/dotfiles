@@ -1,0 +1,3 @@
+# Default apps for the graphical session. Changes require a re-login.
+export TERMINAL=xdg-terminal-exec
+export EDITOR=nvim

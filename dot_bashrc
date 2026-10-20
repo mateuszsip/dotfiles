@@ -1,0 +1,47 @@
+# ~/.bashrc — fallback shell (login shell is nushell)
+
+# If not running interactively, don't do anything (leave this at the top of this file)
+[[ $- != *i* ]] && return
+
+# Env
+export SUDO_EDITOR="${EDITOR:-nvim}"
+export BAT_THEME=ansi
+export MANROFFOPT="-c"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+# Duplicated from ~/.config/uwsm/env so SSH sessions get it too
+export PATH="$HOME/.local/bin:$PATH"
+
+# History
+shopt -s histappend
+HISTCONTROL=ignoreboth
+HISTSIZE=32768
+HISTFILESIZE="${HISTSIZE}"
+
+# Completion
+if [[ ! -v BASH_COMPLETION_VERSINFO && -f /usr/share/bash-completion/bash_completion ]]; then
+  source /usr/share/bash-completion/bash_completion
+fi
+
+# Command hashing off for mise shims
+set +h
+
+# Tool init
+command -v mise &>/dev/null && eval "$(mise activate bash)"
+[[ ${TERM:-} != "dumb" ]] && command -v starship &>/dev/null && eval "$(starship init bash)"
+command -v zoxide &>/dev/null && eval "$(zoxide init bash)"
+[[ -f /usr/share/fzf/completion.bash ]] && source /usr/share/fzf/completion.bash
+[[ -f /usr/share/fzf/key-bindings.bash ]] && source /usr/share/fzf/key-bindings.bash
+
+# Aliases
+if command -v eza &>/dev/null; then
+  alias ls='eza -lh --group-directories-first --icons=auto'
+  alias lsa='ls -a'
+  alias lt='eza --tree --level=2 --long --icons --git'
+fi
+alias ..='cd ..'
+alias ...='cd ../..'
+alias g='git'
+alias d='docker'
+alias t='tmux attach || tmux new -s Work'
+n() { if [ "$#" -eq 0 ]; then command nvim .; else command nvim "$@"; fi; }
+open() ( xdg-open "$@" >/dev/null 2>&1 & )

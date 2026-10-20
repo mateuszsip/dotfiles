@@ -1,0 +1,13 @@
+# Sourced by uwsm (POSIX sh) for the graphical session. Changes require a re-login.
+
+export PATH="$HOME/.local/bin:$PATH"
+
+# TEMP(de-omarchy): omarchy-* scripts still referenced by hypr/waybar/hypridle.
+# Appended (lowest priority). Remove in Phase 8 together with ~/.local/share/omarchy.
+export PATH="$PATH:$HOME/.local/share/omarchy/bin"
+
+# Default terminal and editor
+. "$HOME/.config/uwsm/default"
+
+# Activate mise if present
+command -v mise >/dev/null 2>&1 && eval "$(mise activate bash --shims)"
