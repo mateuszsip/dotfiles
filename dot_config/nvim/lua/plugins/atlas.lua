@@ -53,6 +53,25 @@ local function atlas_pulls_repo(query_suffix)
   })
 end
 
+-- Prompt for a GitHub login and list their PRs (any state), scoped to the
+-- current repo or across all repos.
+---@param scope "repo"|"all"
+local function atlas_pulls_by_author(scope)
+  vim.ui.input({ prompt = "PR author (GitHub login): " }, function(author)
+    author = author and vim.trim(author):gsub("^@", "")
+    if not author or author == "" then
+      return
+    end
+    if scope == "repo" then
+      atlas_pulls_repo("author:" .. author)
+    else
+      require("atlas").open("pulls", "github", {
+        initial_view = { name = "Author: " .. author, layout = "compact", search = "is:pr author:" .. author },
+      })
+    end
+  end)
+end
+
 -- Multi-select my open PRs and yank their URLs (one per line) to the `+` register.
 -- Atlas' own `copy_url` (`Y`) only ever copies the PR under the cursor and
 -- overwrites the clipboard, and its PR list has no marking concept — so this
@@ -343,6 +362,20 @@ return {
         atlas_pulls_repo(nil)
       end,
       desc = "Search PRs (current repo)",
+    },
+    {
+      "<leader>ga",
+      function()
+        atlas_pulls_by_author("repo")
+      end,
+      desc = "PRs by author (current repo)",
+    },
+    {
+      "<leader>gA",
+      function()
+        atlas_pulls_by_author("all")
+      end,
+      desc = "PRs by author (all repos)",
     },
 
     -- Multi-select yank of PR URLs (<Tab> marks, <CR> confirms under snacks).
