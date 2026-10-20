@@ -1,0 +1,11 @@
+# Hyprland colors — generated from .chezmoidata/palette.toml by chezmoi.
+# Edit the palette (or ~/.config/hypr/theme/ for a one-off), not this file.
+$activeBorderColor = rgb({{ .palette.fg | trimPrefix "#" }})
+
+general {
+    col.active_border = $activeBorderColor
+}
+
+group {
+    col.border_active = $activeBorderColor
+}

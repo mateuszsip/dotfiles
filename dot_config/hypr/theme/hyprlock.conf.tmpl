@@ -1,0 +1,7 @@
+# Hyprlock colors — generated from .chezmoidata/palette.toml by chezmoi.
+# rgba(…) takes hex without the leading '#', last byte is the alpha.
+$color = rgba({{ .palette.bg | trimPrefix "#" }}FF)
+$inner_color = rgba({{ .palette.bg | trimPrefix "#" }}CC)
+$outer_color = rgba({{ .palette.fg | trimPrefix "#" }}FF)
+$font_color = rgba({{ .palette.fg | trimPrefix "#" }}FF)
+$check_color = rgba({{ .palette.accent | trimPrefix "#" }}FF)

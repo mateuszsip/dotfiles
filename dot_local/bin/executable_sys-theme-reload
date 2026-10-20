@@ -1,0 +1,21 @@
+#!/bin/bash
+# Reload the running desktop after the theme changed (`.chezmoidata/palette.toml`
+# + `chezmoi apply`).
+#
+#   sys-theme-reload                 refresh what reads the theme at startup
+#   sys-theme-reload --background    also restart the wallpaper
+#
+# hyprlock reads its colors when it starts, so the next lock already has them.
+
+hyprctl reload >/dev/null 2>&1
+
+pkill -SIGUSR2 -x waybar
+
+pidof mako >/dev/null && makoctl reload
+
+case ${1:-} in
+background | --background)
+  pkill -x swaybg
+  hyprctl dispatch exec -- sys-background >/dev/null
+  ;;
+esac

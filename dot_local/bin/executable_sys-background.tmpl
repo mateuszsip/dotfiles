@@ -1,0 +1,8 @@
+#!/bin/bash
+# Set the desktop wallpaper.
+#
+# The path is generated from .chezmoidata/palette.toml (chezmoi template), so
+# changing the wallpaper means editing the palette and running `chezmoi apply`
+# — or running this script by hand after the file is in place.
+
+exec swaybg -i "$HOME/.config/hypr/backgrounds/{{ .palette.background }}" -m fill

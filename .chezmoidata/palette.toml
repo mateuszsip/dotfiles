@@ -1,0 +1,56 @@
+# Desktop palette (Phase 4 of the de-omarchy migration).
+#
+# Single fixed theme — there is no theme switcher. Everything that shows a
+# color is generated from this file by chezmoi templates:
+#
+#   dot_config/hypr/theme/          hyprland, hyprlock, gum
+#   dot_config/waybar/style.css     waybar
+#   dot_config/ghostty/             terminal colors (theme fragment)
+#   dot_config/mako/config          notifications
+#   dot_config/swayosd/style.css    osd
+#   dot_config/btop/btop.conf       resource monitor
+#
+# To change colors: edit this file → `chezmoi apply` → `sys-theme-reload`.
+# Seeded from the Omarchy flexoki-2 theme (light variant) on 2026-10-21.
+
+[palette]
+name = "flexoki-light"
+mode = "light"
+
+# Wallpaper, relative to ~/.config/hypr/backgrounds/ (deployed by chezmoi).
+background = "1-flexoki-light-orb.png"
+
+bg = "#FFFCF0"
+fg = "#100F0F"
+accent = "#205EA6"
+cursor = "#100F0F"
+selection_fg = "#100F0F"
+selection_bg = "#CECDC3"
+
+# base16 / ANSI palette (terminals, ghostty, btop, …)
+color0 = "#100F0F"
+color1 = "#D14D41"
+color2 = "#879A39"
+color3 = "#D0A215"
+color4 = "#205EA6"
+color5 = "#CE5D97"
+color6 = "#3AA99F"
+color7 = "#FFFCF0"
+color8 = "#100F0F"
+color9 = "#D14D41"
+color10 = "#879A39"
+color11 = "#D0A215"
+color12 = "#4385BE"
+color13 = "#CE5D97"
+color14 = "#3AA99F"
+color15 = "#FFFCF0"
+
+# Extras the app themes want on top of base16
+dim = "#6F6E69"
+
+[palette.extra]
+red = "#AF3029"
+orange = "#BC5215"
+yellow = "#D0A215"
+green = "#66800B"
+cyan = "#3AA99F"

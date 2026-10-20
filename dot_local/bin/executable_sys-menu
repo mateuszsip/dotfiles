@@ -4,7 +4,7 @@
 #   sys-menu                       main menu
 #   sys-menu system|toggle|hardware|capture|screenrecord|reminders|setup|keybindings
 #   sys-menu reminder-set
-#   sys-menu background|theme      pending the theme migration
+#   sys-menu background|theme      reload the generated theme (palette.toml)
 
 menu() { # menu <prompt> <option>...
   local prompt=$1
@@ -236,8 +236,11 @@ reminder-set) reminder_set ;;
 share) share_menu ;;
 setup) setup_menu ;;
 keybindings) sys-keybindings ;;
-background | theme)
-  notify-send -u low "Theme migration pending" "This menu lands with the theme phase."
+background)
+  sys-theme-reload --background
+  ;;
+theme)
+  sys-theme-reload
   ;;
 *)
   echo "Usage: $(basename "$0") [main|system|toggle|hardware|capture|screenrecord|reminders|share|setup|keybindings]" >&2
