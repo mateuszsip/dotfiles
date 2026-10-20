@@ -1,5 +1,17 @@
 8bitdo-ultimate-controller-udev
-dysk-git
+elephant
+elephant-bluetooth
+elephant-calc
+elephant-clipboard
+elephant-desktopapplications
+elephant-files
+elephant-menus
+elephant-providerlist
+elephant-runner
+elephant-symbols
+elephant-todo
+elephant-unicode
+elephant-websearch
 feishin-bin
 firefox-tridactyl-native
 gcalcli
@@ -19,6 +31,7 @@ ryzenadj-git
 subtui-git
 tidal-hifi-bin
 vial-appimage
+walker
 witr-bin
 wttrbar
 zen-browser-bin

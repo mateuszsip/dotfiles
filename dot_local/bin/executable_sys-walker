@@ -1,0 +1,30 @@
+#!/bin/bash
+# Launch walker, starting the elephant provider daemon and walker's background
+# service first — neither is socket-activated, and walker shows nothing without
+# them.
+#
+#   sys-walker [walker args]     e.g. --dmenu, -m clipboard, -p "Launch…"
+#   sys-walker --restart         restart elephant and walker's service
+
+set -uo pipefail
+
+if [[ ${1:-} == --restart ]]; then
+  systemctl --user restart elephant.service 2>/dev/null ||
+    notify-send -u low "Could not restart elephant"
+  pkill -f "walker --gapplication-service" 2>/dev/null
+  exit 0
+fi
+
+spawn() {
+  if command -v uwsm-app >/dev/null; then
+    setsid uwsm-app -- "$@" >/dev/null 2>&1 &
+  else
+    setsid "$@" >/dev/null 2>&1 &
+  fi
+}
+
+pgrep -x elephant >/dev/null || spawn elephant
+pgrep -f "walker --gapplication-service" >/dev/null ||
+  spawn env GSK_RENDERER=cairo walker --gapplication-service
+
+exec walker "$@"

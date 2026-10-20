@@ -1,0 +1,49 @@
+force_keyboard_focus = true                # keep keyboard focus inside walker
+selection_wrap = true                      # wrap the list at top/bottom
+theme = "sys"                              # theme in ~/.config/walker/themes
+additional_theme_location = "~/.config/walker/themes/"
+hide_action_hints = true                   # hide the action hints globally
+
+[placeholders]
+"default" = { input = " Search...", list = "No Results" } # per-provider placeholders, e.g. "menus:other"
+
+[keybinds]
+quick_activate = []
+
+[columns]
+symbols = 1                                # providers queried by default
+
+[providers]
+max_results = 256
+default = [
+  "desktopapplications",
+  "websearch",
+]
+
+[[providers.prefixes]]
+prefix = "/"
+provider = "providerlist"
+
+[[providers.prefixes]]
+prefix = "."
+provider = "files"
+
+[[providers.prefixes]]
+prefix = ":"
+provider = "symbols"
+
+[[providers.prefixes]]
+prefix = "="
+provider = "calc"
+
+[[providers.prefixes]]
+prefix = "@"
+provider = "websearch"
+
+[[providers.prefixes]]
+prefix = "$"
+provider = "clipboard"
+
+[[emergencies]]
+text = "Restart Walker"
+command = "sys-walker --restart"
