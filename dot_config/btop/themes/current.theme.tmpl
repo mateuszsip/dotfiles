@@ -1,0 +1,81 @@
+# btop theme "current" — generated from .chezmoidata/palette.toml by chezmoi.
+# ~/.config/btop/btop.conf points at it with `color_theme = "current"`.
+
+# Main bg
+theme[main_bg]="{{ .palette.bg }}"
+
+# Main text color
+theme[main_fg]="{{ .palette.fg }}"
+
+# Title color for boxes
+theme[title]="{{ .palette.fg }}"
+
+# Highlight color for keyboard shortcuts
+theme[hi_fg]="{{ .palette.accent }}"
+
+# Background color of selected item in processes box
+theme[selected_bg]="{{ .palette.selection_bg }}"
+
+# Foreground color of selected item in processes box
+theme[selected_fg]="{{ .palette.fg }}"
+
+# Color of inactive/disabled text
+theme[inactive_fg]="{{ .palette.dim }}"
+
+# Misc colors for processes box including mini cpu graphs, details memory graph and details status text
+theme[proc_misc]="{{ .palette.accent }}"
+
+# Cpu box outline color
+theme[cpu_box]="{{ .palette.dim }}"
+
+# Memory/disks box outline color
+theme[mem_box]="{{ .palette.dim }}"
+
+# Net up/down box outline color
+theme[net_box]="{{ .palette.dim }}"
+
+# Processes box outline color
+theme[proc_box]="{{ .palette.dim }}"
+
+# Box divider line and small boxes line color
+theme[div_line]="{{ .palette.dim }}"
+
+# Temperature graph colors
+theme[temp_start]="{{ .palette.extra.green }}"
+theme[temp_mid]="{{ .palette.extra.orange }}"
+theme[temp_end]="{{ .palette.extra.red }}"
+
+# CPU graph colors
+theme[cpu_start]="{{ .palette.extra.green }}"
+theme[cpu_mid]="{{ .palette.extra.orange }}"
+theme[cpu_end]="{{ .palette.extra.red }}"
+
+# Mem/Disk free meter
+theme[free_start]="{{ .palette.extra.green }}"
+theme[free_mid]="{{ .palette.extra.orange }}"
+theme[free_end]="{{ .palette.extra.red }}"
+
+# Mem/Disk cached meter
+theme[cached_start]="{{ .palette.extra.green }}"
+theme[cached_mid]="{{ .palette.extra.orange }}"
+theme[cached_end]="{{ .palette.extra.red }}"
+
+# Mem/Disk available meter
+theme[available_start]="{{ .palette.extra.green }}"
+theme[available_mid]="{{ .palette.extra.orange }}"
+theme[available_end]="{{ .palette.extra.red }}"
+
+# Mem/Disk used meter
+theme[used_start]="{{ .palette.extra.green }}"
+theme[used_mid]="{{ .palette.extra.orange }}"
+theme[used_end]="{{ .palette.extra.red }}"
+
+# Download graph colors
+theme[download_start]="{{ .palette.extra.green }}"
+theme[download_mid]="{{ .palette.extra.orange }}"
+theme[download_end]="{{ .palette.extra.red }}"
+
+# Upload graph colors
+theme[upload_start]="{{ .palette.extra.green }}"
+theme[upload_mid]="{{ .palette.extra.orange }}"
+theme[upload_end]="{{ .palette.extra.red }}"
