@@ -156,6 +156,18 @@ return {
         end,
         desc = "CodeCompanion Close Chat",
       },
+      {
+        "<leader>ax",
+        function()
+          local cc = require("codecompanion")
+          local chat = cc.buf_get_chat(0) or cc.last_chat()
+          if not (chat and (chat.current_request or chat.tool_orchestrator)) then
+            return vim.notify("No CodeCompanion request in progress", vim.log.levels.INFO)
+          end
+          chat:stop()
+        end,
+        desc = "CodeCompanion Stop Request",
+      },
       { "<leader>aa", "<cmd>CodeCompanionActions<cr>", mode = { "n", "x" }, desc = "CodeCompanion Actions" },
       { "<leader>ai", ":CodeCompanion ", mode = { "n", "x" }, desc = "CodeCompanion Inline" },
       { "<leader>as", "<cmd>CodeCompanionChat Add<cr>", mode = "x", desc = "CodeCompanion Add Selection" },
