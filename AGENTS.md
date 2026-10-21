@@ -30,7 +30,7 @@ dotfiles. Files here deploy to `$HOME` via `chezmoi apply`.
 | `dot_` | leading `.` in deployed path |
 | `private_` | deployed with mode `600` (e.g. `dot_ssh/private_config.tmpl`, `dot_claude/private_settings.json.tmpl`, `dot_config/atuin/private_config.toml`) |
 | `executable_` | deployed with `+x` (hypr/waybar helpers, `dot_local/bin/*`) |
-| `symlink_` | deployed as symlink (`systemd/user/`) |
+| `symlink_` | deployed as symlink (`systemd/user/` mask) |
 | `modify_` | script patches target instead of overwriting (`dot_docker/modify_config.json`) |
 | `.tmpl` | Go template, rendered on apply (29 files) |
 | `.age` | age-encrypted (work secrets + `key.txt.age` bootstrap) |
@@ -43,11 +43,11 @@ dotfiles. Files here deploy to `$HOME` via `chezmoi apply`.
 Middle token is a phase (`install`, `setup`) for readability; `before_`/`after_`
 control ordering (before < main < after):
 
-- `before`: `decrypt-private-key`, `plmac-keyboard`
+- `before`: `decrypt-private-key`, `plmac-keyboard`, `setup-system`
 - main `install`: `packages`, `bosto-recovery`, `muse-acp`, `ripwire`
 - main `setup`: `kbd-backlight`, `low-power-tdp`
 - `once_after`: `01-osx`, `antigravity`, `fonts`, `node-packages`, `bosto-touchpad`, `rapl-readable`
-- `onchange_after`: `ghostty-display-font`
+- `onchange_after`: `ghostty-display-font`, `setup-user-services`
 
 ## Template data
 
@@ -77,13 +77,15 @@ Example (from `dot_config/opencode/opencode.json.tmpl`):
 
 `.chezmoiignore.tmpl` excludes platform-inappropriate files:
 
-- **macOS**: aerospace, `ghostty-display-font.swift`, `mac_theme.lua` tracked;
-  waybar, hypr, pacsea, `modify_config.json`, nvim theme hot-reload excluded.
-- **Linux**: waybar, hypr, pacsea tracked; aerospace excluded.
-- **Linux non-Asahi** (`osRelease.id != "archarm"`): `environment.d/`, `systemd/` excluded.
-  Asahi-gated Mac-hardware config inline via
+- **macOS**: `aerospace.toml` and `ghostty-display-font.swift` tracked; waybar,
+  hypr (incl. theme/backgrounds), mako, swayosd,
+  hyprland-preview-share-picker, uwsm, pacsea, `environment.d/`, `systemd/`,
+  `.bashrc`/`.bash_profile` and `docker/config.json` excluded.
+- **Linux**: `aerospace.toml` excluded.
+- **Linux, Asahi only** (`osRelease.id == "archarm"`): Mac-hardware config inline via
   `{{- if eq .chezmoi.osRelease.id "archarm" }}` in
   `hypr/input.conf.tmpl`, `hypr/bindings.conf.tmpl`, `waybar/config.jsonc.tmpl`.
+  `environment.d/` and `systemd/` deploy on every Linux host.
 - **Non-work machines**: `lendable.nu`, `nvim/lua/db/lendable` excluded.
 
 ## Packages workflow
@@ -117,6 +119,27 @@ Committing (after `chezmoi add` or source edits):
 git -C ~/.local/share/chezmoi add -A
 git -C ~/.local/share/chezmoi commit -m "[scope] message"
 ```
+
+## Validation
+
+Before committing script or template edits:
+
+```bash
+chezmoi execute-template < run_onchange_<name>.sh.tmpl | bash -n   # renders + parses
+chezmoi diff ~/.config/<path>                                      # what apply would change
+```
+
+`chezmoi status` only reports files chezmoi **manages**. Residue left by tooling
+this repo retired (e.g. `~/.config/environment.d/omarchy.conf`, the old shader
+symlinks) is invisible to it — when retiring a tool, look for stray files
+explicitly, not just drift.
+
+## Migration conventions
+
+Large removals land as phased commits: `[scope] phase N: ...`, with
+`TEMP(scope): ... Remove in Phase N` markers in the files carrying the debt.
+Delete the marker in the same commit as the final phase. Do not branch per
+phase — a divergent phase branch leaves half the work unmerged.
 
 ## Critical rules for AI agents
 
