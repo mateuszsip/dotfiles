@@ -19,11 +19,11 @@ ask() { # ask <prompt>
 main_menu() {
   local choice
   choice=$(menu "Menu" \
-    "  System" \
-    "e  Toggle" \
+    "  System" \
+    "  Toggle" \
     "  Hardware" \
     "  Capture" \
-    "b  Reminders" \
+    "  Reminders" \
     "  Setup" \
     "  Keybindings") || exit 0
 
@@ -162,9 +162,9 @@ webcam_select() {
 reminder_menu() {
   local choice
   choice=$(menu "Reminder" \
-    "b  Set one" \
-    "b  Show all" \
-    "b  Clear all") || exit 0
+    "  Set one" \
+    "  Show all" \
+    "  Clear all") || exit 0
 
   case $choice in
   *"Set one") reminder_set ;;
