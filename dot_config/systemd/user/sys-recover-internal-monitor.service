@@ -1,0 +1,14 @@
+[Unit]
+Description=Drop stale internal-display toggles when no external monitor is connected
+Before=graphical-session-pre.target
+
+[Service]
+Type=oneshot
+# If the laptop was undocked while the internal panel was disabled (or
+# mirrored to a now-absent screen), clear those Hyprland toggles before the
+# session starts — otherwise the screen stays dark.
+ExecStart=%h/.local/bin/sys-monitor internal recover
+ExecStart=%h/.local/bin/sys-monitor mirror recover
+
+[Install]
+WantedBy=graphical-session-pre.target

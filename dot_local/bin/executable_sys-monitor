@@ -34,12 +34,12 @@ has_external_monitor() {
 set_toggle() { # set_toggle <name> <content>
   mkdir -p "$TOGGLES"
   printf '%s\n' "$2" >"$TOGGLES/$1.conf"
-  hyprctl reload >/dev/null
+  hyprctl reload >/dev/null 2>&1
 }
 
 clear_toggle() { # clear_toggle <name>
   rm -f "$TOGGLES/$1.conf"
-  hyprctl reload >/dev/null
+  hyprctl reload >/dev/null 2>&1
 }
 
 internal() {

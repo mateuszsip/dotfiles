@@ -1,0 +1,27 @@
+#!/bin/bash
+# Warn once when the battery drops below the threshold while discharging.
+# Run by sys-battery-monitor.timer every 30 seconds.
+#
+# The flag lives in the runtime dir, so it is cleared on logout/reboot and a
+# new warning is shown once the battery is charged again and drops again.
+
+threshold=10
+flag="${XDG_RUNTIME_DIR:-/run/user/$UID}/sys-battery-low"
+
+info=$(upower -i "$(upower -e | grep -m1 BAT)")
+[[ -z $info ]] && exit 0
+
+level=$(awk '/percentage/ { print int($2); exit }' <<<"$info")
+state=$(awk '/state/ { print $2; exit }' <<<"$info")
+
+[[ $level =~ ^[0-9]+$ ]] || exit 0
+
+if [[ $state == discharging ]] && ((level <= threshold)); then
+  if [[ ! -f $flag ]]; then
+    notify-send -u critical "󱐋 Time to recharge!" "Battery is down to ${level}%" \
+      -i battery-caution -t 30000
+    touch "$flag"
+  fi
+else
+  rm -f "$flag"
+fi

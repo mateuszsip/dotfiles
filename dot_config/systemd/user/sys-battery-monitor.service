@@ -1,0 +1,8 @@
+[Unit]
+Description=Battery low warning
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/sys-battery-monitor
+LogLevelMax=warning
