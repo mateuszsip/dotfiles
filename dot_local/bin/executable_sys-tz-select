@@ -1,0 +1,12 @@
+#!/bin/bash
+# Pick a timezone with walker and set it system-wide (polkit prompt for the
+# privileged part).
+
+tz=$(timedatectl list-timezones | sys-walker --dmenu -p 'Timezone' --width 380 --minheight 1 --maxheight 500) || exit 0
+[[ -z $tz ]] && exit 0
+
+if pkexec timedatectl set-timezone "$tz"; then
+  notify-send -u low "Timezone set to $tz"
+else
+  notify-send -u critical "Could not set the timezone" "$tz"
+fi
