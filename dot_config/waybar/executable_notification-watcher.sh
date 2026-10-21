@@ -2,7 +2,7 @@
 # Counts incoming notifications via D-Bus and signals waybar to refresh.
 # Persists count in /tmp/mako-unread-count; reset by dismiss action.
 # Skips:
-#   - low-urgency notifications (byte 0) — omarchy system toggles, etc.
+#   - low-urgency notifications (byte 0) — system toggles, etc.
 #   - app_name containing "playerctld" — song change notifications
 #   - summary containing "Screenshot"
 
