@@ -19,84 +19,97 @@ ask() { # ask <prompt>
 main_menu() {
   local choice
   choice=$(menu "Menu" \
-    "System" \
-    "Toggle" \
-    "Hardware" \
-    "Capture" \
-    "Reminders" \
-    "Setup" \
-    "Keybindings") || exit 0
+    "\uf013  System" \
+    "\uf050e  Toggle" \
+    "\uef70  Hardware" \
+    "\uf030  Capture" \
+    "\uf051b  Reminders" \
+    "\ue615  Setup" \
+    "\uf11c  Keybindings") || exit 0
 
   case $choice in
-  System) system_menu ;;
-  Toggle) toggle_menu ;;
-  Hardware) hardware_menu ;;
-  Capture) capture_menu ;;
-  Reminders) reminder_menu ;;
-  Setup) setup_menu ;;
-  Keybindings) sys-keybindings ;;
+  *System) system_menu ;;
+  *Toggle) toggle_menu ;;
+  *Hardware) hardware_menu ;;
+  *Capture) capture_menu ;;
+  *Reminders) reminder_menu ;;
+  *Setup) setup_menu ;;
+  *Keybindings) sys-keybindings ;;
   *) exit 0 ;;
   esac
 }
 
 system_menu() {
   local choice
-  choice=$(menu "System" "Lock" "Suspend" "Logout" "Reboot" "Shutdown") || exit 0
+  choice=$(menu "System" \
+    "\uf023  Lock" \
+    "\uf04b2  Suspend" \
+    "\uf0343  Logout" \
+    "\uf0719  Reboot" \
+    "\uf0415  Shutdown") || exit 0
 
   case $choice in
-  Lock) sys-lock ;;
-  Suspend) systemctl suspend ;;
-  Logout) uwsm stop ;;
-  Reboot) systemctl reboot ;;
-  Shutdown) systemctl poweroff ;;
+  *Lock) sys-lock ;;
+  *Suspend) systemctl suspend ;;
+  *Logout) uwsm stop ;;
+  *Reboot) systemctl reboot ;;
+  *Shutdown) systemctl poweroff ;;
   esac
 }
 
 toggle_menu() {
   local choice
   choice=$(menu "Toggle" \
-    "Nightlight" \
-    "Idle lock" \
-    "Notifications" \
-    "Top bar" \
-    "Workspace layout" \
-    "Window gaps" \
-    "Single-window ratio" \
-    "Monitor scaling") || exit 0
+    "\uf185  Nightlight" \
+    "\uf023  Idle lock" \
+    "\uf0f3  Notifications" \
+    "\uf037  Top bar" \
+    "\uf009  Workspace layout" \
+    "\uf065  Window gaps" \
+    "\uf10c  Single-window ratio" \
+    "\uf108  Monitor scaling") || exit 0
 
   case $choice in
-  Nightlight) sys-toggle-nightlight ;;
-  "Idle lock") sys-toggle-idle ;;
-  Notifications) sys-toggle-notifications ;;
-  "Top bar") sys-toggle-waybar ;;
-  "Workspace layout") sys-workspace-layout ;;
-  "Window gaps") sys-window gaps ;;
-  "Single-window ratio") sys-window square-aspect ;;
-  "Monitor scaling") sys-monitor scaling ;;
+  *Nightlight) sys-toggle-nightlight ;;
+  *"Idle lock") sys-toggle-idle ;;
+  *Notifications) sys-toggle-notifications ;;
+  *"Top bar") sys-toggle-waybar ;;
+  *"Workspace layout") sys-workspace-layout ;;
+  *"Window gaps") sys-window gaps ;;
+  *"Single-window ratio") sys-window square-aspect ;;
+  *"Monitor scaling") sys-monitor scaling ;;
   esac
 }
 
 hardware_menu() {
   local choice
-  choice=$(menu "Hardware" "Laptop display" "Mirror display" "Touchpad" "Monitor scaling") || exit 0
+  choice=$(menu "Hardware" \
+    "\uf109  Laptop display" \
+    "\uf0c5  Mirror display" \
+    "\uf07f8  Touchpad" \
+    "\uf108  Monitor scaling") || exit 0
 
   case $choice in
-  "Laptop display") sys-monitor internal toggle ;;
-  "Mirror display") sys-monitor mirror toggle ;;
-  Touchpad) sys-touchpad ;;
-  "Monitor scaling") sys-monitor scaling ;;
+  *"Laptop display") sys-monitor internal toggle ;;
+  *"Mirror display") sys-monitor mirror toggle ;;
+  *Touchpad) sys-touchpad ;;
+  *"Monitor scaling") sys-monitor scaling ;;
   esac
 }
 
 capture_menu() {
   local choice
-  choice=$(menu "Capture" "Screenshot" "Screenrecord" "Text extraction" "Color picker") || exit 0
+  choice=$(menu "Capture" \
+    "\uf030  Screenshot" \
+    "\uf03d  Screenrecord" \
+    "\uf0d11  Text extraction" \
+    "\uf00c9  Color picker") || exit 0
 
   case $choice in
-  Screenshot) sys-screenshot ;;
-  Screenrecord) screenrecord_menu ;;
-  "Text extraction") sys-ocr ;;
-  "Color picker") pkill hyprpicker || hyprpicker -a ;;
+  *Screenshot) sys-screenshot ;;
+  *Screenrecord) screenrecord_menu ;;
+  *"Text extraction") sys-ocr ;;
+  *"Color picker") pkill hyprpicker || hyprpicker -a ;;
   esac
 }
 
@@ -106,16 +119,16 @@ screenrecord_menu() {
 
   local choice
   choice=$(menu "Screenrecord" \
-    "No audio" \
-    "Desktop audio" \
-    "Desktop + microphone" \
-    "Desktop + microphone + webcam") || exit 0
+    "\uf03d  No audio" \
+    "\uf03d  Desktop audio" \
+    "\uf03d  Desktop + microphone" \
+    "\uf03d  Desktop + microphone + webcam") || exit 0
 
   case $choice in
-  "No audio") sys-screenrecord ;;
-  "Desktop audio") sys-screenrecord --with-desktop-audio ;;
-  "Desktop + microphone") sys-screenrecord --with-desktop-audio --with-microphone-audio ;;
-  "Desktop + microphone + webcam")
+  *"No audio") sys-screenrecord ;;
+  *"Desktop audio") sys-screenrecord --with-desktop-audio ;;
+  *"Desktop + microphone") sys-screenrecord --with-desktop-audio --with-microphone-audio ;;
+  *"Desktop + microphone + webcam")
     local device
     device=$(webcam_select) || exit 0
     sys-screenrecord --with-desktop-audio --with-microphone-audio --with-webcam --webcam-device="$device"
@@ -148,12 +161,15 @@ webcam_select() {
 
 reminder_menu() {
   local choice
-  choice=$(menu "Reminder" "Set one" "Show all" "Clear all") || exit 0
+  choice=$(menu "Reminder" \
+    "\uf051b  Set one" \
+    "\uf051b  Show all" \
+    "\uf051b  Clear all") || exit 0
 
   case $choice in
-  "Set one") reminder_set ;;
-  "Show all") sys-reminder show ;;
-  "Clear all") sys-reminder clear ;;
+  *"Set one") reminder_set ;;
+  *"Show all") sys-reminder show ;;
+  *"Clear all") sys-reminder clear ;;
   esac
 }
 
@@ -168,25 +184,33 @@ reminder_set() {
 
 setup_menu() {
   local choice
-  choice=$(menu "Setup" "Audio" "Wifi" "Bluetooth" "Power profile" "Monitors") || exit 0
+  choice=$(menu "Setup" \
+    "\ue638  Audio" \
+    "\uf16be  Wifi" \
+    "\uf00af  Bluetooth" \
+    "\uf0e7  Power profile" \
+    "\uf108  Monitors") || exit 0
 
   case $choice in
-  Audio) sys-launch audio ;;
-  Wifi) sys-launch wifi ;;
-  Bluetooth) sys-launch bluetooth ;;
-  "Power profile") powerprofile_menu ;;
-  Monitors) sys-launch editor ~/.config/hypr/monitors.conf ;;
+  *Audio) sys-launch audio ;;
+  *Wifi) sys-launch wifi ;;
+  *Bluetooth) sys-launch bluetooth ;;
+  *"Power profile") powerprofile_menu ;;
+  *Monitors) sys-launch editor ~/.config/hypr/monitors.conf ;;
   esac
 }
 
 share_menu() {
   local choice
-  choice=$(menu "Share" "Clipboard" "File" "Folder") || exit 0
+  choice=$(menu "Share" \
+    "\uf07f  Clipboard" \
+    "\uea7b  File" \
+    "\uf114  Folder") || exit 0
 
   case $choice in
-  Clipboard) sys-share clipboard ;;
-  File) sys-launch tui sys-share file ;;
-  Folder) sys-launch tui sys-share folder ;;
+  *Clipboard) sys-share clipboard ;;
+  *File) sys-launch tui sys-share file ;;
+  *Folder) sys-launch tui sys-share folder ;;
   esac
 }
 
