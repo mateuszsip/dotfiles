@@ -1,9 +1,7 @@
-1password-cli
 8bitdo-ultimate-controller-udev
 aether
 bambustudio-bin
 claude-code
-cliamp
 elephant
 elephant-bluetooth
 elephant-calc
@@ -37,8 +35,6 @@ paru
 phpactor
 rtk-bin
 ryzenadj-git
-slack-desktop
-spotify
 subtui-git
 tidal-hifi-bin
 try
@@ -50,5 +46,4 @@ walker
 witr-bin
 wttrbar
 yaru-icon-theme
-yay
 zen-browser-bin
