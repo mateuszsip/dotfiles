@@ -39,10 +39,25 @@ printf '%s\n' '[Resolve]' 'DNSStubListenerExtra=172.17.0.1' \
   | sudo tee /etc/systemd/resolved.conf.d/20-docker-dns.conf >/dev/null
 sudo systemctl restart systemd-resolved 2>/dev/null || true
 
-# 4. SDDM: autologin into the plain uwsm session (the omarchy session file is
-#    gone) and use a stock greeter theme instead of the omarchy one.
+# 4. SDDM: autologin into a uwsm session that does not wait for the system to
+#    reach graphical.target, and use a stock greeter theme instead of the
+#    omarchy one. The stock hyprland-uwsm.desktop runs plain
+#    `uwsm start -e ...`, which waits up to 60 s while graphical.target is
+#    queued and leaves the screen black on a slow boot; omarchy's session file
+#    passed `-g -1` for the same reason, so ours does too.
+sudo mkdir -p /usr/local/share/wayland-sessions
+printf '%s\n' \
+  '[Desktop Entry]' \
+  'Name=Hyprland (uwsm)' \
+  'Comment=An intelligent dynamic tiling Wayland compositor' \
+  'Exec=uwsm start -g -1 -e -D Hyprland hyprland.desktop' \
+  'TryExec=uwsm' \
+  'DesktopNames=Hyprland' \
+  'Type=Application' \
+  | sudo tee /usr/local/share/wayland-sessions/sys-hyprland.desktop >/dev/null
+sudo rm -f /usr/local/share/wayland-sessions/omarchy.desktop
 if [ -f /etc/sddm.conf.d/autologin.conf ]; then
-  printf '[Autologin]\nUser=%s\nSession=hyprland-uwsm\n\n[Theme]\nCurrent=maldives\n' \
+  printf '[Autologin]\nUser=%s\nSession=sys-hyprland\n\n[Theme]\nCurrent=maldives\n' \
     "$(id -un)" | sudo tee /etc/sddm.conf.d/autologin.conf >/dev/null
 fi
 

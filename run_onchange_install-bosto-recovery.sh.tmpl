@@ -47,16 +47,30 @@ After=sysinit.target
 Type=oneshot
 ExecStart=/usr/local/bin/bosto-recovery.sh
 TimeoutStartSec=180
+SERVICE
+
+# Driven by a timer, not by multi-user.target: as a boot unit the 150 s poll
+# held up multi-user.target (and therefore graphical.target) for the whole
+# timeout whenever the touchpad was not plugged in.
+cat > /tmp/bosto-recovery.timer << 'TIMER'
+[Unit]
+Description=Bosto touchpad USB recovery at boot
+
+[Timer]
+OnBootSec=5s
+Unit=bosto-recovery.service
 
 [Install]
-WantedBy=multi-user.target
-SERVICE
+WantedBy=timers.target
+TIMER
 
 sudo install -m 755 /tmp/bosto-recovery.sh /usr/local/bin/bosto-recovery.sh
 sudo install -m 644 /tmp/bosto-recovery.service /etc/systemd/system/bosto-recovery.service
+sudo install -m 644 /tmp/bosto-recovery.timer /etc/systemd/system/bosto-recovery.timer
 sudo systemctl daemon-reload
-sudo systemctl enable bosto-recovery.service
-rm /tmp/bosto-recovery.sh /tmp/bosto-recovery.service
+sudo systemctl disable bosto-recovery.service 2>/dev/null || true
+sudo systemctl enable --now bosto-recovery.timer
+rm /tmp/bosto-recovery.sh /tmp/bosto-recovery.service /tmp/bosto-recovery.timer
 
 echo "bosto-recovery installed and enabled"
 {{- end }}
