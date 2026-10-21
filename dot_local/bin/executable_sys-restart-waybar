@@ -1,0 +1,5 @@
+#!/bin/bash
+# Reload waybar: SIGUSR2 makes it re-read config.jsonc. style.css reloads by
+# itself (reload_style_on_change), this is for structural changes.
+
+pkill -SIGUSR2 -x waybar

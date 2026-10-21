@@ -1,0 +1,13 @@
+#!/bin/bash
+# Update the system: official repos + AUR through yay.
+#
+# Interactive (pacman and yay ask for confirmation and sudo), so run it in a
+# terminal — the waybar module opens one with `sys-launch float sys-update`.
+
+set -uo pipefail
+
+if command -v yay >/dev/null; then
+  exec yay -Syu --sudoloop
+fi
+
+exec sudo pacman -Syu

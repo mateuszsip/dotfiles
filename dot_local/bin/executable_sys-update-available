@@ -1,0 +1,16 @@
+#!/bin/bash
+# Print the number of pending package updates for the waybar module.
+#
+# Nothing on stdout when the system is up to date (waybar hides empty output).
+# checkupdates (pacman-contrib) queries a private sync database, so this needs
+# no root and does not touch the system database; yay -Qu is the fallback.
+
+if command -v checkupdates >/dev/null; then
+  count=$(checkupdates 2>/dev/null | wc -l)
+else
+  count=$(yay -Qu 2>/dev/null | wc -l)
+fi
+
+if ((count > 0)); then
+  printf '󰚰 %d' "$count"
+fi

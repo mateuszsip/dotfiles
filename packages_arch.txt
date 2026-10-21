@@ -38,6 +38,8 @@ neovim
 nushell
 nwg-displays
 opencode
+p11-kit
+pacman-contrib
 playerctl
 plymouth
 polkit-gnome
