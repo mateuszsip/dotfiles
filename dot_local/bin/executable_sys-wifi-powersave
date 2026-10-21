@@ -1,0 +1,23 @@
+#!/bin/bash
+# Set Wi-Fi power save mode on every wireless interface.
+#
+#   sys-wifi-powersave <on|off>
+#
+# Called from /etc/udev/rules.d/99-wifi-powersave.rules: off on AC, on on
+# battery (saves a little power, at a small latency cost).
+
+case "${1-}" in
+on | off) ;;
+*)
+  echo "usage: sys-wifi-powersave <on|off>" >&2
+  exit 2
+  ;;
+esac
+
+command -v iw >/dev/null || exit 0
+
+for wireless in /sys/class/net/*/wireless; do
+  [[ -e $wireless ]] || continue
+  iface=$(basename "$(dirname "$wireless")")
+  iw dev "$iface" set power_save "$1" 2>/dev/null || true
+done

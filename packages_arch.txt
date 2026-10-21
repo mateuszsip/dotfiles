@@ -102,7 +102,6 @@ pipewire-jack
 pipewire-pulse
 playerctl
 plocate
-plymouth
 polkit-gnome
 postgresql
 postgresql-libs

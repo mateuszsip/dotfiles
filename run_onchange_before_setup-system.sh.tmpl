@@ -1,0 +1,109 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# System files this repo owns under /etc (needs sudo).
+#
+# This replaces what omarchy used to set up at install time. Every file is
+# written unconditionally, so re-running the script is the idempotency check
+# (same pattern as kbd-backlight / low-power-tdp).
+set -euo pipefail
+
+HOME_DIR="{{ .chezmoi.homeDir }}"
+UDEV=/etc/udev/rules.d
+
+# 1. Power profile and Wi-Fi power save on power-supply changes. omarchy's
+#    rules called ~/.local/share/omarchy/bin/omarchy-*; these call the sys-*
+#    replacements, so they keep working after that tree is gone.
+printf '%s\n' \
+  "SUBSYSTEM==\"power_supply\", ATTR{type}==\"Mains\", RUN+=\"/usr/bin/systemd-run --no-block --collect --unit=sys-power-profile --property=After=power-profiles-daemon.service $HOME_DIR/.local/bin/sys-power-profile\"" \
+  "SUBSYSTEM==\"power_supply\", ATTR{type}==\"USB\", RUN+=\"/usr/bin/systemd-run --no-block --collect --unit=sys-power-profile --property=After=power-profiles-daemon.service $HOME_DIR/.local/bin/sys-power-profile\"" \
+  | sudo tee "$UDEV/99-power-profile.rules" >/dev/null
+
+printf '%s\n' \
+  "SUBSYSTEM==\"power_supply\", ATTR{type}==\"Mains\", ATTR{online}==\"0\", RUN+=\"/usr/bin/systemd-run --no-block --collect --unit=sys-wifi-powersave-on $HOME_DIR/.local/bin/sys-wifi-powersave on\"" \
+  "SUBSYSTEM==\"power_supply\", ATTR{type}==\"Mains\", ATTR{online}==\"1\", RUN+=\"/usr/bin/systemd-run --no-block --collect --unit=sys-wifi-powersave-off $HOME_DIR/.local/bin/sys-wifi-powersave off\"" \
+  | sudo tee "$UDEV/99-wifi-powersave.rules" >/dev/null
+
+sudo udevadm control --reload-rules
+
+# 2. fd/inotify limits (was /etc/sysctl.d/90-omarchy-file-watchers.conf).
+printf '%s\n' 'fs.inotify.max_user_watches=524288' \
+  | sudo tee /etc/sysctl.d/90-file-watchers.conf >/dev/null
+sudo rm -f /etc/sysctl.d/90-omarchy-file-watchers.conf
+sudo sysctl -q -p /etc/sysctl.d/90-file-watchers.conf
+
+# 3. resolved drop-ins: no multicast DNS stub (avahi owns mDNS) and a stable
+#    stub address docker containers can reach.
+printf '%s\n' '[Resolve]' 'MulticastDNS=no' \
+  | sudo tee /etc/systemd/resolved.conf.d/10-disable-multicast.conf >/dev/null
+printf '%s\n' '[Resolve]' 'DNSStubListenerExtra=172.17.0.1' \
+  | sudo tee /etc/systemd/resolved.conf.d/20-docker-dns.conf >/dev/null
+sudo systemctl restart systemd-resolved 2>/dev/null || true
+
+# 4. SDDM: autologin into the plain uwsm session (the omarchy session file is
+#    gone) and use a stock greeter theme instead of the omarchy one.
+if [ -f /etc/sddm.conf.d/autologin.conf ]; then
+  printf '[Autologin]\nUser=%s\nSession=hyprland-uwsm\n\n[Theme]\nCurrent=maldives\n' \
+    "$(id -un)" | sudo tee /etc/sddm.conf.d/autologin.conf >/dev/null
+fi
+
+# 5. limine: drop omarchy's names, the dead `splash` word (plymouth is not in
+#    HOOKS) and omarchy's initramfs workaround. Regenerate the boot entries only
+#    when something changed.
+limine_changed=0
+if [ -f /etc/default/limine ]; then
+  before=$(sudo sha256sum /etc/default/limine)
+  sudo sed -i \
+    -e 's/^TARGET_OS_NAME=.*/TARGET_OS_NAME="Arch Linux"/' \
+    -e 's/^CUSTOM_UKI_NAME=.*/CUSTOM_UKI_NAME="arch"/' \
+    -e 's/ splash / /' \
+    /etc/default/limine
+  after=$(sudo sha256sum /etc/default/limine)
+  if [ "$before" != "$after" ]; then
+    limine_changed=1
+  fi
+fi
+
+# omarchy shipped this drop-in so Plymouth survived async initramfs unpacking;
+# we do not ship Plymouth, so the workaround goes away with it.
+if [ -f /etc/limine-entry-tool.d/omarchy-initramfs-async.conf ]; then
+  sudo rm -f /etc/limine-entry-tool.d/omarchy-initramfs-async.conf
+  limine_changed=1
+fi
+
+if [ "$limine_changed" = 1 ] && command -v limine-mkinitcpio >/dev/null; then
+  sudo limine-mkinitcpio
+fi
+
+# limine-entry-tool keeps the menu title and branding it already wrote, so the
+# rename has to happen in the generated config itself.
+for conf in /boot/limine.conf /efi/limine.conf; do
+  if [ -f "$conf" ]; then
+    sudo sed -i \
+      -e 's|^/+Omarchy$|/+Arch Linux|' \
+      -e 's|^interface_branding: Omarchy Bootloader$|interface_branding: Arch Linux Bootloader|' \
+      "$conf"
+  fi
+done
+
+# 6. mkinitcpio: omarchy's drop-ins forced a `plymouth` hook (Plymouth is gone
+#    now, and a missing hook breaks every future initramfs build). Replace them
+#    with one drop-in holding the same hooks minus plymouth.
+mkinitcpio_conf=/etc/mkinitcpio.conf.d/90-sys.conf
+mkinitcpio_changed=0
+if [ -f /etc/mkinitcpio.conf.d/omarchy_hooks.conf ] ||
+  [ -f /etc/mkinitcpio.conf.d/omarchy_resume.conf ]; then
+  sudo rm -f /etc/mkinitcpio.conf.d/omarchy_hooks.conf \
+    /etc/mkinitcpio.conf.d/omarchy_resume.conf
+  mkinitcpio_changed=1
+fi
+want='# Hibernation on the btrfs swapfile: resume= is on the kernel cmdline.
+HOOKS+=(btrfs-overlayfs resume)
+FILES+=(/etc/vconsole.conf)'
+if [ "$(cat "$mkinitcpio_conf" 2>/dev/null)" != "$want" ]; then
+  printf '%s\n' "$want" | sudo tee "$mkinitcpio_conf" >/dev/null
+  mkinitcpio_changed=1
+fi
+if [ "$mkinitcpio_changed" = 1 ] && command -v limine-mkinitcpio >/dev/null; then
+  sudo limine-mkinitcpio
+fi
+{{- end }}
