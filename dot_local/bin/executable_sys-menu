@@ -6,6 +6,10 @@
 #   sys-menu reminder-set
 #   sys-menu background|theme      reload the generated theme (palette.toml)
 
+# Icons are nerd-font glyphs stored as literal UTF-8, not "\u" escapes: bash's
+# \u takes only 4 hex digits, so a 5-digit Material Design codepoint like
+# U+F04B2 must be written out — "\uf04b2" renders U+F04B plus a stray "2".
+
 menu() { # menu <prompt> <option>...
   local prompt=$1
   shift
@@ -43,10 +47,10 @@ system_menu() {
   local choice
   choice=$(menu "System" \
     "  Lock" \
-    "2  Suspend" \
-    "3  Logout" \
-    "9  Reboot" \
-    "5  Shutdown") || exit 0
+    "󰒲  Suspend" \
+    "󰍃  Logout" \
+    "󰜉  Reboot" \
+    "󰐥  Shutdown") || exit 0
 
   case $choice in
   *Lock) sys-lock ;;
@@ -86,7 +90,7 @@ hardware_menu() {
   choice=$(menu "Hardware" \
     "  Laptop display" \
     "  Mirror display" \
-    "8  Touchpad" \
+    "󰟸  Touchpad" \
     "  Monitor scaling") || exit 0
 
   case $choice in
@@ -102,8 +106,8 @@ capture_menu() {
   choice=$(menu "Capture" \
     "  Screenshot" \
     "  Screenrecord" \
-    "1  Text extraction" \
-    "9  Color picker") || exit 0
+    "󰴑  Text extraction" \
+    "󰏘  Color picker") || exit 0
 
   case $choice in
   *Screenshot) sys-screenshot ;;
@@ -186,8 +190,8 @@ setup_menu() {
   local choice
   choice=$(menu "Setup" \
     "  Audio" \
-    "e  Wifi" \
-    "f  Bluetooth" \
+    "󰖩  Wifi" \
+    "󰂯  Bluetooth" \
     "  Power profile" \
     "  Monitors") || exit 0
 
