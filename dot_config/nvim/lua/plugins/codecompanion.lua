@@ -5,7 +5,7 @@
 -- per chat via the `muse` adapter below; Antigravity via `antigravity`
 -- (personal machines only). Inline/cmd interactions only
 -- support HTTP adapters, so they stay on Copilot.
-local chat_adapter = vim.fn.executable("opencode2") == 1 and "opencode" or "claude_code"
+local chat_adapter = vim.fn.executable("opencode") == 1 and "opencode" or "claude_code"
 
 -- MCP servers (stdio only). Jira/Datadog are remote HTTP servers reached via the
 -- mcp-remote bridge (browser OAuth on first start) and only enabled on work machines.
@@ -194,7 +194,7 @@ return {
         acp = {
           opencode = function()
             return require("codecompanion.adapters").extend("opencode", {
-              commands = { default = { "opencode2", "acp" } },
+              commands = { default = { "opencode", "acp" } },
               defaults = { mcpServers = "inherit_from_config" },
             })
           end,
@@ -252,46 +252,48 @@ return {
           -- run_onchange_install-antigravity-acp.sh.tmpl, personal machines
           -- only); run `agy login` once first. Selectable, never the default.
           -- `nil` on work machines drops the key, hiding the adapter.
-          antigravity = not is_work and function()
-            return {
-              name = "antigravity",
-              formatted_name = "Antigravity",
-              type = "acp",
-              roles = {
-                llm = "assistant",
-                user = "user",
-              },
-              opts = {
-                vision = true,
-              },
-              commands = {
-                default = { "agy-acp" },
-              },
-              defaults = {
-                mcpServers = {},
-                timeout = 20000, -- 20 seconds
-              },
-              parameters = {
-                protocolVersion = 1,
-                clientCapabilities = {
-                  fs = { readTextFile = true, writeTextFile = true },
-                },
-                clientInfo = {
-                  name = "CodeCompanion.nvim",
-                  version = "1.0.0",
-                },
-              },
-              handlers = {
-                setup = function(self)
-                  return true
-                end,
-                form_messages = function(self, messages, capabilities)
-                  return require("codecompanion.adapters.acp.helpers").form_messages(self, messages, capabilities)
-                end,
-                on_exit = function(self, code) end,
-              },
-            }
-          end or nil,
+          antigravity = not is_work
+              and function()
+                return {
+                  name = "antigravity",
+                  formatted_name = "Antigravity",
+                  type = "acp",
+                  roles = {
+                    llm = "assistant",
+                    user = "user",
+                  },
+                  opts = {
+                    vision = true,
+                  },
+                  commands = {
+                    default = { "agy-acp" },
+                  },
+                  defaults = {
+                    mcpServers = {},
+                    timeout = 20000, -- 20 seconds
+                  },
+                  parameters = {
+                    protocolVersion = 1,
+                    clientCapabilities = {
+                      fs = { readTextFile = true, writeTextFile = true },
+                    },
+                    clientInfo = {
+                      name = "CodeCompanion.nvim",
+                      version = "1.0.0",
+                    },
+                  },
+                  handlers = {
+                    setup = function(self)
+                      return true
+                    end,
+                    form_messages = function(self, messages, capabilities)
+                      return require("codecompanion.adapters.acp.helpers").form_messages(self, messages, capabilities)
+                    end,
+                    on_exit = function(self, code) end,
+                  },
+                }
+              end
+            or nil,
         },
       },
       interactions = {
