@@ -30,7 +30,7 @@ dotfiles. Files here deploy to `$HOME` via `chezmoi apply`.
 | `dot_` | leading `.` in deployed path |
 | `private_` | deployed with mode `600` (e.g. `dot_ssh/private_config.tmpl`, `dot_claude/private_settings.json.tmpl`, `dot_config/atuin/private_config.toml`) |
 | `executable_` | deployed with `+x` (hypr/waybar helpers, `dot_local/bin/*`) |
-| `symlink_` | deployed as symlink (140+ hypr shader presets, `systemd/user/`) |
+| `symlink_` | deployed as symlink (`systemd/user/`) |
 | `modify_` | script patches target instead of overwriting (`dot_docker/modify_config.json`) |
 | `.tmpl` | Go template, rendered on apply (29 files) |
 | `.age` | age-encrypted (work secrets + `key.txt.age` bootstrap) |
