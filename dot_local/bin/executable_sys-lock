@@ -8,9 +8,6 @@ fi
 # Reset to the primary keyboard layout so the password can always be typed.
 hyprctl switchxkblayout all 0 >/dev/null 2>&1
 
-# Lock 1Password when it is running.
-pgrep -x 1password >/dev/null && 1password --lock &
-
 # SYS_LOCK_ONLY=true is used before suspend, where the compositor turns the
 # display off itself.
 if [[ ${SYS_LOCK_ONLY:-false} != "true" ]]; then
