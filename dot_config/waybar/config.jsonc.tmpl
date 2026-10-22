@@ -8,27 +8,27 @@
   "margin-left": 10,
   "margin-right": 10,
   "modules-left": [
-    "hyprland/workspaces"
+    "hyprland/workspaces",
+    "custom/ai",
+    "custom/notifications",
+    "custom/voxtype",
+    "tray"
   ],
   "modules-center": [
-    "custom/notifications",
-    "custom/ai",
     "custom/weather",
     "clock",
     "custom/gcal",
     "custom/media#feishin",
     "custom/media#tidal",
-    "custom/media#browser",
-    "custom/update",
-    "custom/screenrecording-indicator",
-    "custom/voxtype"
+    "custom/media#browser"
   ],
   "modules-right": [
-    "group/tray-expander",
+    "custom/update",
     "group/connectivity",
     "pulseaudio",
     "group/system",
-    "group/power"
+    "group/power",
+    "custom/screenrecording-indicator"
   ],
   "group/connectivity": {
     "orientation": "horizontal",
@@ -258,21 +258,6 @@
         ""
       ]
     }
-  },
-  "group/tray-expander": {
-    "orientation": "inherit",
-    "drawer": {
-      "transition-duration": 600,
-      "children-class": "tray-group-item"
-    },
-    "modules": [
-      "custom/expand-icon",
-      "tray"
-    ]
-  },
-  "custom/expand-icon": {
-    "format": "",
-    "tooltip": false
   },
   "custom/notifications": {
     "exec": "$HOME/.config/waybar/notifications.sh",

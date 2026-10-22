@@ -115,13 +115,20 @@ mpris.empty {
 #system #cpu,
 #system #memory,
 #power #custom-watts,
-#power #battery,
-#tray-expander #tray {
+#power #battery {
   background: none;
   border: none;
   box-shadow: none;
   margin: 0;
   padding: 0 6px;
+}
+
+/* Group children carry 6px of their own padding, so trim the group box's
+   padding to 4px — outer inset then matches standalone pills (10px). */
+#connectivity,
+#system,
+#power {
+  padding: 0 4px;
 }
 
 /* Hover on clickable modules */
@@ -141,10 +148,6 @@ mpris.empty {
 #system:hover,
 #power:hover {
   background-color: #CECDC3;
-}
-
-#custom-expand-icon {
-  margin-right: 2px;
 }
 
 tooltip {
@@ -206,19 +209,6 @@ tooltip * {
   box-shadow: 0 1px 6px alpha(@foreground, 0.2);
   margin-left: 0;
   padding: 0;
-}
-
-#tray-expander {
-  background-color: #DEDBD0;
-  color: @foreground;
-  border-radius: 10px;
-  border: 1px solid alpha(@foreground, 0.25);
-  box-shadow: 0 1px 6px alpha(@foreground, 0.2);
-  padding: 0 10px;
-}
-
-#tray {
-  margin: 0;
 }
 
 #mpris {
