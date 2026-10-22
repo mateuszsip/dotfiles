@@ -1,0 +1,17 @@
+[Unit]
+Description=Restore nv sessions after login
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+# The nvim servers `nv -R` starts are children of this unit. Without
+# RemainAfterExit, systemd considers the oneshot finished the moment `nv`
+# exits and SIGTERMs the rest of the cgroup — i.e. every server it just
+# restored. Staying "active" keeps them alive; `systemctl --user stop
+# nv-restore` then parks them (they snapshot on SIGTERM) in one go.
+RemainAfterExit=yes
+ExecStart=%h/.local/bin/nv -R
+StandardOutput=journal
+
+[Install]
+WantedBy=graphical-session.target

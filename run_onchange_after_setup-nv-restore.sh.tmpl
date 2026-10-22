@@ -1,0 +1,64 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Rebuilds the nv sessions saved by ~/.local/bin/nv at login — the macOS
+# counterpart of dot_config/systemd/user/nv-restore.service.
+#
+# launchd is what systemd is on macOS, and the mapping is close:
+#   systemd user unit  -> LaunchAgent plist in ~/Library/LaunchAgents
+#   WantedBy=...       -> RunAtLoad
+#   Type=oneshot       -> no KeepAlive (run once, don't respawn)
+#   systemctl enable   -> launchctl bootstrap "gui/$UID"
+#
+# Kept as a run_ script rather than a managed plist because the agent also
+# has to be bootstrapped, which chezmoi cannot express — same shape as
+# run_onchange_after_install-ghostty-display-font.sh.tmpl.
+
+set -euo pipefail
+
+NV="$HOME/.local/bin/nv"
+LABEL="com.mateusz-sip.nv-restore"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+LOG="$HOME/Library/Logs/nv-restore.log"
+
+if [[ ! -x $NV ]]; then
+    echo "$NV is not executable — apply the dotfiles first" >&2
+    exit 1
+fi
+
+mkdir -p "$(dirname "$PLIST")" "$(dirname "$LOG")"
+
+# launchd starts agents with a bare PATH (and no login shell), so spell out
+# where nvim and the coreutils `nv` leans on actually live.
+cat > "$PLIST" << PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>$LABEL</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$NV</string>
+		<string>-R</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>StandardOutPath</key>
+	<string>$LOG</string>
+	<key>StandardErrorPath</key>
+	<string>$LOG</string>
+</dict>
+</plist>
+PLIST
+
+# Reload so a changed plist takes effect (and runs) now, not next login.
+launchctl bootout "gui/$UID/$LABEL" 2> /dev/null || true
+launchctl bootstrap "gui/$UID" "$PLIST"
+{{ end -}}

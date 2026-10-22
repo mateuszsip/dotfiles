@@ -1,0 +1,361 @@
+#!/bin/bash
+# nv — attach to, or start, a long-lived nvim server for the current project.
+#
+# Neovim 0.12 splits the editor from its UI: `:detach` drops the UI and leaves
+# the server running. That only helps if you can find the server again, which
+# is all this wrapper adds — one socket per project under $XDG_RUNTIME_DIR,
+# plus a note of where it came from.
+#
+# The server is started without a UI (`--headless`) in its own session, and
+# the terminal is just a client attached with `--remote-ui`. Consequences:
+#   * closing the terminal / losing an SSH connection kills only the client,
+#     the editor keeps running       (`nv` to reattach)
+#   * `:detach` and closing the window do the same thing
+#   * `:q` still quits the editor for good, since the last UI is leaving
+#
+# A process cannot outlive a reboot, so each server also snapshots itself
+# (`:mksession`) to $XDG_STATE_HOME/nvim/nv-sessions — on detach, on exit and
+# on a slow timer. `nv` restores that snapshot when the server starts again,
+# and `nv -R` respawns every saved server after a boot. Buffers, layout, tabs,
+# folds and cwd come back; `:terminal` buffers cannot, and neither can LSP
+# servers (they restart when the buffers reopen).
+#
+#   nv                 attach to this directory's session, or start one
+#   nv FILE...         same, then open those files in it
+#   nv -n NAME [FILE]  same, but keyed by NAME instead of the directory
+#   nv -a [NAME|DIR]   attach only; fail if nothing is running
+#   nv -f [NAME|DIR]   run the TUI in this terminal instead of daemonizing
+#   nv -R              respawn every saved session (after a reboot)
+#   nv -l              list sessions, live and stopped
+#   nv -p              pick a live session with fzf and attach
+#   nv -k [NAME|DIR]   ask a session to quit (refuses on unsaved changes)
+#   nv -K [NAME|DIR]   force quit, discarding changes
+#
+# Addresses live in ${XDG_RUNTIME_DIR}/nvim-sessions (tmpfs: they die with the
+# machine, which is what you want for "instances still running"); without
+# $XDG_RUNTIME_DIR — macOS — they live in ${XDG_STATE_HOME}/nvim/run instead.
+# Snapshots live in ${XDG_STATE_HOME}/nvim/nv-sessions, which survives reboots.
+
+set -uo pipefail
+
+# Sockets want a short, per-user, throwaway path. $XDG_RUNTIME_DIR is exactly
+# that on Linux (tmpfs, dies with the machine). macOS has no such variable and
+# $TMPDIR is not trustworthy here — a login shell and a launchd agent can
+# resolve it differently, which would hide every restored session — so fall
+# back to a path inside the state home, which both contexts compute the same.
+if [[ -n ${XDG_RUNTIME_DIR:-} ]]; then
+  state_dir="${XDG_RUNTIME_DIR%/}/nvim-sessions"
+else
+  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/nvim/run"
+fi
+snap_dir="${XDG_STATE_HOME:-$HOME/.local/state}/nvim/nv-sessions"
+mkdir -p "$state_dir" || exit 1
+
+sock_for() { printf '%s/%s.sock' "$state_dir" "$1"; }
+meta_for() { printf '%s/%s.meta' "$state_dir" "$1"; }
+snap_meta_for() { printf '%s/%s.meta' "$snap_dir" "$1"; }
+
+# coreutils is not the default on macOS: `timeout`/`stat -c` are GNU-only and
+# brew installs them as g-prefixed binaries (this repo has coreutils there).
+with_timeout() { # seconds, command...
+  local t=$1
+  shift
+  if command -v timeout >/dev/null; then
+    timeout "$t" "$@"
+  elif command -v gtimeout >/dev/null; then
+    gtimeout "$t" "$@"
+  else
+    "$@"
+  fi
+}
+
+mtime_of() { # file -> epoch seconds
+  stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || date +%s
+}
+
+# nvim 0.12 is where :detach, :connect and --remote-ui appear; older versions
+# cannot serve a UI at all, so fail with the reason instead of a vague error.
+nvim_ok() {
+  local v
+  v=$(nvim --version 2>/dev/null | head -1 | awk '{print $2}')
+  v=${v#v}
+  [[ $v == 0.1[2-9]* || $v == 0.[2-9][0-9]* || $v == [1-9]* ]]
+}
+
+# 0 if a server is actually answering on $1 (a stale socket file is not enough).
+probe() {
+  [[ -S ${1:-} ]] || return 1
+  with_timeout 2 nvim --server "$1" --remote-expr '1' >/dev/null 2>&1
+}
+
+# How many UIs are attached: empty on a dead socket.
+ui_count() {
+  with_timeout 2 nvim --server "$1" --remote-expr 'len(nvim_list_uis())' 2>/dev/null
+}
+
+# Default key is the cwd with / turned into %, so two projects with the same
+# basename cannot collide, and `nv` in the same directory is always the same
+# session.
+dir_key() {
+  local d=${PWD/#$HOME/\~}
+  printf '%s' "${d//\//%}"
+}
+
+# Accept either a literal key or a path.
+to_key() {
+  case ${1:-} in
+  /* | \~*) (cd -- "$1" 2>/dev/null && dir_key) || printf '%s' "${1//\//%}" ;;
+  *) printf '%s' "${1:-}" ;;
+  esac
+}
+
+key_cwd() {
+  local meta cwd
+  meta=$(meta_for "$1")
+  [[ -r $meta ]] || meta=$(snap_meta_for "$1")
+  if [[ -r $meta ]]; then
+    cwd=$(sed -n 's/^cwd=//p' "$meta")
+    [[ -n $cwd ]] && { printf '%s' "$cwd"; return; }
+  fi
+  local key=${1//%//}
+  printf '%s' "${key/\~/$HOME}"
+}
+
+# How to get back to this session, phrased for whichever key it uses.
+reattach_hint() {
+  local key=$1
+  if [[ $key == "$(dir_key)" ]]; then
+    printf 'nv'
+  else
+    printf 'nv -a %s' "$(key_cwd "$key")"
+  fi
+}
+
+age_of() { # seconds -> 3h12m / 8m / 42s
+  local s=$1
+  if ((s >= 86400)); then printf '%dd%dh' $((s / 86400)) $((s % 86400 / 3600))
+  elif ((s >= 3600)); then printf '%dh%02dm' $((s / 3600)) $((s % 3600 / 60))
+  elif ((s >= 60)); then printf '%dm' $((s / 60))
+  else printf '%ds' "$s"
+  fi
+}
+
+# Every live session as: key <TAB> ui <TAB> age <TAB> cwd. Prunes dead ones.
+sessions() {
+  shopt -s nullglob
+  local sock key uis mtime
+  for sock in "$state_dir"/*.sock; do
+    key=$(basename "$sock" .sock)
+    uis=$(ui_count "$sock")
+    if [[ -z $uis ]]; then
+      rm -f "$sock" "$(meta_for "$key")"
+      continue
+    fi
+    mtime=$(mtime_of "$sock")
+    printf '%s\t%s\t%s\t%s\n' "$key" "$uis" "$(age_of $(($(date +%s) - mtime)))" "$(key_cwd "$key")"
+  done
+}
+
+usage() { sed -n '/^#   nv  /,/^#   nv -K/p' "$0" | sed 's/^# \{0,1\}//'; }
+
+cmd_list() {
+  local out stopped=() f key cwd
+  out=$(sessions)
+  if [[ -z $out ]]; then
+    echo "no nvim sessions running"
+  else
+    {
+      printf 'UI\tAGE\tDIRECTORY\n'
+      printf '%s\n' "$out" | awk -F'\t' '{ printf "%s\t%s\t%s\n", $2, $3, $4 }'
+    } | column -t -s$'\t'
+  fi
+
+  shopt -s nullglob
+  for f in "$snap_dir"/*.vim; do
+    key=$(basename "$f" .vim)
+    probe "$(sock_for "$key")" && continue
+    cwd=$(key_cwd "$key")
+    [[ -n $cwd ]] && stopped+=("$cwd")
+  done
+  if ((${#stopped[@]})); then
+    printf '\nstopped (restore with `nv -R`):\n'
+    printf '  %s\n' "${stopped[@]}"
+  fi
+}
+
+cmd_pick() {
+  local out lines pick
+  out=$(sessions)
+  [[ -n $out ]] || { echo "no nvim sessions running" >&2; return 1; }
+  lines=$(printf '%s\n' "$out" | awk -F'\t' '{ printf "%s\t%s\t%s\t%s\n", $4, ($2 == 0 ? "detached" : "attached"), $3, $1 }')
+  pick=$(printf '%s\n' "$lines" | fzf --ansi --delimiter='\t' \
+    --with-nth=1,2,3 --nth=1 --height=40% --reverse \
+    --header='directory / state / age') || return 130
+  exec nvim --server "$(sock_for "$(cut -f4 <<<"$pick")")" --remote-ui
+}
+
+# Start a UI-less server in its own session so no terminal owns it. macOS has
+# no `setsid`, but `nohup` (POSIX) is enough there: the only terminal signal
+# that would reach the server otherwise is SIGHUP, and nohup ignores it.
+start_server() { # sock, cwd, key
+  local sock=$1 dir=$2 key=$3
+  rm -f "$sock"
+  (
+    cd "$dir" || exit 1
+    export NV_SESSION_KEY="$key"
+    if command -v setsid >/dev/null; then
+      exec setsid nvim --headless --listen "$sock" </dev/null >/dev/null 2>&1
+    else
+      exec nohup nvim --headless --listen "$sock" </dev/null >/dev/null 2>&1
+    fi
+  ) &
+  local _
+  for _ in {1..100}; do
+    probe "$sock" && return 0
+    sleep 0.05
+  done
+  return 1
+}
+
+attach_ui() { # sock, key
+  nvim --server "$1" --remote-ui
+  local rc=$?
+  if probe "$1"; then
+    printf 'session still running — reattach with: %s\n' "$(reattach_hint "$2")" >&2
+  fi
+  return $rc
+}
+
+cmd_open() { # key, foreground, files...
+  local key=$1 fg=$2 sock
+  shift 2
+  sock=$(sock_for "$key")
+  if ! probe "$sock"; then
+    rm -f "$sock" # stale after a SIGKILL
+    mkdir -p "$snap_dir"
+    printf 'cwd=%s\ncreated=%s\n' "$PWD" "$(date +%s)" >"$(meta_for "$key")"
+    printf 'cwd=%s\n' "$PWD" >"$(snap_meta_for "$key")"
+    if [[ $fg == 1 ]]; then
+      NV_SESSION_KEY="$key" nvim --listen "$sock" "$@" || return
+      if probe "$sock"; then
+        printf 'session still running — reattach with: %s\n' "$(reattach_hint "$key")" >&2
+      fi
+      return 0
+    fi
+    if ! start_server "$sock" "$PWD" "$key"; then
+      echo "failed to start an nvim server on $sock" >&2
+      return 1
+    fi
+  fi
+  (($#)) && nvim --server "$sock" --remote "$@" >/dev/null 2>&1
+  attach_ui "$sock" "$key"
+}
+
+cmd_attach() { # key
+  local key sock
+  key=$(to_key "$1")
+  sock=$(sock_for "$key")
+  if ! probe "$sock"; then
+    rm -f "$sock" "$(meta_for "$key")"
+    echo "no live session for $key — start it with nv, or nv -R" >&2
+    return 1
+  fi
+  attach_ui "$sock" "$key"
+}
+
+# Rebuild every saved server that is not currently running.
+cmd_restore() {
+  local f key sock cwd started=0
+  shopt -s nullglob
+  for f in "$snap_dir"/*.vim; do
+    key=$(basename "$f" .vim)
+    sock=$(sock_for "$key")
+    probe "$sock" && continue
+    cwd=$(sed -n 's/^cwd=//p' "$(snap_meta_for "$key")" 2>/dev/null)
+    [[ -d ${cwd:-} ]] || continue
+    printf 'cwd=%s\ncreated=%s\n' "$cwd" "$(date +%s)" >"$(meta_for "$key")"
+    if start_server "$sock" "$cwd" "$key"; then
+      started=$((started + 1))
+    else
+      echo "failed to restore $cwd" >&2
+    fi
+  done
+  if ((started)); then
+    echo "restored $started session(s) — attach with nv -p"
+  else
+    echo "nothing to restore"
+  fi
+}
+
+cmd_stop() { # key, [force]
+  local key=$1 sock
+  sock=$(sock_for "$key")
+  if ! probe "$sock"; then
+    rm -f "$sock" "$(meta_for "$key")"
+    echo "no live session: $key" >&2
+    return 1
+  fi
+  if [[ ${2:-} == force ]]; then
+    nvim --server "$sock" --remote-send $':qa!\r' >/dev/null 2>&1
+  else
+    nvim --server "$sock" --remote-send $':qa\r' >/dev/null 2>&1
+  fi
+  sleep 0.4
+  if probe "$sock"; then
+    echo "session kept running (unsaved changes) — attach and quit it: nv -a $(key_cwd "$key")" >&2
+    return 1
+  fi
+  rm -f "$sock" "$(meta_for "$key")"
+}
+
+fg=0
+case ${1:-} in
+-f | --foreground)
+  fg=1
+  shift
+  ;;
+esac
+
+# `nv -h` should work even where nvim is missing or too old to help.
+case ${1:-} in
+-h | --help | help)
+  usage
+  exit 0
+  ;;
+esac
+
+if ! command -v nvim >/dev/null; then
+  echo "nv: nvim not found on \$PATH" >&2
+  exit 1
+fi
+if ! nvim_ok; then
+  echo "nv: needs nvim 0.12+ (for :detach and --remote-ui), found $(nvim --version | head -1)" >&2
+  exit 1
+fi
+
+case ${1:-} in
+-l | --list | list) cmd_list ;;
+-p | --pick | pick) cmd_pick ;;
+-R | --restore | restore) cmd_restore ;;
+-a | --attach | attach)
+  shift
+  cmd_attach "${1:-}"
+  ;;
+-k | --kill | kill)
+  shift
+  cmd_stop "$(to_key "${1:-}")"
+  ;;
+-K | --force-kill | force-kill)
+  shift
+  cmd_stop "$(to_key "${1:-}")" force
+  ;;
+-n | --name)
+  shift
+  [[ -n ${1:-} ]] || { echo "-n needs a name" >&2; exit 2; }
+  key=$1
+  shift
+  cmd_open "$key" "$fg" "$@"
+  ;;
+*) cmd_open "$(dir_key)" "$fg" "$@" ;;
+esac
+

@@ -13,6 +13,7 @@ systemctl --user disable omarchy-battery-monitor.timer 2>/dev/null
 
 for unit in \
   elephant.service \
+  nv-restore.service \
   sys-battery-monitor.timer \
   sys-recover-internal-monitor.service \
   voxtype.service \
