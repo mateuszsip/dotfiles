@@ -243,16 +243,41 @@ tooltip * {
 }
 
 #custom-voxtype {
-  min-width: 12px;
+  background-color: #DEDBD0;
+  color: alpha(@foreground, 0.55);
+  border-radius: 8px;
+  border: 1px solid alpha(@foreground, 0.25);
+  box-shadow: 0 1px 6px alpha(@foreground, 0.2);
+  padding: 0 8px;
   margin: 0 0 0 7px;
+  transition: background-color 0.15s;
+}
+
+#custom-voxtype:hover {
+  background-color: #CECDC3;
 }
 
 #custom-voxtype.recording {
   color: #e87878;
+  animation: voxtype-pulse 1.2s ease-in-out infinite;
 }
 
 #custom-voxtype.transcribing {
   color: #D0A215;
+}
+
+#custom-voxtype.muted {
+  color: #DA702C;
+}
+
+#custom-voxtype.stopped {
+  color: alpha(@foreground, 0.3);
+}
+
+@keyframes voxtype-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.45; }
+  100% { opacity: 1; }
 }
 
 #custom-idle-indicator.active,

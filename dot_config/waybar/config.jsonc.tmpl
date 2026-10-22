@@ -297,10 +297,13 @@
     "return-type": "json"
   },
   "custom/voxtype": {
-    "exec": "voxtype status --follow --format json",
+    "exec": "$HOME/.config/waybar/voxtype-status.sh",
+    "interval": 1,
     "return-type": "json",
     "format": "{}",
-    "tooltip": true
+    "tooltip": true,
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+    "on-click-right": "sys-launch audio"
   },
   "custom/idle-indicator": {
     "on-click": "sys-toggle-idle",
