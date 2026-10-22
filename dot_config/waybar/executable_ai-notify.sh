@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Find the Hyprland workspace containing the terminal running this Claude Code session
-claude_ws=$(python3 -c "
+ai_ws=$(python3 -c "
 import json, subprocess, os
 
 def get_ppid(pid):
@@ -32,11 +32,11 @@ for _ in range(20):
 active_ws=$(hyprctl activeworkspace -j | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
 
 # Don't notify if user is already on Claude's workspace
-if [ -n "$claude_ws" ] && [ "$active_ws" = "$claude_ws" ]; then
+if [ -n "$ai_ws" ] && [ "$active_ws" = "$ai_ws" ]; then
     exit 0
 fi
 
-count=$(cat /tmp/claude-count 2>/dev/null || echo 0)
-echo $((count + 1)) > /tmp/claude-count
-echo "${claude_ws:-$active_ws}" > /tmp/claude-workspace
+count=$(cat /tmp/ai-count 2>/dev/null || echo 0)
+echo $((count + 1)) > /tmp/ai-count
+echo "${ai_ws:-$active_ws}" > /tmp/ai-workspace
 pkill -SIGRTMIN+11 waybar

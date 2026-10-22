@@ -91,7 +91,7 @@ mpris.empty {
 #network,
 #bluetooth,
 #pulseaudio,
-#custom-claude,
+#custom-ai,
 #custom-notifications,
 #custom-media,
 #custom-update,
@@ -134,7 +134,7 @@ mpris.empty {
 #custom-weather:hover,
 #custom-update:hover,
 #custom-media:hover,
-#custom-claude:hover,
+#custom-ai:hover,
 #custom-notifications:hover,
 #datetime:hover,
 #connectivity:hover,
@@ -226,11 +226,11 @@ tooltip * {
 }
 
 
-#custom-claude {
+#custom-ai {
   color: alpha(@foreground, 0.35);
 }
 
-#custom-claude.active {
+#custom-ai.active {
   color: #DA702C;
 }
 
