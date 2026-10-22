@@ -12,5 +12,5 @@ else
 fi
 
 if ((count > 0)); then
-  printf '󰚰 %d' "$count"
+  printf '󰏕 %d' "$count"
 fi
