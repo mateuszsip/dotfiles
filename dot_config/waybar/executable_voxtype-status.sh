@@ -18,14 +18,14 @@ elif command -v pactl >/dev/null 2>&1; then
 fi
 
 case "$state" in
-  recording)    icon=""; action="Recording";         class=recording;    known=true ;;
-  transcribing) icon=""; action="Transcribing";      class=transcribing; known=true ;;
-  idle)         icon=""; action="Dictation ready";   class=idle;         known=true ;;
-  *)            icon=""; action="Voxtype not running"; class=stopped;    known=false ;;
+  recording)    icon="󰻂"; action="Recording";         class=recording;    known=true ;;
+  transcribing) icon="󱑽"; action="Transcribing";      class=transcribing; known=true ;;
+  idle)         icon="󰍬"; action="Dictation ready";   class=idle;         known=true ;;
+  *)            icon="󰍭"; action="Voxtype not running"; class=stopped;    known=false ;;
 esac
 
 if [ "$muted" = true ]; then
-  icon=""
+  icon=""
   class=muted
   if [ "$state" = recording ]; then
     action="Recording with the microphone muted"
