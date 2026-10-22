@@ -15,6 +15,7 @@ for unit in \
   elephant.service \
   sys-battery-monitor.timer \
   sys-recover-internal-monitor.service \
+  voxtype.service \
   swayosd-server.service \
   syncthing.service; do
   if ! systemctl --user enable "$unit" >/dev/null 2>&1; then
@@ -25,6 +26,7 @@ done
 systemctl --user start sys-battery-monitor.timer 2>/dev/null
 systemctl --user start sys-recover-internal-monitor.service 2>/dev/null
 systemctl --user start elephant.service 2>/dev/null
+systemctl --user start voxtype.service 2>/dev/null
 
 # The old omarchy timer/service files are not owned by chezmoi; remove them
 # once they are disabled so nothing can start them again.

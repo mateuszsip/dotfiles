@@ -1,0 +1,23 @@
+# Push-to-talk dictation.
+#
+# Hotkeys live in Hyprland (SUPER CTRL X toggles, F9 starts/stops), so evdev
+# detection stays off — no `input` group membership is needed.
+engine = "whisper"
+state_file = "auto"
+
+[hotkey]
+enabled = false
+
+[whisper]
+model = "base.en"
+language = "en"
+# Dictation clips are short; this is ~1.6-1.9x faster for them and base.en is
+# stable enough that the smaller context window doesn't cost accuracy.
+context_window_optimization = true
+
+[audio]
+# Lower playing media while the mic is open rather than talking over it.
+duck_media = true
+
+[status]
+icon_theme = "nerd-font"

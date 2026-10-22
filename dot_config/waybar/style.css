@@ -251,6 +251,10 @@ tooltip * {
   color: #e87878;
 }
 
+#custom-voxtype.transcribing {
+  color: #D0A215;
+}
+
 #custom-idle-indicator.active,
 #custom-notification-silencing-indicator.active {
   color: #e87878;

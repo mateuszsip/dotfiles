@@ -42,6 +42,7 @@ ttf-ia-writer
 typora
 ufw-docker
 vial-appimage
+voxtype-bin
 walker
 witr-bin
 wttrbar

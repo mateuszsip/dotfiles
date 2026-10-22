@@ -20,7 +20,8 @@
     "custom/media#tidal",
     "custom/media#browser",
     "custom/update",
-    "custom/screenrecording-indicator"
+    "custom/screenrecording-indicator",
+    "custom/voxtype"
   ],
   "modules-right": [
     "group/tray-expander",
@@ -294,6 +295,12 @@
     "exec": "$HOME/.config/waybar/screen-recording.sh",
     "signal": 8,
     "return-type": "json"
+  },
+  "custom/voxtype": {
+    "exec": "voxtype status --follow --format json",
+    "return-type": "json",
+    "format": "{}",
+    "tooltip": true
   },
   "custom/idle-indicator": {
     "on-click": "sys-toggle-idle",

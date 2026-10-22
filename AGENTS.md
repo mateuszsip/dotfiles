@@ -46,7 +46,7 @@ control ordering (before < main < after):
 - `before`: `decrypt-private-key`, `plmac-keyboard`, `setup-system`
 - main `install`: `packages`, `bosto-recovery`, `muse-acp`, `ripwire`
 - main `setup`: `kbd-backlight`, `low-power-tdp`
-- `once_after`: `01-osx`, `antigravity`, `fonts`, `node-packages`, `bosto-touchpad`, `rapl-readable`
+- `once_after`: `01-osx`, `antigravity`, `fonts`, `node-packages`, `bosto-touchpad`, `rapl-readable`, `voxtype`
 - `onchange_after`: `ghostty-display-font`, `setup-user-services`
 
 ## Template data
