@@ -152,7 +152,17 @@ return {
     -- auto-render every ![](...) image inline in markdown buffers — that
     -- path clashes with snacks.image's on-demand K hover (see
     -- render-markdown.lua) and would defeat the "only on K" behaviour.
-    { "3rd/image.nvim", opts = { integrations = { markdown = { enabled = false } } } },
+    --
+    -- lazy = true keeps it out of the startup set. image.nvim queries the
+    -- terminal (ioctl on fd 1) the moment it is required, and a headless
+    -- server started by `nv` has no tty there — every session would log
+    -- "cannot query terminal size". It loads with diagram.nvim instead, i.e.
+    -- in a markdown buffer, where a UI is by definition attached.
+    {
+      "3rd/image.nvim",
+      lazy = true,
+      opts = { integrations = { markdown = { enabled = false } } },
+    },
   },
   ft = { "markdown" },
   keys = {
