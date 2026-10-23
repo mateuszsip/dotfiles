@@ -41,6 +41,12 @@ disable_hotkey 60 32 49 262144
 
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
+# Rex terminal: left Option sends Alt so <A-...> keybinds work in Neovim; right
+# Option still composes Polish Pro letters. The default ("automatic") follows
+# the layout, and Polish Pro makes both Options compose. Other values:
+# automatic, composesText, actsAsAlt, rightActsAsAlt. Takes effect on next launch.
+defaults write com.superlogical.rex Workspace.terminalOptionKeyBehavior -string leftActsAsAlt
+
 # Symlink nushell config into macOS' Application Support dir, but only when
 # the link isn't already there (chezmoi run_once scripts re-run on edits,
 # and `ln -s" over an existing target exits non-zero → whole script fails).
