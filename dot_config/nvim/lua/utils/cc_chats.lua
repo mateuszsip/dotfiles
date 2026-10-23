@@ -1,5 +1,7 @@
 -- Remember open CodeCompanion ACP chats per cwd across Neovim sessions.
--- Saved on VimLeavePre; restored on demand (restoring spawns the agents).
+-- Saved on VimLeavePre; restored on startup and on demand with <leader>aL
+-- (restoring spawns the agents). Inside `nv`, lua/utils/nv_sessions.lua runs
+-- the startup restore itself, after its snapshot has set the cwd.
 local M = {}
 
 local file = vim.fn.stdpath("data") .. "/codecompanion_open_chats.json"
@@ -112,10 +114,31 @@ function M.restore()
   end
 end
 
+--- Startup restore: quiet when there is nothing saved, and a no-op if chats
+--- are already open, so they are never doubled
+function M.autorestore()
+  local entries = read()[cwd()]
+  if not entries or #entries == 0 then
+    return
+  end
+  if package.loaded["codecompanion"] and #require("codecompanion").buf_get_chat() > 0 then
+    return
+  end
+  M.restore()
+end
+
 function M.setup()
-  vim.api.nvim_create_autocmd("VimLeavePre", {
-    group = vim.api.nvim_create_augroup("cc_chats_save", { clear = true }),
-    callback = M.save,
+  local group = vim.api.nvim_create_augroup("cc_chats_save", { clear = true })
+  vim.api.nvim_create_autocmd("VimLeavePre", { group = group, callback = M.save })
+  vim.api.nvim_create_autocmd("VimEnter", {
+    group = group,
+    callback = function()
+      -- `nv` restores after its snapshot; headless runs (scripts, Lazy sync) get no agents
+      if (vim.env.NV_SESSION_KEY or "") ~= "" or #vim.api.nvim_list_uis() == 0 then
+        return
+      end
+      vim.schedule(M.autorestore)
+    end,
   })
 end
 

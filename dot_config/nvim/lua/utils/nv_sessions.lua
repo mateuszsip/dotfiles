@@ -11,6 +11,8 @@
 -- registers/marks/history (shada), undo (undofile). What cannot: running
 -- `:terminal` buffers (a session file cannot recreate them), LSP servers
 -- (restarted when the buffers reopen), and anything in memory anywhere else.
+-- CodeCompanion chats are the exception: their ACP session ids are saved with
+-- each snapshot (lua/utils/cc_chats.lua) and reloaded on start, like <leader>aL.
 
 local M = {}
 
@@ -33,6 +35,7 @@ local function save()
   if not path then
     return
   end
+  require("utils.cc_chats").save()
   vim.fn.mkdir(state_dir(), "p")
   -- mksession complains about odd buffers; the snapshot is still worth taking.
   pcall(vim.cmd, "silent! mksession! " .. vim.fn.fnameescape(path))
@@ -83,7 +86,11 @@ function M.setup()
     group = group,
     callback = function()
       -- after startup, so the dashboard/plugins are in their final shape
-      vim.schedule(M.restore)
+      vim.schedule(function()
+        M.restore()
+        -- after the snapshot, which sets the cwd the chats are keyed by
+        require("utils.cc_chats").autorestore()
+      end)
     end,
     desc = "nv: restore snapshot",
   })
