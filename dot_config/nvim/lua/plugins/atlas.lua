@@ -241,6 +241,11 @@ return {
     "MeanderingProgrammer/render-markdown.nvim",
   },
   opts = {
+    ui = {
+      -- Atlas always opens its own tab (hardcoded `tabnew`); listing the panel
+      -- at least lets you switch away from and back to it like a normal buffer.
+      listed_buffer = true,
+    },
     keymaps = {
       ui = {
         -- Match the shifted jkl; layout (see config/keymaps.lua). Atlas binds
