@@ -1,4 +1,4 @@
-set theme base16-grayscale-light
+colourscheme flexoki-light
 
 " Unbind to clear the slate
 unbind j

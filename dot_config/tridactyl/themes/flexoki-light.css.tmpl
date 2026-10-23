@@ -1,0 +1,300 @@
+/* Tridactyl theme — generated from .chezmoidata/palette.toml by chezmoi.
+ * Spotlight-style command palette, matches the nvim flexoki-light colorscheme.
+ * Load with `:colourscheme flexoki-light` (tridactylrc does this). */
+
+:root {
+    /* Palette */
+    --fx-bg: {{ .palette.bg }};
+    --fx-fg: {{ .palette.fg }};
+    --fx-dim: {{ .palette.dim }};
+    --fx-accent: {{ .palette.accent }};
+    --fx-sel: {{ .palette.selection_bg }};
+    --fx-yellow: {{ .palette.extra.yellow }};
+    --fx-red: {{ .palette.extra.red }};
+    --fx-green: {{ .palette.extra.green }};
+    /* Flexoki UI greys between bg and selection (not in palette.toml) */
+    --fx-bg-2: #F2F0E5;
+    --fx-ui: #E6E4D9;
+    --fx-ui-2: #DAD8CE;
+
+    --fx-radius: 12px;
+    --fx-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    --fx-mono: "JetBrainsMono Nerd Font Propo", "JetBrains Mono", ui-monospace, monospace;
+
+    /* Tridactyl variables */
+    --tridactyl-font-family: var(--fx-font);
+    --tridactyl-fg: var(--fx-fg);
+    --tridactyl-bg: var(--fx-bg);
+    --tridactyl-url-fg: var(--fx-accent);
+    --tridactyl-url-bg: transparent;
+    --tridactyl-highlight-box-bg: var(--fx-accent);
+    --tridactyl-highlight-box-fg: var(--fx-bg);
+
+    --tridactyl-of-fg: var(--fx-fg);
+    --tridactyl-of-bg: var(--fx-ui);
+
+    --tridactyl-cmdl-bg: var(--fx-bg);
+    --tridactyl-cmdl-fg: var(--fx-fg);
+    --tridactyl-cmdl-font-family: var(--fx-mono);
+    --tridactyl-cmdl-font-size: 1.25rem;
+    --tridactyl-cmdl-line-height: 1.5;
+
+    --tridactyl-cmplt-bg: var(--fx-bg);
+    --tridactyl-cmplt-fg: var(--fx-fg);
+    --tridactyl-cmplt-font-family: var(--fx-font);
+    --tridactyl-header-first-bg: transparent;
+    --tridactyl-header-second-bg: transparent;
+    --tridactyl-header-third-bg: transparent;
+    --tridactyl-header-font-size: 0.7rem;
+    --tridactyl-header-font-weight: 600;
+    --tridactyl-header-border-bottom: none;
+
+    --tridactyl-status-bg: var(--fx-bg);
+    --tridactyl-status-fg: var(--fx-fg);
+    --tridactyl-status-font-family: var(--fx-mono);
+    --tridactyl-status-font-size: 11px;
+    --tridactyl-status-border: 1px solid var(--fx-ui-2);
+    --tridactyl-status-border-radius: 8px;
+
+    /* Hint labels */
+    --tridactyl-hintspan-font-family: var(--fx-mono) !important;
+    --tridactyl-hintspan-font-size: 13px !important;
+    --tridactyl-hintspan-font-weight: 700 !important;
+    --tridactyl-hintspan-fg: var(--fx-bg) !important;
+    --tridactyl-hintspan-bg: var(--fx-fg) !important;
+    --tridactyl-hintspan-js-background: var(--fx-bg) !important;
+    --tridactyl-hintspan-active-fg: var(--fx-bg) !important;
+    --tridactyl-hintspan-active-bg: var(--fx-fg) !important;
+    --tridactyl-hintspan-pressed-fg: var(--fx-dim) !important;
+    --tridactyl-hintspan-border-color: var(--fx-fg) !important;
+    --tridactyl-hintspan-border-width: 1px !important;
+
+    /* Hinted element highlights */
+    --tridactyl-hint-bg: none !important;
+    --tridactyl-hint-outline: none !important;
+    --tridactyl-hint-active-fg: none !important;
+    --tridactyl-hint-active-bg: none !important;
+    --tridactyl-hint-active-outline: 2px solid var(--fx-fg) !important;
+
+    --tridactyl-scrollbar-color: auto;
+}
+
+/* ---------- Floating command palette (outer page) ---------- */
+
+#cmdline_iframe {
+    position: fixed !important;
+    bottom: unset !important;
+    top: 20% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: min(760px, 90vw) !important;
+    z-index: 2147483647 !important;
+    border-radius: var(--fx-radius) !important;
+    box-shadow:
+        0 0 0 1px rgba(16, 15, 15, 0.08),
+        0 8px 24px rgba(16, 15, 15, 0.12),
+        0 24px 64px rgba(16, 15, 15, 0.16) !important;
+    color-scheme: light;
+}
+
+/* ---------- Inside the command line iframe ---------- */
+
+#command-line-holder {
+    order: 1;
+    display: flex;
+    align-items: center;
+    background: var(--fx-bg);
+    border-bottom: 1px solid var(--fx-ui);
+    padding: 0 1rem;
+}
+
+#command-line-holder::before {
+    content: "›";
+    color: var(--fx-fg);
+    font-family: var(--fx-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding-right: 0.5rem;
+}
+
+#tridactyl-colon {
+    display: none;
+}
+
+#tridactyl-input {
+    width: 100%;
+    padding: 0.9rem 0;
+    background: transparent;
+    color: var(--fx-fg);
+    caret-color: var(--fx-fg);
+    font-family: var(--fx-mono);
+    font-size: 1.25rem;
+    line-height: 1.5;
+    border: none;
+    outline: none;
+}
+
+/* ---------- Completions ---------- */
+
+#completions {
+    --option-height: 1.9em;
+    order: 2;
+    width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    background: var(--fx-bg);
+    color: var(--fx-fg);
+    font-family: var(--fx-font);
+    font-size: 13px;
+    font-weight: 400;
+    border-top: none;
+}
+
+#completions > div {
+    max-height: calc(16 * var(--option-height));
+    min-height: 0;
+    padding: 0.25rem 0.5rem 0.5rem;
+}
+
+#completions .HistoryCompletionSource,
+#completions .BmarkCompletionSource {
+    max-height: unset;
+    min-height: unset;
+}
+
+#completions table {
+    width: 100%;
+    font-size: 13px;
+    border-spacing: 0 2px;
+    border-collapse: separate;
+    table-layout: fixed;
+    padding: 0;
+}
+
+#completions .BufferCompletionSource table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+#completions table tr td.prefix,
+#completions table tr td.privatewindow,
+#completions table tr td.container,
+#completions table tr td.icon {
+    display: none;
+}
+
+#completions table tr {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#completions table tr td {
+    padding: 0.35rem 0.6rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#completions table tr td:first-of-type {
+    border-radius: 8px 0 0 8px;
+}
+
+#completions table tr td:last-of-type {
+    border-radius: 0 8px 8px 0;
+}
+
+#completions table tr .title {
+    width: 50%;
+}
+
+#completions table tr .url,
+#completions table tr .content {
+    color: var(--fx-dim);
+    font-family: var(--fx-mono);
+    font-size: 12px;
+}
+
+#completions table tr:hover td {
+    background: var(--fx-bg-2);
+}
+
+#completions .focused td,
+#completions .focused {
+    background: var(--fx-ui);
+    color: var(--fx-fg);
+}
+
+#completions .focused .url,
+#completions .focused .content {
+    background: var(--fx-ui);
+    color: var(--fx-accent);
+}
+
+#completions .sectionHeader {
+    background: transparent;
+    color: var(--fx-dim);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: none;
+    padding: 0.75rem 0.6rem 0.25rem !important;
+}
+
+/* ---------- Hints ---------- */
+
+span.TridactylHint {
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    box-shadow: 0 1px 3px rgba(16, 15, 15, 0.25) !important;
+    text-transform: lowercase !important;
+}
+
+.TridactylHintActive {
+    border-radius: 4px !important;
+}
+
+/* Elements that only react to JS click handlers (not real links/inputs) */
+span.TridactylHint.TridactylJSHint {
+    color: var(--fx-fg) !important;
+    border-color: var(--fx-ui-2) !important;
+}
+
+/* ---------- Mode indicator ---------- */
+
+.TridactylStatusIndicator {
+    position: fixed !important;
+    bottom: 10px !important;
+    right: 10px !important;
+    padding: 4px 10px !important;
+    background: var(--fx-bg) !important;
+    color: var(--fx-dim) !important;
+    border: 1px solid var(--fx-ui-2) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(16, 15, 15, 0.1) !important;
+    font-family: var(--fx-mono) !important;
+    font-size: 11px !important;
+    text-transform: lowercase !important;
+}
+
+.TridactylModeinsert,
+.TridactylModeinput {
+    color: var(--fx-green) !important;
+    border-color: var(--fx-green) !important;
+}
+
+.TridactylModevisual {
+    color: var(--fx-accent) !important;
+    border-color: var(--fx-accent) !important;
+}
+
+.TridactylModeignore {
+    color: var(--fx-red) !important;
+    border-color: var(--fx-red) !important;
+}
+
+/* Find-mode highlight boxes */
+.TridactylFindHighlight,
+.TridactylSearchHighlight {
+    border-radius: 3px;
+}
