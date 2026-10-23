@@ -93,8 +93,31 @@ map("i", "<A-l>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move Up" })
 map("v", "<A-k>", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv", { desc = "Move Down" })
 map("v", "<A-l>", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv", { desc = "Move Up" })
 
-map("n", "<A-S-j>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
-map("n", "<A-S-;>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
+-- markdown-table-wrap shows markdown files that have tables through an unlisted
+-- reader buffer. Plain :bprevious from the reader lands on its own source (the
+-- listed buffer below it), and the plugin swaps the reader straight back in, so
+-- step through the listed buffers from the source instead.
+local function cycle_buffer(step)
+  local cur = vim.b.markdown_table_wrap_source or vim.api.nvim_get_current_buf()
+  local bufs = vim.tbl_filter(function(b)
+    return vim.bo[b].buflisted
+  end, vim.api.nvim_list_bufs())
+  local i = vim.fn.index(bufs, cur)
+  if i < 0 then
+    return vim.cmd(step > 0 and "bnext" or "bprevious")
+  end
+  vim.cmd.buffer(bufs[(i + step * vim.v.count1) % #bufs + 1])
+end
+map("n", "<A-S-j>", function()
+  cycle_buffer(-1)
+end, { desc = "Prev Buffer" })
+-- Shift+; arrives as ":" (<A-:>); <A-S-;> is kept for kitty-protocol
+-- terminals that report the unshifted key
+for _, lhs in ipairs({ "<A-:>", "<A-S-;>" }) do
+  map("n", lhs, function()
+    cycle_buffer(1)
+  end, { desc = "Next Buffer" })
+end
 
 map("n", "<A-j>", "<cmd>cprev<cr>", { desc = "Previous Quickfix" })
 map("n", "<A-;>", "<cmd>cnext<cr>", { desc = "Next Quickfix" })
