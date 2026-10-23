@@ -88,8 +88,22 @@ function M.setup()
       -- after startup, so the dashboard/plugins are in their final shape
       vim.schedule(function()
         M.restore()
-        -- after the snapshot, which sets the cwd the chats are keyed by
-        require("utils.cc_chats").autorestore()
+        -- CodeCompanion chats: after the snapshot, which sets the cwd they
+        -- are keyed by, and once a UI is attached, so the windows are laid
+        -- out for the real terminal instead of the headless 80x24 grid
+        local cc_chats = require("utils.cc_chats")
+        if #vim.api.nvim_list_uis() > 0 then
+          cc_chats.startup()
+        else
+          vim.api.nvim_create_autocmd("UIEnter", {
+            group = group,
+            once = true,
+            callback = function()
+              vim.schedule(cc_chats.startup)
+            end,
+            desc = "nv: restore CodeCompanion chats",
+          })
+        end
       end)
     end,
     desc = "nv: restore snapshot",
