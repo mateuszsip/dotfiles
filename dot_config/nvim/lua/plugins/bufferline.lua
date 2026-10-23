@@ -28,6 +28,12 @@ return {
       buffer = { fg = "#b7b5ac", bg = "#e0ddd3" },
       buffer_visible = { fg = "#b7b5ac", bg = "#eae7dc" },
       buffer_selected = { fg = "#100f0f", bg = "#fffcf0", bold = true },
+      -- Bufferline always renders one indicator cell before each icon, even
+      -- with indicator.style = "none" (it draws a space). Its own bg is
+      -- normal_bg, i.e. nil here, and nvim then paints that cell with
+      -- TabLineFill's grey. Pin it to the tab's background instead.
+      indicator_selected = { fg = "#fffcf0", bg = "#fffcf0" },
+      indicator_visible = { fg = "#eae7dc", bg = "#eae7dc" },
       close_button = { fg = "#b7b5ac", bg = "#e0ddd3" },
       close_button_visible = { fg = "#b7b5ac", bg = "#eae7dc" },
       close_button_selected = { fg = "#100f0f", bg = "#fffcf0" },
