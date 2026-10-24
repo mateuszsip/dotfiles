@@ -18,7 +18,7 @@ hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd("uwsm-app -- typora --enable-waylan
 hl.bind("SUPER + SHIFT + SLASH", hl.dsp.exec_cmd("uwsm-app -- bitwarden-desktop"), { description = "Passwords" })
 
 -- Launcher + menu live in ~/.config/hypr/base/bindings/utilities.lua
-hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sys-launch clipboard"), { release = true })
+hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sys-launch clipboard"), { release = true, description = "Clipboard manager (release)" })
 
 -- Add extra bindings:
 -- hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("alacritty -e ssh your-server"))
@@ -34,6 +34,6 @@ hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("sys-screenshot"), { description = 
 {{- if eq .chezmoi.osRelease.id "archarm" }}
 
 -- Keyboard backlight (Super+F1/F2; native Apple kbd-bright keys removed on this model)
-hl.bind("SUPER + XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl --device='kbd_backlight' set 10%-"), { locked = true, repeating = true })
-hl.bind("SUPER + XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl --device='kbd_backlight' set +10%"), { locked = true, repeating = true })
+hl.bind("SUPER + XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl --device='kbd_backlight' set 10%-"), { locked = true, repeating = true, description = "Keyboard brightness down" })
+hl.bind("SUPER + XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl --device='kbd_backlight' set +10%"), { locked = true, repeating = true, description = "Keyboard brightness up" })
 {{- end }}

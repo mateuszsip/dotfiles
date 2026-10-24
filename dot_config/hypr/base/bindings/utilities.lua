@@ -71,11 +71,16 @@ hl.bind("SUPER + CTRL + X", hl.dsp.exec_cmd("voxtype record toggle"), { descript
 hl.bind("F9", hl.dsp.exec_cmd("voxtype record start"), { description = "Start dictation (push-to-talk)" })
 hl.bind("F9", hl.dsp.exec_cmd("voxtype record stop"), { release = true, description = "Stop dictation (push-to-talk)" })
 
--- Zoom
--- TEMP(hyprlua) phase 6: `hyprctl keyword` no longer works under the Lua parser;
--- these move to hl.config expressions together with the cutover.
-hl.bind("SUPER + CTRL + Z", hl.dsp.exec_cmd("hyprctl keyword cursor:zoom_factor $(hyprctl getoption cursor:zoom_factor -j | jq '.float + 1')"), { description = "Zoom in" })
-hl.bind("SUPER + CTRL + ALT + Z", hl.dsp.exec_cmd("hyprctl keyword cursor:zoom_factor 1"), { description = "Reset zoom" })
+-- Zoom. These are Lua functions rather than shell commands: the old form shelled
+-- out to `hyprctl keyword`, which the Lua config manager rejects.
+hl.bind("SUPER + CTRL + Z", function()
+  local current = hl.get_config("cursor.zoom_factor")
+  hl.config({ cursor = { zoom_factor = (type(current) == "number" and current or 1) + 1 } })
+end, { description = "Zoom in" })
+
+hl.bind("SUPER + CTRL + ALT + Z", function()
+  hl.config({ cursor = { zoom_factor = 1 } })
+end, { description = "Reset zoom" })
 
 -- Lock system
 hl.bind("SUPER + CTRL + L", hl.dsp.exec_cmd("sys-lock"), { description = "Lock system" })

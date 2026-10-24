@@ -41,11 +41,11 @@ adjust_display() {
 
   case $step in
   off)
-    hyprctl dispatch dpms off >/dev/null 2>&1
+    hyprctl dispatch 'hl.dsp.dpms({ action = "disable" })' >/dev/null 2>&1
     return 0
     ;;
   on)
-    hyprctl dispatch dpms on >/dev/null 2>&1
+    hyprctl dispatch 'hl.dsp.dpms({ action = "enable" })' >/dev/null 2>&1
     return 0
     ;;
   esac

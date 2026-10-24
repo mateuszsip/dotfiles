@@ -125,7 +125,7 @@ focus() {
     | .address' | head -n1)
 
   if [[ -n $address ]]; then
-    hyprctl dispatch focuswindow "address:$address" >/dev/null
+    hyprctl eval "hl.dispatch(hl.dsp.focus({ window = hl.get_window(\"address:$address\") }))" >/dev/null
     return 0
   fi
 

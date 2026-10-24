@@ -16,6 +16,6 @@ pidof mako >/dev/null && makoctl reload
 case ${1:-} in
 background | --background)
   pkill -x swaybg
-  hyprctl dispatch exec -- sys-background >/dev/null
+  hyprctl dispatch 'hl.dsp.exec_cmd("sys-background")' >/dev/null
   ;;
 esac

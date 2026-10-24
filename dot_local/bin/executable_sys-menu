@@ -200,7 +200,7 @@ setup_menu() {
   *Wifi) sys-launch wifi ;;
   *Bluetooth) sys-launch bluetooth ;;
   *"Power profile") powerprofile_menu ;;
-  *Monitors) sys-launch editor ~/.config/hypr/monitors.conf ;;
+  *Monitors) sys-launch editor ~/.config/hypr/monitors.lua ;;
   esac
 }
 

@@ -7,8 +7,8 @@
 #   sys-monitor external                           exit 0 when an external monitor is connected
 #   sys-monitor watch                              recover toggles when a monitor is unplugged
 #
-# The disabled/mirrored state is persisted as Hyprland config in the toggles
-# directory, which hyprland.conf sources last.
+# The disabled/mirrored state is persisted as Lua config in the toggles
+# directory, which hyprland.lua loads last.
 
 TOGGLES="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/toggles"
 DISABLE=internal-monitor-disable
@@ -33,12 +33,12 @@ has_external_monitor() {
 
 set_toggle() { # set_toggle <name> <content>
   mkdir -p "$TOGGLES"
-  printf '%s\n' "$2" >"$TOGGLES/$1.conf"
+  printf '%s\n' "$2" >"$TOGGLES/$1.lua"
   hyprctl reload >/dev/null 2>&1
 }
 
 clear_toggle() { # clear_toggle <name>
-  rm -f "$TOGGLES/$1.conf"
+  rm -f "$TOGGLES/$1.lua"
   hyprctl reload >/dev/null 2>&1
 }
 
@@ -48,7 +48,7 @@ internal() {
 
   case ${1:-toggle} in
   on)
-    [[ -f $TOGGLES/$DISABLE.conf ]] && notify-send -u low "Laptop display enabled"
+    [[ -f $TOGGLES/$DISABLE.lua ]] && notify-send -u low "Laptop display enabled"
     clear_toggle "$DISABLE"
     ;;
   off)
@@ -56,16 +56,16 @@ internal() {
       notify-send -u low "Can't disable the only active display"
       exit 1
     fi
-    if [[ ! -f $TOGGLES/$DISABLE.conf && ! -f $TOGGLES/$MIRROR.conf ]]; then
-      set_toggle "$DISABLE" "monitor=$panel,disable"
+    if [[ ! -f $TOGGLES/$DISABLE.lua && ! -f $TOGGLES/$MIRROR.lua ]]; then
+      set_toggle "$DISABLE" "hl.monitor({ output = \"$panel\", disabled = true })"
       notify-send -u low "Laptop display disabled"
     fi
     ;;
   toggle)
-    if [[ -f $TOGGLES/$DISABLE.conf ]]; then internal on; else internal off; fi
+    if [[ -f $TOGGLES/$DISABLE.lua ]]; then internal on; else internal off; fi
     ;;
   recover)
-    if ! has_external_monitor && [[ -f $TOGGLES/$DISABLE.conf ]]; then
+    if ! has_external_monitor && [[ -f $TOGGLES/$DISABLE.lua ]]; then
       clear_toggle "$DISABLE"
     fi
     ;;
@@ -92,21 +92,21 @@ mirror() {
       exit 1
     fi
 
-    rm -f "$TOGGLES/$DISABLE.conf"
-    set_toggle "$MIRROR" "monitor=$external, preferred, auto, 1, mirror, $panel"
+    rm -f "$TOGGLES/$DISABLE.lua"
+    set_toggle "$MIRROR" "hl.monitor({ output = \"$external\", mode = \"preferred\", position = \"auto\", scale = 1, mirror = \"$panel\" })"
     notify-send -u low "Mirroring enabled ($external)"
     ;;
   off)
-    if [[ -f $TOGGLES/$MIRROR.conf ]]; then
+    if [[ -f $TOGGLES/$MIRROR.lua ]]; then
       clear_toggle "$MIRROR"
       notify-send -u low "Extended mode restored"
     fi
     ;;
   toggle)
-    if [[ -f $TOGGLES/$MIRROR.conf ]]; then mirror off; else mirror on; fi
+    if [[ -f $TOGGLES/$MIRROR.lua ]]; then mirror off; else mirror on; fi
     ;;
   recover)
-    if ! has_external_monitor && [[ -f $TOGGLES/$MIRROR.conf ]]; then
+    if ! has_external_monitor && [[ -f $TOGGLES/$MIRROR.lua ]]; then
       clear_toggle "$MIRROR"
     fi
     ;;
@@ -145,7 +145,7 @@ scaling() {
   fi
   new_scale=${scales[$new_index]}
 
-  hyprctl keyword monitor "$monitor,${width}x${height}@${rate},auto,$new_scale" >/dev/null
+  hyprctl eval "hl.monitor({ output = \"$monitor\", mode = \"${width}x${height}@${rate}\", position = \"auto\", scale = $new_scale })" >/dev/null
   notify-send -u low "Display scaling set to ${new_scale}x (not persisted)"
 }
 

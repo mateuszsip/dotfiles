@@ -97,23 +97,45 @@ Also verified live:
 
 ### Second, larger blast radius: `hyprctl` call sites
 
-`hyprctl keyword` **does not exist under the Lua manager**, and `hyprctl dispatch` now takes a **Lua expression** (`hyprctl dispatch 'hl.dsp.focus({workspace="3"})'`). Any script doing either breaks the moment the manager switches.
+**As built (phase 6).** `hyprctl keyword` **does not exist under the Lua manager** ("keyword can't work
+with non-legacy parsers. Use eval."), and `hyprctl dispatch` now parses its argument as a **Lua
+expression** (`hyprctl dispatch 'hl.dsp.focus({ workspace = 3 })'`). Anything still passing a legacy
+dispatcher name is parsed as Lua and dies with a syntax error.
 
-| Script | Breaking calls | Replacement |
+| Script | Was | Now |
 | --- | --- | --- |
-| `sys-window` | 8 dispatches (`togglefloating`, `resizeactive`, `moveactive`, `centerwindow`, `pin`, `alterzorder`, `tagwindow`, `closewindow`, `setprop`) | `hyprctl dispatch 'hl.dsp.window.…'` |
+| `sys-window` | 9 legacy dispatches, two `--batch` calls | one `hyprctl eval` per action, `hl.dsp.window.*` |
 | `sys-monitor` | `keyword monitor …` | `hyprctl eval 'hl.monitor({…})'` |
-| `sys-touchpad` | 2× `keyword device[…]:enabled` | `hyprctl eval 'hl.device({name=…, enabled=…})'` |
+| `sys-touchpad` | 2× `keyword device[…]:enabled` | `hyprctl eval 'hl.device({…})'` |
 | `sys-workspace-layout` | `keyword workspace …, layout:…` | `hyprctl eval 'hl.workspace_rule({…})'` |
-| `sys-brightness` | 2× `dispatch dpms on/off` | `hyprctl dispatch 'hl.dsp.dpms({action="…"})'` |
-| `sys-launch` | `dispatch focuswindow address:` | `hl.dsp.focus({window="address:…"})` |
+| `sys-brightness` | `dispatch dpms on/off` | `hl.dsp.dpms({ action = "enable"/"disable" })` |
+| `sys-launch` | `dispatch focuswindow address:` | `hl.dsp.focus({ window = hl.get_window("address:…") })` |
 | `sys-theme-reload` | `dispatch exec -- sys-background` | `hl.dsp.exec_cmd("sys-background")` |
-| `utilities.conf` zoom binds | `keyword cursor:zoom_factor`, `getoption` | `hl.get_config` / `hl.config` inside a bind callback |
-| `monitors.conf` switch binds | `keyword monitor` | drop — `hl.monitor` + `hyprctl eval` |
+| `base/bindings/utilities.lua` zoom | `keyword cursor:zoom_factor` + `getoption` | Lua bind callbacks using `hl.get_config` / `hl.config` |
+| `monitors.lua` panel binds | `keyword monitor` | Lua bind callbacks calling `hl.monitor` |
 
-Info-only calls (`clients`, `monitors`, `devices`, `activewindow`, `workspaces`, `binds`) are unaffected; `getoption` needs re-verification.
+**Two traps, both found by testing rather than by reading the stubs:**
 
-**This is the sharp edge of the whole migration: the scripts and the config manager must flip in the same atomic step.**
+1. **A window-targeted dispatcher needs a `HL.Window`, not an `address:` string.** The stub types the
+   field loosely, and `hl.dsp.window.float({ window = "address:0x…" })` returns `ok` and does
+   *nothing*. The working form is `hl.dsp.window.float({ window = hl.get_window("address:0x…") })`
+   (or `hl.get_active_window()`). Use `hl.dsp.window.resize({ x, y })` for absolute size and
+   `hl.dsp.window.move({ x, y })` for absolute position — same call shape, the object makes it work.
+2. **`hyprctl` exits 0 even when the Lua eval fails.** The error goes to stdout. A script that tests
+   `$?` will silently "succeed" forever, so verify by observing state, not by exit code.
+
+Unaffected and still fine: every `-j` query (`clients`, `monitors`, `devices`, `activewindow`,
+`workspaces`, `binds`, `instances`), `hyprctl reload`, `hyprctl getoption`, and the non-dispatch
+commands (`switchxkblayout`, `hyprsunset`). `sys-keybindings` keeps working because it reads the
+`description` field — which is why every bind in the Lua tree carries one (a bind with no description
+would render as `__lua,<n>`).
+
+**The scripts and the config manager flip in the same atomic step** — that is why the script rewrite
+is committed with the cutover rather than applied as a routine `chezmoi apply` mid-migration.
+
+**Small deltas from hyprlang worth knowing:** `resize({x,y})` lands one pixel wider than
+`resizeactive exact` did (1300→1301), and `pop` now runs as a single `hyprctl eval` instead of a
+`--batch`, so a mid-sequence failure can no longer leave a half-popped window.
 
 ---
 
@@ -374,7 +396,7 @@ Follows the repo convention: phased commits, no per-phase branch, `TEMP(hyprlua)
 | **3** | `[hyprlua] phase 3: binds` | **DONE** — 5 modules, 183 binds (verified live in a nested instance) | mechanical, high volume |
 | **4** | `[hyprlua] phase 4: window rules` | **DONE** — `windows.lua`, `apps.lua` + 16 app modules (rule-for-rule parity); effect application verified live | order-sensitive |
 | **5** | `[hyprlua] phase 5: monitors` | **DONE** — `monitors.lua` hand-owned (nwg-displays retired), panel binds as Lua functions. Toggle *writers* deferred to phase 6 with the other scripts | low |
-| **6** | `[hyprlua] phase 6: hyprctl call sites` | 7 scripts + zoom binds → Lua expressions | **medium** |
+| **6** | `[hyprlua] phase 6: hyprctl call sites` | **DONE** — 7 scripts + zoom/panel binds; window-object dispatchers; every script exercised against a nested instance | **medium** |
 | **7** | `[hyprlua] phase 7: cutover` | `chezmoi apply` + full restart; verify; delete `hyprland.conf` + hyprlang tree | **high, but reversible** |
 
 Phases 1–6 are inert: nothing changes until `hyprland.lua` is deployed **and** the session restarts. `chezmoi apply` at phase 7 is the single atomic flip, and phase 6 must be in the same apply.

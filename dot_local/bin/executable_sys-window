@@ -6,11 +6,17 @@
 #   sys-window transparency               toggle opacity on the focused window
 #   sys-window gaps                       toggle window gaps + borders
 #   sys-window square-aspect              toggle single-window square aspect ratio
+#
+# Hyprland runs the Lua config manager, so runtime changes are `hl.*` expressions
+# passed to `hyprctl eval` / `hyprctl dispatch`. `hyprctl keyword` and the legacy
+# dispatcher names no longer exist. A window-targeted dispatcher needs a window
+# object (`hl.get_window(...)`), not an `address:` string -- a bare string is
+# accepted silently and does nothing.
 
 TOGGLES="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/toggles"
 
-toggle_conf() { # toggle_conf <name> <conf-content>
-  local file="$TOGGLES/$1.conf"
+toggle_conf() { # toggle_conf <name> <label> <lua-payload>
+  local file="$TOGGLES/$1.lua"
   if [[ -f $file ]]; then
     rm -f "$file"
     printf '%s disabled\n' "$2"
@@ -23,64 +29,72 @@ toggle_conf() { # toggle_conf <name> <conf-content>
 }
 
 close_all() {
-  hyprctl clients -j | jq -r '.[].address' | xargs -r -I{} hyprctl dispatch closewindow address:{}
-  hyprctl dispatch workspace 1 >/dev/null
+  # Snapshot the window list and close each entry in a single round trip.
+  hyprctl eval 'for _, w in ipairs(hl.get_windows()) do hl.dispatch(hl.dsp.window.close({ window = w })) end' >/dev/null
+  hyprctl dispatch 'hl.dsp.focus({ workspace = 1 })' >/dev/null
 }
 
 pop() {
   local width=${1:-1300} height=${2:-900} x=${3:-} y=${4:-}
-  local active pinned address
+  local active pinned address placement lua
 
   active=$(hyprctl activewindow -j)
   pinned=$(jq -r '.pinned' <<<"$active")
   address=$(jq -r '.address' <<<"$active")
 
   if [[ $pinned == true ]]; then
-    hyprctl -q --batch \
-      "dispatch pin address:$address;" \
-      "dispatch togglefloating address:$address;" \
-      "dispatch tagwindow -pop address:$address;"
+    lua=$(cat <<EOF
+local w = hl.get_window("address:$address")
+if not w then return end
+hl.dispatch(hl.dsp.window.pin({ window = w }))
+hl.dispatch(hl.dsp.window.float({ window = w }))
+hl.dispatch(hl.dsp.window.tag({ tag = "-pop", window = w }))
+EOF
+)
   elif [[ -n $address && $address != null ]]; then
-    hyprctl dispatch togglefloating "address:$address"
-    hyprctl dispatch resizeactive exact "$width" "$height" "address:$address"
-
     if [[ -n $x && -n $y ]]; then
-      hyprctl dispatch moveactive "$x" "$y" "address:$address"
+      placement="hl.dispatch(hl.dsp.window.move({ x = $x, y = $y, window = w }))"
     else
-      hyprctl dispatch centerwindow "address:$address"
+      placement="hl.dispatch(hl.dsp.window.center({ window = w }))"
     fi
 
-    hyprctl -q --batch \
-      "dispatch pin address:$address;" \
-      "dispatch alterzorder top address:$address;" \
-      "dispatch tagwindow +pop address:$address;"
+    lua=$(cat <<EOF
+local w = hl.get_window("address:$address")
+if not w then return end
+hl.dispatch(hl.dsp.window.float({ window = w }))
+hl.dispatch(hl.dsp.window.resize({ x = $width, y = $height, window = w }))
+$placement
+hl.dispatch(hl.dsp.window.pin({ window = w }))
+hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top", window = w }))
+hl.dispatch(hl.dsp.window.tag({ tag = "+pop", window = w }))
+EOF
+)
+  else
+    return 0
   fi
+
+  hyprctl eval "$lua" >/dev/null
 }
 
 transparency() {
-  hyprctl dispatch setprop "address:$(hyprctl activewindow -j | jq -r '.address')" opaque toggle
+  hyprctl eval 'local w = hl.get_active_window()
+if not w then return end
+hl.dispatch(hl.dsp.window.set_prop({ prop = "opaque", value = "toggle", window = w }))' >/dev/null
 }
 
 gaps() {
-  toggle_conf window-no-gaps "Window gaps" '# Remove all window gaps and borders
-general {
-    gaps_out = 0
-    gaps_in = 0
-    border_size = 0
-}
-
-decoration {
-    rounding = 0
-}'
-  notify-send -u low "Window gaps: $( [[ -f $TOGGLES/window-no-gaps.conf ]] && echo off || echo on )"
+  toggle_conf window-no-gaps "Window gaps" '-- Remove all window gaps and borders
+hl.config({
+    general = { gaps_out = 0, gaps_in = 0, border_size = 0 },
+    decoration = { rounding = 0 },
+})'
+  notify-send -u low "Window gaps: $( [[ -f $TOGGLES/window-no-gaps.lua ]] && echo off || echo on )"
 }
 
 square_aspect() {
-  toggle_conf single-window-aspect-ratio "Single-window aspect ratio" '# Avoid overly wide single-window layouts on wide screens
-layout {
-    single_window_aspect_ratio = 1 1
-}'
-  notify-send -u low "Single-window aspect ratio: $( [[ -f $TOGGLES/single-window-aspect-ratio.conf ]] && echo on || echo off )"
+  toggle_conf single-window-aspect-ratio "Single-window aspect ratio" '-- Avoid overly wide single-window layouts on wide screens
+hl.config({ layout = { single_window_aspect_ratio = { 1, 1 } } })'
+  notify-send -u low "Single-window aspect ratio: $( [[ -f $TOGGLES/single-window-aspect-ratio.lua ]] && echo on || echo off )"
 }
 
 case ${1:-} in
