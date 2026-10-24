@@ -1,3 +1,39 @@
--- Personal application bindings.
--- TEMP(hyprlua) phase 3: migrated from bindings.conf.tmpl.
-return {}
+-- Application bindings.
+-- Migrated from bindings.conf.tmpl; that file stays authoritative until phase 7.
+
+hl.bind("SUPER + RETURN", hl.dsp.exec_cmd('uwsm-app -- xdg-terminal-exec --dir="$(sys-terminal-cwd)"'), { description = "Terminal" })
+hl.bind("SUPER + ALT + RETURN", hl.dsp.exec_cmd('uwsm-app -- xdg-terminal-exec --dir="$(sys-terminal-cwd)" bash -c "tmux attach || tmux new -s Work"'), { description = "Tmux" })
+hl.bind("SUPER + SHIFT + RETURN", hl.dsp.exec_cmd("sys-launch browser"), { description = "Browser" })
+hl.bind("SUPER + SHIFT + F", hl.dsp.exec_cmd("uwsm-app -- nautilus --new-window"), { description = "File manager" })
+hl.bind("SUPER + ALT + SHIFT + F", hl.dsp.exec_cmd('uwsm-app -- nautilus --new-window "$(sys-terminal-cwd)"'), { description = "File manager (cwd)" })
+hl.bind("SUPER + SHIFT + B", hl.dsp.exec_cmd("sys-launch browser"), { description = "Browser" })
+hl.bind("SUPER + SHIFT + ALT + B", hl.dsp.exec_cmd("sys-launch browser --private"), { description = "Browser (private)" })
+hl.bind("SUPER + SHIFT + M", hl.dsp.exec_cmd('sys-launch webapp "https://spotify.com"'), { description = "Music" })
+hl.bind("SUPER + SHIFT + ALT + G", hl.dsp.exec_cmd('sys-launch focus WhatsApp sys-launch webapp "https://web.whatsapp.com/"'), { description = "WhatsApp" })
+hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("sys-launch editor"), { description = "Editor" })
+hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd("sys-launch tui lazydocker"), { description = "Docker" })
+hl.bind("SUPER + SHIFT + G", hl.dsp.exec_cmd("sys-launch focus '^signal$' uwsm-app -- signal-desktop"), { description = "Signal" })
+hl.bind("SUPER + SHIFT + O", hl.dsp.exec_cmd("sys-launch focus '^obsidian$' uwsm-app -- obsidian -disable-gpu --enable-wayland-ime"), { description = "Obsidian" })
+hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd("uwsm-app -- typora --enable-wayland-ime"), { description = "Typora" })
+hl.bind("SUPER + SHIFT + SLASH", hl.dsp.exec_cmd("uwsm-app -- bitwarden-desktop"), { description = "Passwords" })
+
+-- Launcher + menu live in ~/.config/hypr/base/bindings/utilities.lua
+hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sys-launch clipboard"), { release = true })
+
+-- Add extra bindings:
+-- hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("alacritty -e ssh your-server"))
+
+-- Overwrite existing bindings, like putting Menu on Super + Space:
+-- hl.unbind("SUPER + SPACE")
+-- hl.bind("SUPER + SPACE", hl.dsp.exec_cmd("sys-menu"), { description = "Menu" })
+
+-- Logitech MX Keys
+hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("sys-screenshot"), { description = "Screenshot" }) -- Print Screen Button
+-- hl.bind("SUPER + H", hl.dsp.exec_cmd("voxtype record toggle"), { description = "Dictation Button" })
+-- hl.bind("SUPER + PERIOD", hl.dsp.exec_cmd("sys-launch emoji"), { description = "Emoji Button" })
+{{- if eq .chezmoi.osRelease.id "archarm" }}
+
+-- Keyboard backlight (Super+F1/F2; native Apple kbd-bright keys removed on this model)
+hl.bind("SUPER + XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl --device='kbd_backlight' set 10%-"), { locked = true, repeating = true })
+hl.bind("SUPER + XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl --device='kbd_backlight' set +10%"), { locked = true, repeating = true })
+{{- end }}

@@ -180,7 +180,17 @@ Two cleanups fall out for free either way:
 | `# hyprlang noerror true` | `local ok, err = pcall(require, "maybe")` |
 | `$var = value` | `local var = value` |
 | `section { key = v }` | `hl.config({ section = { key = v } })` |
-| `col.active_border` | `col = { active_border = … }` (nested classes confirmed in stubs) |
+| `col.active_border = rgba(a) rgba(b) 45deg` | `col = { active_border = { colors = { "rgba(a)", "rgba(b)" }, angle = 45 } }` |
+
+**Gradient gotcha:** the hyprlang gradient *string* is rejected in Lua mode
+(`invalid color "rgba(33ccffee) rgb(00ff99ee) 45deg"`), even though the stub types the
+field as `string|HL.Gradient`. It must be the table form. Single colours stay strings.
+`hl.get_config` always returns gradients as a table (`{ colors = { 0xFF100F0F }, angle = 0 }`).
+
+**Layering:** repeated `hl.config({ … })` calls *merge* — they do not replace a subtree.
+Verified: setting `decoration.rounding` afterwards keeps `decoration.shadow.*` from the
+earlier call, which is what makes the base → theme → personal override chain behave like
+hyprlang did.
 
 ### Top-level calls
 
@@ -217,7 +227,19 @@ Suffix flags map 1:1 into the options table. Used in this repo:
 | `bindmd` (m=mouse) | `{ mouse = true, description = "…" }` |
 | `binddr` (d+r=release) | `{ release = true, description = "…" }` |
 
-Keys: `"SUPER + SHIFT + Q"`. Keycodes unchanged: `"SUPER + code:10"`. Switches: `"switch:on:Lid Switch"`.
+Keys: `"SUPER + SHIFT + Q"`. Keycodes unchanged: `"SUPER + code:10"`. Switches: `"SUPER + switch:on:Lid Switch"`.
+
+**Mouse binds** (`bindm`) take no extra option — `hl.bind("SUPER + mouse:272", hl.dsp.window.drag())`
+is the whole thing. Don't be alarmed when `hyprctl binds -j` reports `mouse: false`: the `mouse`
+flag exists only to route hyprlang's `bindm` to the legacy `"mouse"` dispatcher. Lua binds dispatch
+through `__lua` instead, and `onMouseEvent` → `handleKeybinds` matches on the `mouse:N` key name,
+so they fire normally. `hl.unbind("SUPER + SPACE")` exists if a key must be redefined.
+
+**Duplicates are preserved.** `ALT + TAB` carries two actions (focus next + raise), exactly as two
+hyprlang `bind` lines did; both register and both fire.
+
+**Verified live:** a nested instance loaded all 183 binds (matching the source count), with
+descriptions, `locked`/`repeat`/`release` flags and the lid-switch binds intact.
 
 ### Dispatchers used in this repo → `hl.dsp.*`
 
@@ -313,8 +335,8 @@ Follows the repo convention: phased commits, no per-phase branch, `TEMP(hyprlua)
 | --- | --- | --- | --- |
 | **0** | *(none — scratch)* | **DONE** — nested spike, all questions answered (see results at top) | none |
 | **1** | `[hyprlua] phase 1: lua modules for env, autostart and input` | **DONE** — `hyprland.lua` + `require` graph (stubs for later phases) + `envs`/`autostart`/`input` + `theme/gum-env.lua.tmpl` | none — not deployed |
-| **2** | `[hyprlua] phase 2: look & feel, animations, theme` | `looknfeel.lua`, `theme/hyprland.lua.tmpl`, curves/animations | none |
-| **3** | `[hyprlua] phase 3: binds` | 4 binding files + `bindings.lua.tmpl` (~130 binds) | mechanical, high volume |
+| **2** | `[hyprlua] phase 2: look and feel, animations and theme colours` | **DONE** — `base/looknfeel.lua`, `looknfeel.lua`, `theme/hyprland.lua.tmpl`; gradients as tables | none |
+| **3** | `[hyprlua] phase 3: binds` | **DONE** — 5 modules, 183 binds (verified live in a nested instance) | mechanical, high volume |
 | **4** | `[hyprlua] phase 4: window rules` | `windows.lua`, `apps.lua`, 17 app files | order-sensitive |
 | **5** | `[hyprlua] phase 5: monitors + toggles` | `monitors.lua`; toggle files → `.lua`; `sys-window`/`sys-monitor`/`sys-touchpad` toggle writers | **medium** |
 | **6** | `[hyprlua] phase 6: hyprctl call sites` | 7 scripts + zoom binds → Lua expressions | **medium** |

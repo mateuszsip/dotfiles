@@ -23,6 +23,10 @@ require("theme.hyprland")
 -- Personal setup: overrides anything set above
 require("monitors")
 require("input")
+require("base.bindings.media")
+require("base.bindings.clipboard")
+require("base.bindings.tiling-v2")
+require("base.bindings.utilities")
 require("bindings")
 require("looknfeel")
 
