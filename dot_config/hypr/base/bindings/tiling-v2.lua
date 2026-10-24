@@ -1,5 +1,5 @@
 -- Tiling, focus, workspaces and groups.
--- Migrated from base/bindings/tiling-v2.conf; that file stays authoritative until phase 7.
+-- Migrated from base/bindings/tiling-v2.conf
 
 -- Close windows
 hl.bind("SUPER + W", hl.dsp.window.close(), { description = "Close window" })

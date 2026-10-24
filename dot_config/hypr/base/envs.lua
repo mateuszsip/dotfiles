@@ -2,7 +2,7 @@
 -- Must load before the display server initialises, so this is the first require
 -- in hyprland.lua.
 --
--- Migrated from base/envs.conf; that file stays authoritative until phase 7.
+-- Migrated from base/envs.conf
 
 -- Gum colours, generated from .chezmoidata/palette.toml
 require("theme.gum-env")

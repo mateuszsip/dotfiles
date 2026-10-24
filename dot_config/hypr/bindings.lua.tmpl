@@ -1,5 +1,5 @@
 -- Application bindings.
--- Migrated from bindings.conf.tmpl; that file stays authoritative until phase 7.
+-- Migrated from bindings.conf.tmpl
 
 hl.bind("SUPER + RETURN", hl.dsp.exec_cmd('uwsm-app -- xdg-terminal-exec --dir="$(sys-terminal-cwd)"'), { description = "Terminal" })
 hl.bind("SUPER + ALT + RETURN", hl.dsp.exec_cmd('uwsm-app -- xdg-terminal-exec --dir="$(sys-terminal-cwd)" bash -c "tmux attach || tmux new -s Work"'), { description = "Tmux" })

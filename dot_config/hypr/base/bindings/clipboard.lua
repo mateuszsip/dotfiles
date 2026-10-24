@@ -1,5 +1,5 @@
 -- Copy / Paste.
--- Migrated from base/bindings/clipboard.conf; that file stays authoritative until phase 7.
+-- Migrated from base/bindings/clipboard.conf
 
 hl.bind("SUPER + C", hl.dsp.send_shortcut({ mods = "CTRL", key = "Insert", window = "activewindow" }), { description = "Universal copy" })
 hl.bind("SUPER + V", hl.dsp.send_shortcut({ mods = "SHIFT", key = "Insert", window = "activewindow" }), { description = "Universal paste" })

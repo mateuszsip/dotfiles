@@ -1,10 +1,10 @@
 -- Hyprland entry point (Lua).
 -- Deploys to ~/.config/hypr/hyprland.lua.
 --
--- TEMP(hyprlua): held out of $HOME until the phase 7 cutover — see the
--- `.config/hypr/hyprland.lua` entry in .chezmoiignore.tmpl. Hyprland picks Lua
--- mode purely on this file existing, so deploying it early would silently
--- switch the next session to a half-migrated config.
+-- Hyprland enters Lua mode purely on this file existing; there is no fallback
+-- to hyprland.conf. A parse error anywhere in the require graph drops the
+-- session to Emergency.hpp (SUPER+Q terminal, SUPER+M exit), so run
+-- `hyprland -c ~/.config/hypr/hyprland.lua --verify-config` after edits.
 --
 -- Order matters:
 --   * env first (must be set before the display server initialises)

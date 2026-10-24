@@ -1,5 +1,5 @@
 -- Look and feel: layout, gaps, borders, blur, animations.
--- Migrated from base/looknfeel.conf; that file stays authoritative until phase 7.
+-- Migrated from base/looknfeel.conf
 -- Reference: https://wiki.hypr.land/Configuring/Basics/Variables/
 
 -- hyprlang wrote gradients as `rgba(a) rgba(b) 45deg`; Lua takes a table of

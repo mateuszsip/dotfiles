@@ -1,5 +1,5 @@
 -- App-specific window rules, one module per application.
--- Migrated from base/apps.conf; that file stays authoritative until phase 7.
+-- Migrated from base/apps.conf
 --
 -- Order matters: these run before the default-opacity rule in base/windows.lua,
 -- and later rules can retag what earlier ones added (`tag -x`).

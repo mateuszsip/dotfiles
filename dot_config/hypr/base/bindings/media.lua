@@ -1,5 +1,5 @@
 -- Laptop multimedia keys for volume and LCD brightness (with OSD).
--- Migrated from base/bindings/media.conf; that file stays authoritative until phase 7.
+-- Migrated from base/bindings/media.conf
 --
 -- `bindeld` = repeating + locked + description; `bindld` = locked + description.
 

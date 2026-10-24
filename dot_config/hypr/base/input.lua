@@ -1,5 +1,5 @@
 -- Base input configuration.
--- Migrated from base/input.conf; that file stays authoritative until phase 7.
+-- Migrated from base/input.conf
 
 hl.config({
   input = {

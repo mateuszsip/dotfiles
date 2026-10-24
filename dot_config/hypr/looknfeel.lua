@@ -1,5 +1,5 @@
 -- Personal look-and-feel overrides, applied after base/looknfeel.lua.
--- Migrated from looknfeel.conf; that file stays authoritative until phase 7.
+-- Migrated from looknfeel.conf
 
 hl.config({
   decoration = {

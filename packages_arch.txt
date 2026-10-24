@@ -91,7 +91,6 @@ noto-fonts-emoji
 nss-mdns
 nushell
 nvidia-utils
-nwg-displays
 opencode
 p11-kit
 pacman-contrib

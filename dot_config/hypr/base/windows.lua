@@ -1,5 +1,5 @@
 -- Window rules.
--- Migrated from base/windows.conf; that file stays authoritative until phase 7.
+-- Migrated from base/windows.conf
 -- See https://wiki.hypr.land/Configuring/Basics/Window-Rules/
 
 -- Hyprland 0.53+ rule syntax

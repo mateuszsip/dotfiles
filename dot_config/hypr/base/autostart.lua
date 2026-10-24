@@ -1,5 +1,5 @@
 -- Base autostart.
--- Migrated from base/autostart.conf; that file stays authoritative until phase 7.
+-- Migrated from base/autostart.conf
 --
 -- `hl.exec_cmd` runs the command through `sh -c`, exactly like `exec-once` did,
 -- so shell syntax and `~` still work. It is asynchronous — no `&`/`disown`.

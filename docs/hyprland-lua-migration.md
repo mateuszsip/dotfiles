@@ -1,8 +1,9 @@
 # Hyprland config: hyprlang → Lua migration plan
 
-Status: **phase 0 spike done, nothing in the live config changed**
+Status: **complete — phases 0–7 landed; the Lua tree is the live config**
 Date: 2026-10-24
-Machine: Hyprland **0.56.2** (hyprlang manager active, no `hyprland.lua` present)
+Machine: Hyprland **0.56.2** (`hyprland.lua` present, Lua manager active;
+the hyprlang tree is gone)
 
 ---
 
@@ -203,17 +204,17 @@ Two cleanups fall out for free either way:
 **Recommendation — retire nwg-displays from the workflow** and hand-own `monitors.lua` (it is 2 monitors + 2 switch binds). If you want to keep it, it needs a wrapper that translates its output; not worth it for 2 monitors.
 
 **As built:** `monitors.lua` is hand-owned; the two internal-panel binds became Lua-function
-dispatchers (`hl.monitor(...)` directly, no `hyprctl`, no shell). `nwg-displays` is still listed in
-`packages_arch.txt` and is dropped in phase 7, together with the files it generated.
+dispatchers (`hl.monitor(...)` directly, no `hyprctl`, no shell). `nwg-displays` was dropped
+from `packages_arch.txt` in phase 7, together with the files it generated.
 
 **Dead files found while migrating** (not loaded today, so behaviour is unchanged by not porting
 them):
 - `workspaces.conf` — nwg-displays output that `hyprland.conf` never sources.
 - `base/apps/davinci-resolve.conf` — not listed in `base/apps.conf`.
 
-Both are deleted in phase 7 rather than ported.
-Also note `sys-menu` opens `~/.config/hypr/monitors.conf` in the editor; that path moves to
-`monitors.lua` in phase 6.
+Both were deleted in phase 7 rather than ported.
+Also note `sys-menu` opened `~/.config/hypr/monitors.conf` in the editor; it now opens
+`monitors.lua` (converted in phase 6).
 
 ---
 
@@ -342,7 +343,8 @@ The named block form (`windowrule { name = …; match:class = …; effect = on }
 `hl.window_rule({ name = "…", match = { class = "…" }, effect = true })`.
 
 **`davinci-resolve.conf` is dead config:** it is not listed in `base/apps.conf`, so it has never
-loaded. It is not migrated (no Lua equivalent) and the file is left in place for phase 7.
+loaded. It is not migrated (no Lua equivalent) and was deleted with the rest of the hyprlang
+tree in phase 7.
 
 **Rules only apply to windows mapped after they are declared** — `hl.window_rule` at runtime does
 not retro-apply to existing windows, same as hyprlang. Verified live with a probe rule
@@ -397,21 +399,42 @@ Follows the repo convention: phased commits, no per-phase branch, `TEMP(hyprlua)
 | **4** | `[hyprlua] phase 4: window rules` | **DONE** — `windows.lua`, `apps.lua` + 16 app modules (rule-for-rule parity); effect application verified live | order-sensitive |
 | **5** | `[hyprlua] phase 5: monitors` | **DONE** — `monitors.lua` hand-owned (nwg-displays retired), panel binds as Lua functions. Toggle *writers* deferred to phase 6 with the other scripts | low |
 | **6** | `[hyprlua] phase 6: hyprctl call sites` | **DONE** — 7 scripts + zoom/panel binds; window-object dispatchers; every script exercised against a nested instance | **medium** |
-| **7** | `[hyprlua] phase 7: cutover` | `chezmoi apply` + full restart; verify; delete `hyprland.conf` + hyprlang tree | **high, but reversible** |
+| **7** | `[hyprlua] phase 7: cutover` | **DONE** — deployed both trees, restarted, verified live, then deleted `hyprland.conf` + the hyprlang tree | **high, but reversible** |
 
-Phases 1–6 are inert: nothing changes until `hyprland.lua` is deployed **and** the session restarts. `chezmoi apply` at phase 7 is the single atomic flip, and phase 6 must be in the same apply.
+Phases 1–6 were inert: nothing changed until `hyprland.lua` was deployed **and** the
+session restarted. `chezmoi apply` at phase 7 was the single atomic flip, with phase 6
+in the same apply.
 
-**Cutover guard.** Hyprland switches to Lua mode purely on `hyprland.lua` existing, so a
-routine `chezmoi apply` during phases 1–6 would silently migrate the next session to a
-half-built config. `hyprland.lua` is therefore listed in `.chezmoiignore.tmpl`
-(`.config/hypr/hyprland.lua`) and is **not** managed until phase 7 removes that line.
-Verified with `chezmoi managed`: the entry file is absent, the module files are present
-(unreferenced, therefore harmless).
+**Cutover, as executed.** Applied `~/.config/hypr` + the 8 `sys-*` scripts, then
+restarted the session (Lua auto-detected — the compositor runs with no `-c` flag under
+uwsm), verified, and only then deleted the hyprlang originals. Splitting it that way kept
+"remove `hyprland.lua` and restart" available as rollback until the last step.
+
+**Cutover guard (removed).** Hyprland switches to Lua mode purely on `hyprland.lua`
+existing, so a routine `chezmoi apply` during phases 1–6 would have silently migrated the
+next session to a half-built config. `hyprland.lua` was therefore listed in
+`.chezmoiignore.tmpl` until phase 7 removed that line.
 
 `hyprland.lua` is plain `.lua`, not `.tmpl` — it needs no template data.
 
-`TEMP(hyprlua)` markers go in every hyprlang file being replaced (`hyprland.conf`,
-`base/*.conf`, …) and are deleted in phase 7, per repo convention.
+`TEMP(hyprlua)` markers went in every hyprlang file being replaced (`hyprland.conf`,
+`base/*.conf`, …) and were deleted with those files in phase 7, per repo convention.
+
+### Phase 7 verification (live, 0.56.2)
+
+- `hyprctl configerrors` empty, before and after a `hyprctl reload`.
+- Binds: **185 live = 185 in the deleted hyprlang tree = 185 `hl.bind` calls**
+  (189 statements minus 4 commented examples). Mods+key parity is exact, including 42
+  keycode binds and the two `bindd`/`binddr` dictation binds.
+- Monitors unchanged: `eDP-1 1920x1080@60, scale 1.333`.
+- Autostart: all 8 `exec-once` commands ran (zen, bitwarden on its remembered
+  workspace, 2× silent ghostty, waybar, swaybg); single instance of each daemon —
+  no duplicate registration from the require graph.
+- Toggle round-trip: gaps `5 → 0 → 5` with the `.lua` payload created and removed,
+  proving the `dofile` + `hyprctl reload` path end to end.
+- `hyprland -c ~/.config/hypr/hyprland.lua --verify-config` → `config ok`, run against
+  the deployed tree (real paths, real `require` resolution).
+
 
 ---
 
@@ -447,7 +470,7 @@ hyprctl -i <sig> repl 'dofile("/tmp/opencode/hyprlua-spike/checks.lua")'
 hyprctl -i <sig> configerrors
 ```
 
-**Phase 7 cutover:**
+**Phase 7 cutover — DONE** (kept for reference):
 ```bash
 chezmoi diff                        # review every file
 chezmoi apply
@@ -456,7 +479,10 @@ hyprctl configerrors                # must be empty
 ```
 Then walk: binds, workspaces, groups, scratchpad, float/pin, monitors, mirror, touchpad toggle, gaps toggle, theme reload, each `sys-*` script.
 
-**Rollback:** delete `~/.config/hypr/hyprland.lua` (or `chezmoi apply` the previous commit) and restart. `hyprland.conf` stays in the repo untouched until phase 7 succeeds, so rollback is one file deletion. If `hyprctl reload full-reset` exists on 0.56.2, rollback does not even need a restart.
+**Rollback:** while phasing, deleting `~/.config/hypr/hyprland.lua` and restarting returned the
+session to hyprlang — one file, no restart needed beyond the manager check. After the phase 7
+cleanup the hyprlang tree no longer exists, so rollback means checking out the last pre-cutover
+commit and re-applying.
 
 **Emergency:** Hyprland grants `SUPER+Q` / `SUPER+R` / `SUPER+M` when the config fails before binds load — so a broken phase 7 is recoverable in-session, not a lockout.
 

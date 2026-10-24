@@ -30,10 +30,6 @@ packages_macos_taps.txt
 {{ else }}
 .aerospace.toml
 .config/ghostty/ghostty-display-font.swift
-{{- /* TEMP(hyprlua): keep the Lua entry out of $HOME until the phase 7 cutover.
-       Hyprland switches to Lua mode purely on hyprland.lua existing, so an
-       early `chezmoi apply` would silently migrate the next session. */}}
-.config/hypr/hyprland.lua
 {{- end }}
 
 

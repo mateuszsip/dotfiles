@@ -1,5 +1,5 @@
 -- Menus, toggles, captures and control panels.
--- Migrated from base/bindings/utilities.conf; that file stays authoritative until phase 7.
+-- Migrated from base/bindings/utilities.conf
 
 -- Menus
 hl.bind("SUPER + SPACE", hl.dsp.exec_cmd("sys-launch apps"), { description = "Launch apps" })

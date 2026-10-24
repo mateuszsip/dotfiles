@@ -1,7 +1,7 @@
 -- Monitors. Hand-owned: nwg-displays is retired (it regenerates hyprlang, which
 -- the Lua manager would never read). Edit the values here and commit.
 --
--- Migrated from monitors.conf; that file stays authoritative until phase 7.
+-- Migrated from monitors.conf
 
 hl.monitor({
   output = "eDP-1",

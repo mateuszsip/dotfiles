@@ -1,5 +1,5 @@
 -- Extra autostart processes.
--- Migrated from autostart.conf; that file stays authoritative until phase 7.
+-- Migrated from autostart.conf
 
 hl.on("hyprland.start", function()
   -- Retry Waybar after the session settles, but do not duplicate its normal launch.
