@@ -140,7 +140,6 @@ ufw
 unzip
 uwsm
 vulkan-radeon
-waybar
 whois
 wireless-regdb
 wireplumber
