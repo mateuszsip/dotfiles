@@ -291,6 +291,16 @@ descriptions, `locked`/`repeat`/`release` flags and the lid-switch binds intact.
 | `scroll_touchpad 1.5` | `scroll_touchpad = 1.5` |
 | `match:class X, match:float 1` | `match = { class = "X", float = true }` |
 
+The named block form (`windowrule { name = …; match:class = …; effect = on }`) maps to a single
+`hl.window_rule({ name = "…", match = { class = "…" }, effect = true })`.
+
+**`davinci-resolve.conf` is dead config:** it is not listed in `base/apps.conf`, so it has never
+loaded. It is not migrated (no Lua equivalent) and the file is left in place for phase 7.
+
+**Rules only apply to windows mapped after they are declared** — `hl.window_rule` at runtime does
+not retro-apply to existing windows, same as hyprlang. Verified live with a probe rule
+(`float` + `size` + `pin`) on a freshly spawned window.
+
 Rule **order still matters** and is preserved by `require` order.
 
 ---
@@ -337,7 +347,7 @@ Follows the repo convention: phased commits, no per-phase branch, `TEMP(hyprlua)
 | **1** | `[hyprlua] phase 1: lua modules for env, autostart and input` | **DONE** — `hyprland.lua` + `require` graph (stubs for later phases) + `envs`/`autostart`/`input` + `theme/gum-env.lua.tmpl` | none — not deployed |
 | **2** | `[hyprlua] phase 2: look and feel, animations and theme colours` | **DONE** — `base/looknfeel.lua`, `looknfeel.lua`, `theme/hyprland.lua.tmpl`; gradients as tables | none |
 | **3** | `[hyprlua] phase 3: binds` | **DONE** — 5 modules, 183 binds (verified live in a nested instance) | mechanical, high volume |
-| **4** | `[hyprlua] phase 4: window rules` | `windows.lua`, `apps.lua`, 17 app files | order-sensitive |
+| **4** | `[hyprlua] phase 4: window rules` | **DONE** — `windows.lua`, `apps.lua` + 16 app modules (rule-for-rule parity); effect application verified live | order-sensitive |
 | **5** | `[hyprlua] phase 5: monitors + toggles` | `monitors.lua`; toggle files → `.lua`; `sys-window`/`sys-monitor`/`sys-touchpad` toggle writers | **medium** |
 | **6** | `[hyprlua] phase 6: hyprctl call sites` | 7 scripts + zoom binds → Lua expressions | **medium** |
 | **7** | `[hyprlua] phase 7: cutover` | `chezmoi apply` + full restart; verify; delete `hyprland.conf` + hyprlang tree | **high, but reversible** |
