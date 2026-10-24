@@ -312,7 +312,7 @@ Follows the repo convention: phased commits, no per-phase branch, `TEMP(hyprlua)
 | Phase | Commit | Work | Risk |
 | --- | --- | --- | --- |
 | **0** | *(none — scratch)* | **DONE** — nested spike, all questions answered (see results at top) | none |
-| **1** | `[hyprlua] phase 1: lua tree skeleton` | `hyprland.lua.tmpl` + `require` graph + `envs`/`autostart`/`input` | none — not deployed |
+| **1** | `[hyprlua] phase 1: lua modules for env, autostart and input` | **DONE** — `hyprland.lua` + `require` graph (stubs for later phases) + `envs`/`autostart`/`input` + `theme/gum-env.lua.tmpl` | none — not deployed |
 | **2** | `[hyprlua] phase 2: look & feel, animations, theme` | `looknfeel.lua`, `theme/hyprland.lua.tmpl`, curves/animations | none |
 | **3** | `[hyprlua] phase 3: binds` | 4 binding files + `bindings.lua.tmpl` (~130 binds) | mechanical, high volume |
 | **4** | `[hyprlua] phase 4: window rules` | `windows.lua`, `apps.lua`, 17 app files | order-sensitive |
@@ -322,13 +322,30 @@ Follows the repo convention: phased commits, no per-phase branch, `TEMP(hyprlua)
 
 Phases 1–6 are inert: nothing changes until `hyprland.lua` is deployed **and** the session restarts. `chezmoi apply` at phase 7 is the single atomic flip, and phase 6 must be in the same apply.
 
-`TEMP(hyprlua)` marker goes in `hyprland.conf` at phase 1 and is deleted in phase 7, per repo convention.
+**Cutover guard.** Hyprland switches to Lua mode purely on `hyprland.lua` existing, so a
+routine `chezmoi apply` during phases 1–6 would silently migrate the next session to a
+half-built config. `hyprland.lua` is therefore listed in `.chezmoiignore.tmpl`
+(`.config/hypr/hyprland.lua`) and is **not** managed until phase 7 removes that line.
+Verified with `chezmoi managed`: the entry file is absent, the module files are present
+(unreferenced, therefore harmless).
+
+`hyprland.lua` is plain `.lua`, not `.tmpl` — it needs no template data.
+
+`TEMP(hyprlua)` markers go in every hyprlang file being replaced (`hyprland.conf`,
+`base/*.conf`, …) and are deleted in phase 7, per repo convention.
 
 ---
 
 ## 7. Validation & rollback
 
 **Per phase (offline, no compositor):**
+```bash
+docs/hyprlua-validate.sh .                  # stage + render + verify the whole tree
+```
+It copies `dot_config/hypr` to a scratch dir, renders every `.tmpl` through
+`chezmoi execute-template`, then runs the gate below against the entry file. Rendering
+matters: a template bug only shows up in the rendered output, never in the source.
+
 ```bash
 hyprland -c <file> --verify-config          # parses the config; "config ok", exit 1 on error
 ```
