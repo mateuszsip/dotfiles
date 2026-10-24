@@ -9,9 +9,7 @@
   "margin-right": 10,
   "modules-left": [
     "hyprland/workspaces",
-    "custom/ai",
-    "custom/notifications",
-    "custom/voxtype",
+    "group/notifications",
     "tray"
   ],
   "modules-center": [
@@ -25,11 +23,25 @@
   "modules-right": [
     "custom/update",
     "group/connectivity",
-    "pulseaudio",
+    "group/audio",
     "group/system",
     "group/power",
     "custom/screenrecording-indicator"
   ],
+  "group/notifications": {
+    "orientation": "horizontal",
+    "modules": [
+      "custom/ai",
+      "custom/notifications"
+    ]
+  },
+  "group/audio": {
+    "orientation": "horizontal",
+    "modules": [
+      "pulseaudio",
+      "custom/voxtype"
+    ]
+  },
   "group/connectivity": {
     "orientation": "horizontal",
     "modules": [
@@ -46,6 +58,7 @@
   },
   "hyprland/workspaces": {
     "on-click": "activate",
+    "tooltip": false,
     "format": "{icon}",
     "all-outputs": false,
     "format-icons": {
