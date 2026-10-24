@@ -195,7 +195,11 @@ return {
           opencode = function()
             return require("codecompanion.adapters").extend("opencode", {
               commands = { default = { "opencode", "acp" } },
-              defaults = { mcpServers = "inherit_from_config" },
+              defaults = {
+                mcpServers = "inherit_from_config",
+                -- opencode v2 ACP model id (provider/model) — see `opencode models`
+                session_config_options = { model = "opencode/deepseek-v4.1-flash-free" },
+              },
             })
           end,
           claude_code = function()
