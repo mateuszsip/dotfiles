@@ -9,16 +9,14 @@
   "margin-right": 10,
   "modules-left": [
     "hyprland/workspaces",
-    "group/notifications",
-    "tray"
-  ],
-  "modules-center": [
-    "custom/weather",
-    "clock",
-    "custom/gcal",
+    "tray",
     "custom/media#feishin",
     "custom/media#tidal",
-    "custom/media#browser"
+    "custom/media#browser",
+    "custom/gcal"
+  ],
+  "modules-center": [
+    "group/notifications",
   ],
   "modules-right": [
     "custom/update",
@@ -26,13 +24,14 @@
     "group/audio",
     "group/system",
     "group/power",
-    "custom/screenrecording-indicator"
+    "clock"
   ],
   "group/notifications": {
     "orientation": "horizontal",
     "modules": [
       "custom/ai",
-      "custom/notifications"
+      "custom/notifications",
+      "custom/screenrecording-indicator"
     ]
   },
   "group/audio": {

@@ -117,6 +117,7 @@ mpris.empty {
 #power #battery,
 #notifications #custom-ai,
 #notifications #custom-notifications,
+#notifications #custom-screenrecording-indicator,
 #audio #pulseaudio,
 #audio #custom-voxtype {
   background: none;
