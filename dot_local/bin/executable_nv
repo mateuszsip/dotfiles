@@ -229,7 +229,7 @@ cmd_list() {
     sock_state "$(sock_for "$key")"
     (( $? == 1 )) || continue # running, or too busy to tell — not stopped
     cwd=$(key_cwd "$key")
-    [[ -n $cwd ]] && stopped+=("$cwd")
+    [[ -d $cwd ]] && stopped+=("$cwd")
   done
   if ((${#stopped[@]})); then
     printf '\nstopped (restore with `nv -R`):\n'
