@@ -31,6 +31,11 @@
 #   nv -k [NAME|DIR]   ask a session to quit (refuses on unsaved changes)
 #   nv -K [NAME|DIR]   force quit, discarding changes
 #
+# A server whose socket file disappears (killed mid-start, /run cleaned up) can
+# no longer be reached through nv, so it would linger forever. `nv -l` finds
+# those by scanning the process list and lists them as orphaned; `nv -k`/`-K`
+# then signal the pid directly.
+#
 # Addresses live in ${XDG_RUNTIME_DIR}/nvim-sessions (tmpfs: they die with the
 # machine, which is what you want for "instances still running"); without
 # $XDG_RUNTIME_DIR — macOS — they live in ${XDG_STATE_HOME}/nvim/run instead.
@@ -82,13 +87,34 @@ nvim_ok() {
   [[ $v == 0.1[2-9]* || $v == 0.[2-9][0-9]* || $v == [1-9]* ]]
 }
 
-# 0 if a server is actually answering on $1 (a stale socket file is not enough).
-probe() {
+# State of the server behind socket $1:
+#   0 answering — safe to attach, leave the socket alone
+#   1 gone      — no socket file, or the connection was refused
+#   2 busy      — the socket exists and something is listening, but it did not
+#                 answer in time (loading a big session, blocked in an LSP)
+# The third case is the one that matters. Treating "slow" as "dead" makes nv
+# unlink the socket of a live server and start a second one on the same key;
+# the first is then unreachable forever, because every command finds servers
+# *through* that path.
+sock_state() {
+  local rc
   [[ -S ${1:-} ]] || return 1
   with_timeout 2 nvim --server "$1" --remote-expr '1' >/dev/null 2>&1
+  rc=$?
+  ((rc == 124 || rc == 137)) && return 2
+  return $rc
 }
 
-# How many UIs are attached: empty on a dead socket.
+# 0 if a server is actually answering on $1 (a stale socket file is not enough).
+probe() {
+  local st
+  sock_state "${1:-}"
+  st=$?
+  ((st == 0))
+}
+
+# How many UIs are attached: empty on a dead socket. The exit status is what
+# tells those apart — see sock_state.
 ui_count() {
   with_timeout 2 nvim --server "$1" --remote-expr 'len(nvim_list_uis())' 2>/dev/null
 }
@@ -143,23 +169,50 @@ age_of() { # seconds -> 3h12m / 8m / 42s
 # Every live session as: key <TAB> ui <TAB> age <TAB> cwd. Prunes dead ones.
 sessions() {
   shopt -s nullglob
-  local sock key uis mtime
+  local sock key uis rc mtime
   for sock in "$state_dir"/*.sock; do
     key=$(basename "$sock" .sock)
     uis=$(ui_count "$sock")
-    if [[ -z $uis ]]; then
-      rm -f "$sock" "$(meta_for "$key")"
-      continue
+    rc=$?
+    if ((rc != 0)); then
+      # Still listening, just too busy to answer: keep it, and keep its socket.
+      if ((rc == 124 || rc == 137)); then
+        uis='?'
+      else
+        rm -f "$sock" "$(meta_for "$key")"
+        continue
+      fi
     fi
     mtime=$(mtime_of "$sock")
     printf '%s\t%s\t%s\t%s\n' "$key" "$uis" "$(age_of $(($(date +%s) - mtime)))" "$(key_cwd "$key")"
   done
 }
 
+# Servers that outlived their socket file: key <TAB> pid. Nothing can connect
+# to them any more — `--listen` is the only handle left — so they are found by
+# scanning the process list instead of the state dir. Linux only: macOS has no
+# /proc and no other cheap way to see another process's command line.
+orphans() {
+  [[ -d /proc ]] || return 0
+  local pid args path key
+  while read -r pid args; do
+    path=${args##*--listen }
+    [[ $path == "$state_dir/"* ]] || continue
+    path=${path%% *}
+    [[ -S $path ]] && continue
+    key=${path##*/}
+    printf '%s\t%s\n' "${key%.sock}" "$pid"
+  done < <(ps -eo pid=,args= 2>/dev/null)
+}
+
+orphan_pid() { # key
+  orphans | awk -F'\t' -v k="$1" '$1 == k { print $2; exit }'
+}
+
 usage() { sed -n '/^#   nv  /,/^#   nv -K/p' "$0" | sed 's/^# \{0,1\}//'; }
 
 cmd_list() {
-  local out stopped=() f key cwd
+  local out stopped=() orph f key cwd
   out=$(sessions)
   if [[ -z $out ]]; then
     echo "no nvim sessions running"
@@ -173,7 +226,8 @@ cmd_list() {
   shopt -s nullglob
   for f in "$snap_dir"/*.vim; do
     key=$(basename "$f" .vim)
-    probe "$(sock_for "$key")" && continue
+    sock_state "$(sock_for "$key")"
+    (( $? == 1 )) || continue # running, or too busy to tell — not stopped
     cwd=$(key_cwd "$key")
     [[ -n $cwd ]] && stopped+=("$cwd")
   done
@@ -181,13 +235,21 @@ cmd_list() {
     printf '\nstopped (restore with `nv -R`):\n'
     printf '  %s\n' "${stopped[@]}"
   fi
+
+  orph=$(orphans)
+  if [[ -n $orph ]]; then
+    printf '\norphaned — socket file gone, unreachable by nv (kill with `nv -K <name>`):\n'
+    printf '%s\n' "$orph" | while IFS=$'\t' read -r key pid; do
+      printf '  %s  (pid %s)\n' "$key" "$pid"
+    done
+  fi
 }
 
 cmd_pick() {
   local out lines pick
   out=$(sessions)
   [[ -n $out ]] || { echo "no nvim sessions running" >&2; return 1; }
-  lines=$(printf '%s\n' "$out" | awk -F'\t' '{ printf "%s\t%s\t%s\t%s\n", $4, ($2 == 0 ? "detached" : "attached"), $3, $1 }')
+  lines=$(printf '%s\n' "$out" | awk -F'\t' '{ printf "%s\t%s\t%s\t%s\n", $4, ($2 == 0 ? "detached" : $2 == "?" ? "busy" : "attached"), $3, $1 }')
   pick=$(printf '%s\n' "$lines" | fzf --ansi --delimiter='\t' \
     --with-nth=1,2,3 --nth=1 --height=40% --reverse \
     --header='directory / state / age') || return 130
@@ -227,10 +289,27 @@ attach_ui() { # sock, key
 }
 
 cmd_open() { # key, foreground, files...
-  local key=$1 fg=$2 sock
+  local key=$1 fg=$2 sock st _
   shift 2
   sock=$(sock_for "$key")
-  if ! probe "$sock"; then
+  sock_state "$sock"
+  st=$?
+  if ((st == 2)); then
+    # Busy is not dead. Wait for an answer instead of unlinking the socket and
+    # starting a second server on the same key — that is what stranded the old
+    # ones.
+    for _ in {1..20}; do
+      sleep 0.5
+      sock_state "$sock"
+      st=$?
+      ((st == 0)) && break
+    done
+    if ((st != 0)); then
+      echo "nv: session $key is not answering (busy) — retry in a moment" >&2
+      return 1
+    fi
+  fi
+  if ((st != 0)); then
     rm -f "$sock" # stale after a SIGKILL
     mkdir -p "$snap_dir"
     printf 'cwd=%s\ncreated=%s\n' "$PWD" "$(date +%s)" >"$(meta_for "$key")"
@@ -252,10 +331,16 @@ cmd_open() { # key, foreground, files...
 }
 
 cmd_attach() { # key
-  local key sock
+  local key sock st
   key=$(to_key "$1")
   sock=$(sock_for "$key")
-  if ! probe "$sock"; then
+  sock_state "$sock"
+  st=$?
+  if ((st == 2)); then
+    echo "session $key is not answering (busy) — retry in a moment" >&2
+    return 1
+  fi
+  if ((st != 0)); then
     rm -f "$sock" "$(meta_for "$key")"
     echo "no live session for $key — start it with nv, or nv -R" >&2
     return 1
@@ -270,7 +355,8 @@ cmd_restore() {
   for f in "$snap_dir"/*.vim; do
     key=$(basename "$f" .vim)
     sock=$(sock_for "$key")
-    probe "$sock" && continue
+    sock_state "$sock"
+    (( $? == 1 )) || continue # running, or busy — leave it alone either way
     cwd=$(sed -n 's/^cwd=//p' "$(snap_meta_for "$key")" 2>/dev/null)
     [[ -d ${cwd:-} ]] || continue
     printf 'cwd=%s\ncreated=%s\n' "$cwd" "$(date +%s)" >"$(meta_for "$key")"
@@ -288,9 +374,36 @@ cmd_restore() {
 }
 
 cmd_stop() { # key, [force]
-  local key=$1 sock
+  local key=$1 sock pid st _
   sock=$(sock_for "$key")
-  if ! probe "$sock"; then
+  sock_state "$sock"
+  st=$?
+  if ((st == 2)); then
+    echo "session $key is not answering (busy) — retry in a moment" >&2
+    return 1
+  fi
+  if ((st != 0)); then
+    # No reachable socket. Either nothing is running, or the server outlived
+    # its socket file — then the pid is the only handle left.
+    pid=$(orphan_pid "$key")
+    if [[ -n $pid ]]; then
+      if [[ ${2:-} == force ]]; then
+        kill -KILL "$pid" 2>/dev/null
+      else
+        kill -TERM "$pid" 2>/dev/null
+      fi
+      for _ in {1..20}; do
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 0.1
+      done
+      if kill -0 "$pid" 2>/dev/null; then
+        echo "orphaned server $key (pid $pid) ignored the signal — use nv -K $key" >&2
+        return 1
+      fi
+      rm -f "$sock" "$(meta_for "$key")"
+      echo "killed orphaned server $key (pid $pid)"
+      return 0
+    fi
     rm -f "$sock" "$(meta_for "$key")"
     echo "no live session: $key" >&2
     return 1
