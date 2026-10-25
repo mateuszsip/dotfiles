@@ -1,5 +1,26 @@
 #!/bin/bash
-# Reload waybar: SIGUSR2 makes it re-read config.jsonc. style.css reloads by
-# itself (reload_style_on_change), this is for structural changes.
+# Restart Waybar: reload the running instance, or start it when it is down.
+#
+# SIGUSR2 makes a running Waybar re-read config.jsonc; style.css reloads by
+# itself (reload_style_on_change). Waybar exits on a config parse error, so a
+# reload can leave it dead — hence the second check rather than trusting the
+# signal to have done the job.
 
-pkill -SIGUSR2 -x waybar
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sys/toggles"
+
+if pgrep -x waybar >/dev/null; then
+  pkill -SIGUSR2 -x waybar
+  sleep 0.5
+fi
+
+if ! pgrep -x waybar >/dev/null; then
+  # Starting the bar supersedes a hidden-bar toggle, or the next session would
+  # skip it even though it is visible now.
+  rm -f "$state_dir/waybar-off"
+  setsid uwsm-app -- waybar >/dev/null 2>&1 &
+  sleep 0.8
+  if ! pgrep -x waybar >/dev/null; then
+    echo "waybar failed to start — see: journalctl --user -n 40 | grep -i waybar" >&2
+    exit 1
+  fi
+fi
