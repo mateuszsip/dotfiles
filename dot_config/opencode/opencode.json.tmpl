@@ -24,7 +24,7 @@
 {{- if eq .chezmoi.os "darwin" }}
     "@mohak34/opencode-notifier@latest",
 {{- else if eq .chezmoi.os "linux" }}
-    "./waybar-notify.ts",
+    "./plugins/waybar-notify",
 {{- end }}
     "@mrhisyammm/opencode-antigravity-auth@latest"
   ]

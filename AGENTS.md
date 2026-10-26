@@ -69,7 +69,7 @@ Example (from `dot_config/opencode/opencode.json.tmpl`):
 {{- if eq .chezmoi.os "darwin" }}
     "@mohak34/opencode-notifier@latest",
 {{- else if eq .chezmoi.os "linux" }}
-    "./waybar-notify.ts",
+    "./plugins/waybar-notify",
 {{- end }}
 ```
 
