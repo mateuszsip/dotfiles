@@ -8,11 +8,12 @@
 --
 -- Statuses, by priority:
 --   waiting  the agent is blocked on you (tool approval or a question)
---   done     the turn finished and the chat is not the buffer you are on
+--   done     the turn finished and has not been acknowledged
 --   working  a request is in flight
 --
--- `done` clears when the chat buffer is entered; `waiting` stays until the
--- approval/question is answered, so a glance at the buffer does not hide it.
+-- `done` clears when you interact with the chat, switch to it, or return to a
+-- focused terminal; `waiting` stays until the approval/question is answered,
+-- so a glance at the buffer does not hide it.
 -- Entries are pruned by the reader when their pid is gone, so a SIGKILLed
 -- server does not leave a ghost in the indicator.
 local M = {}
@@ -126,7 +127,7 @@ local function remove(bufnr)
   end
 end
 
--- A chat buffer you are looking at no longer needs a "done" badge. `waiting`
+-- A chat you are interacting with no longer needs a "done" badge. `waiting`
 -- is left alone: the prompt is still unanswered.
 local function seen(bufnr)
   local entry = owned[bufnr]
@@ -204,20 +205,6 @@ local function terminal_focused()
   return win.address == address
 end
 
--- Is this chat in front of the user right now? A server with no attached UI
--- always counts as unseen, even if its current buffer happens to be the chat.
-local function is_frontmost(bufnr)
-  if #api.nvim_list_uis() == 0 then
-    return false
-  end
-  local focused = terminal_focused()
-  if focused == nil then
-    -- No compositor answer: keep the old buffer-only check.
-    focused = true
-  end
-  return focused and api.nvim_get_current_buf() == bufnr
-end
-
 local function has_done()
   for _, entry in pairs(owned) do
     if entry.status == "done" then
@@ -228,8 +215,8 @@ local function has_done()
 end
 
 -- t_fi is empty under ghostty, so FocusGained is not delivered. Retire a done
--- badge when the user interacts with the terminal after coming back: only the
--- current buffer can be "seen", and only while the terminal is really focused.
+-- badge once the terminal is focused and the chat buffer is current: CursorHold
+-- gives us a periodic check while idle, CursorMoved covers interaction.
 local focus_timer
 local function check_seen()
   if focus_timer or not has_done() then
@@ -315,11 +302,7 @@ function M.setup()
       elseif args.match == "CodeCompanionToolApprovalFinished" or args.match == "CodeCompanionToolQuestionAnswered" then
         write(bufnr, "working")
       elseif args.match == "CodeCompanionChatDone" or args.match == "CodeCompanionChatStopped" then
-        if is_frontmost(bufnr) then
-          remove(bufnr)
-        else
-          write(bufnr, "done", args.match == "CodeCompanionChatStopped" and "stopped" or nil)
-        end
+        write(bufnr, "done", args.match == "CodeCompanionChatStopped" and "stopped" or nil)
       else -- ChatCleared, ChatClosed
         remove(bufnr)
       end
