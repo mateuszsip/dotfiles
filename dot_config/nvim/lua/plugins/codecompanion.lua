@@ -71,6 +71,7 @@ return {
         "<leader>al",
         function()
           local notify = require("utils.cc_notify")
+          local cc_chats = require("utils.cc_chats")
           local function chat_entries()
             return vim.tbl_filter(function(e)
               return e.interaction == "chat"
@@ -86,7 +87,13 @@ return {
                 local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
                 -- prefer the chat title (set by <leader>at or the agent's session_info_update)
                 local chat = require("codecompanion").buf_get_chat(e.bufnr)
-                local title = chat and chat.title ~= "" and chat.title or e.name
+                local name, real = chat and cc_chats.display_name(chat)
+                local title = name or e.name
+                if chat and real and chat.title ~= real then
+                  pcall(function()
+                    chat:set_title(real)
+                  end)
+                end
                 -- same states waybar shows: blocked on you, finished/unread, in flight
                 local status = notify.status(e.bufnr)
                 local mark = status == "waiting" and "●"

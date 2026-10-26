@@ -73,8 +73,15 @@ local function title_of(chat, bufnr)
   if type(chat.title) == "string" and chat.title ~= "" then
     return chat.title
   end
-  local ok, registry = pcall(require, "codecompanion.interactions.shared.registry")
-  local entry = ok and registry.get(bufnr) or nil
+  local ok, chats = pcall(require, "utils.cc_chats")
+  if ok and chats then
+    local name = chats.display_name(chat)
+    if name and name ~= "" then
+      return name
+    end
+  end
+  local ok2, registry = pcall(require, "codecompanion.interactions.shared.registry")
+  local entry = ok2 and registry.get(bufnr) or nil
   return entry and entry.name or ("chat " .. bufnr)
 end
 

@@ -10,6 +10,11 @@ local M = {}
 -- `cycle`), and even while their session is still loading
 local restored = {}
 
+-- opencode session id -> { title, slug, at }; the picker finder can run on
+-- every keystroke, so avoid spawning sqlite3 for an unchanged session
+local name_cache = {}
+local NAME_CACHE_TTL = 5
+
 local file = vim.fn.stdpath("data") .. "/codecompanion_open_chats.json"
 
 local function cwd()
@@ -35,6 +40,88 @@ local function write(data)
   end
 end
 
+---OpenCode keeps the generated title/slug in its own database; CodeCompanion
+---drops the session_info_update notification while it loads a saved session, so
+---use the stored name as a fallback for pickers and the Waybar tooltip.
+---@param chat CodeCompanion.Chat|nil
+---@return string|nil title, string|nil slug
+local function opencode_name(chat)
+  local adapter = chat and chat.adapter
+  if not (adapter and adapter.name == "opencode") then
+    return nil
+  end
+  local sid = chat.acp_connection and chat.acp_connection.session_id
+  if not sid or not sid:match("^[%w_]+$") then
+    return nil
+  end
+  local cached = name_cache[sid]
+  if cached and os.time() - cached.at < NAME_CACHE_TTL then
+    return cached.title, cached.slug
+  end
+  if vim.fn.executable("sqlite3") == 0 then
+    return nil
+  end
+  local data = vim.env.XDG_DATA_HOME
+  if not data or data == "" then
+    data = vim.fn.expand("~/.local/share")
+  end
+  local db = data .. "/opencode/opencode.db"
+  if vim.fn.filereadable(db) == 0 then
+    return nil
+  end
+  for _, table in ipairs({ "session_v2", "session" }) do
+    local out = vim.fn.system({
+      "sqlite3",
+      "-readonly",
+      "-json",
+      db,
+      ("select coalesce(title, '') as title, coalesce(slug, '') as slug from %s where id = '%s' limit 1;"):format(
+        table,
+        sid
+      ),
+    })
+    if vim.v.shell_error == 0 then
+      local ok, rows = pcall(vim.json.decode, out or "")
+      local row = ok and type(rows) == "table" and rows[1] or nil
+      if row and (row.title ~= "" or row.slug ~= "") then
+        name_cache[sid] = { title = row.title, slug = row.slug, at = os.time() }
+        return row.title, row.slug
+      end
+    end
+  end
+  return nil
+end
+
+---Best name for display: the chat title, then the agent's stored title, then
+---the agent's session slug. The slug is display-only so a later generated
+---title can replace it.
+---@param chat CodeCompanion.Chat|nil
+---@return string|nil name, string|nil title
+function M.display_name(chat)
+  if not chat then
+    return nil
+  end
+  if type(chat.title) == "string" and chat.title ~= "" then
+    return chat.title, chat.title
+  end
+  local title, slug = opencode_name(chat)
+  if title and title ~= "" then
+    return title, title
+  end
+  if slug and slug ~= "" then
+    return slug, nil
+  end
+  return nil
+end
+
+---The real title to persist; a slug is only a display fallback.
+---@param chat CodeCompanion.Chat|nil
+---@return string|nil
+function M.title_for(chat)
+  local _, title = M.display_name(chat)
+  return title
+end
+
 --- Record the open ACP chats that have had at least one exchange
 function M.save()
   if not package.loaded["codecompanion"] then
@@ -46,12 +133,12 @@ function M.save()
     local chat = e.interaction == "chat" and require("codecompanion").buf_get_chat(e.bufnr) or nil
     local conn = chat and chat.acp_connection
     if chat and chat.cycle == 1 and restored[e.bufnr] then
-      table.insert(entries, vim.tbl_extend("force", restored[e.bufnr], { title = chat.title ~= "" and chat.title or nil }))
+      table.insert(entries, vim.tbl_extend("force", restored[e.bufnr], { title = M.title_for(chat) }))
     elseif chat and chat.adapter.type == "acp" and conn and conn.session_id and chat.cycle > 1 then
       table.insert(entries, {
         adapter = chat.adapter.name,
         session_id = conn.session_id,
-        title = chat.title ~= "" and chat.title or nil,
+        title = M.title_for(chat),
       })
     end
   end
@@ -106,8 +193,12 @@ local function restore_one(entry, window_opts)
       end
       require("codecompanion.interactions.chat.acp.commands").link_buffer_to_session(chat.bufnr, conn.session_id)
       require("codecompanion.interactions.chat.acp.render").restore_session(chat, updates)
-      if entry.title then
-        chat:set_title(entry.title)
+      local title = entry.title
+      if not title or title == "" then
+        title = M.title_for(chat)
+      end
+      if title and title ~= "" then
+        chat:set_title(title)
       end
     end)
   )
