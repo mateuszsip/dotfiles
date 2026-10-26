@@ -242,6 +242,23 @@ tooltip * {
   color: alpha(@foreground, 0.55);
 }
 
+/* Attention states get a filled pill so the count reads at a glance. */
+#notifications #custom-ai.done,
+#notifications #custom-ai.waiting {
+  color: #FFFCF0;
+  border-radius: 8px;
+  font-weight: bold;
+  margin: 0 2px;
+}
+
+#notifications #custom-ai.done {
+  background-color: #66800B;
+}
+
+#notifications #custom-ai.waiting {
+  background-color: #DA702C;
+}
+
 #custom-notifications {
   color: alpha(@foreground, 0.35);
 }

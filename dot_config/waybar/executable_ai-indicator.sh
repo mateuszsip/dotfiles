@@ -88,8 +88,8 @@ done
 legacy=$(cat "$legacy_file" 2>/dev/null || echo 0)
 [[ $legacy =~ ^[0-9]+$ ]] || legacy=0
 if ((legacy > 0)); then
-  finished=$((finished + legacy))
-  lines+=("✓ agent turn finished · claude/opencode · $legacy pending")
+  finished=$((finished + 1))
+  lines+=("✓ agent turn finished · claude/opencode · $legacy turn(s) pending")
 fi
 
 pending=$((waiting + finished))
@@ -111,6 +111,11 @@ fi
 
 if ((${#lines[@]} > 0)); then
   tooltip=$(printf '%s\n' "${lines[@]}" | jq -Rsr 'rtrimstr("\n")')
+  if ((pending == 1)); then
+    tooltip=$(printf '1 agent needs attention\n%s' "$tooltip")
+  elif ((pending > 1)); then
+    tooltip=$(printf '%s agents need attention\n%s' "$pending" "$tooltip")
+  fi
 else
   tooltip="No AI sessions waiting"
 fi
