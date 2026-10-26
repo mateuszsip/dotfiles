@@ -120,9 +120,6 @@ local function write(bufnr, status, detail)
 end
 
 local function remove(bufnr)
-  if not owned[bufnr] then
-    return
-  end
   owned[bufnr] = nil
   if os.remove(path_for(bufnr)) then
     signal_waybar()
@@ -138,10 +135,121 @@ local function seen(bufnr)
   end
 end
 
+-- Hyprland does not report focus to nvim in this terminal (t_fi is empty), so
+-- FocusGained never fires. Ask the compositor which window is active instead:
+-- resolve the terminal window that hosts nvim once, then compare it with the
+-- active window. Returns nil when the compositor cannot answer.
+local function hypr_json(args)
+  local out = vim.fn.system(args)
+  if vim.v.shell_error ~= 0 or out == "" then
+    return nil
+  end
+  local ok, decoded = pcall(vim.json.decode, out)
+  return ok and decoded or nil
+end
+
+local function parent_pid(pid)
+  local f = io.open("/proc/" .. pid .. "/status")
+  if not f then
+    return nil
+  end
+  local ppid
+  for line in f:lines() do
+    ppid = line:match("^PPid:%s*(%d+)")
+    if ppid then
+      break
+    end
+  end
+  f:close()
+  return tonumber(ppid)
+end
+
+local function terminal_address()
+  if M._terminal_address then
+    return M._terminal_address
+  end
+  local clients = hypr_json({ "hyprctl", "clients", "-j" })
+  if type(clients) ~= "table" then
+    return nil
+  end
+  local by_pid = {}
+  for _, client in ipairs(clients) do
+    if client.pid and client.address then
+      by_pid[client.pid] = client.address
+    end
+  end
+  local pid = vim.fn.getpid()
+  for _ = 1, 32 do
+    if by_pid[pid] then
+      M._terminal_address = by_pid[pid]
+      return M._terminal_address
+    end
+    pid = parent_pid(pid)
+    if not pid or pid <= 1 then
+      return nil
+    end
+  end
+  return nil
+end
+
+local function terminal_focused()
+  local address = terminal_address()
+  if not address then
+    return nil
+  end
+  local win = hypr_json({ "hyprctl", "activewindow", "-j" })
+  if type(win) ~= "table" then
+    return nil
+  end
+  return win.address == address
+end
+
 -- Is this chat in front of the user right now? A server with no attached UI
 -- always counts as unseen, even if its current buffer happens to be the chat.
 local function is_frontmost(bufnr)
-  return #api.nvim_list_uis() > 0 and api.nvim_get_current_buf() == bufnr
+  if #api.nvim_list_uis() == 0 then
+    return false
+  end
+  local focused = terminal_focused()
+  if focused == nil then
+    -- No compositor answer: keep the old buffer-only check.
+    focused = true
+  end
+  return focused and api.nvim_get_current_buf() == bufnr
+end
+
+local function has_done()
+  for _, entry in pairs(owned) do
+    if entry.status == "done" then
+      return true
+    end
+  end
+  return false
+end
+
+-- t_fi is empty under ghostty, so FocusGained is not delivered. Retire a done
+-- badge when the user interacts with the terminal after coming back: only the
+-- current buffer can be "seen", and only while the terminal is really focused.
+local focus_timer
+local function check_seen()
+  if focus_timer or not has_done() then
+    return
+  end
+  focus_timer = vim.uv.new_timer()
+  focus_timer:start(
+    200,
+    0,
+    vim.schedule_wrap(function()
+      focus_timer:stop()
+      focus_timer:close()
+      focus_timer = nil
+      if terminal_focused() == false then
+        return
+      end
+      seen(api.nvim_get_current_buf())
+    end)
+  )
+  focus_timer:unref()
 end
 
 --- Status currently reported for a chat buffer (nil when idle/unreported).
@@ -223,6 +331,13 @@ function M.setup()
     callback = function(args)
       seen(args.buf)
     end,
+  })
+
+  -- FocusGained does not fire under ghostty (t_fi is empty); interaction is
+  -- the reliable "I am back" signal.
+  api.nvim_create_autocmd({ "CursorMoved", "CursorHold" }, {
+    group = group,
+    callback = check_seen,
   })
 
   -- Coming back to the terminal from another window should retire the badge
