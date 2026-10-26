@@ -242,21 +242,11 @@ tooltip * {
   color: alpha(@foreground, 0.55);
 }
 
-/* Attention states get a filled pill so the count reads at a glance. */
-#notifications #custom-ai.done,
-#notifications #custom-ai.waiting {
-  color: #FFFCF0;
-  border-radius: 8px;
+/* Attention states colour the icon and count; keep the bar background. */
+#custom-ai.done,
+#custom-ai.waiting {
   font-weight: bold;
-  margin: 0 2px;
-}
-
-#notifications #custom-ai.done {
-  background-color: #66800B;
-}
-
-#notifications #custom-ai.waiting {
-  background-color: #DA702C;
+  font-size: 15px;
 }
 
 #custom-notifications {
