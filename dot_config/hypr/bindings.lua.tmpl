@@ -16,6 +16,7 @@ hl.bind("SUPER + SHIFT + G", hl.dsp.exec_cmd("sys-launch focus '^signal$' uwsm-a
 hl.bind("SUPER + SHIFT + O", hl.dsp.exec_cmd("sys-launch focus '^obsidian$' uwsm-app -- obsidian -disable-gpu --enable-wayland-ime"), { description = "Obsidian" })
 hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd("uwsm-app -- typora --enable-wayland-ime"), { description = "Typora" })
 hl.bind("SUPER + SHIFT + SLASH", hl.dsp.exec_cmd("uwsm-app -- bitwarden-desktop"), { description = "Passwords" })
+hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd("sys-ai"), { description = "AI sessions" })
 
 -- Launcher + menu live in ~/.config/hypr/base/bindings/utilities.lua
 hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sys-launch clipboard"), { release = true, description = "Clipboard manager (release)" })

@@ -284,7 +284,9 @@
     "exec": "$HOME/.config/waybar/ai-indicator.sh",
     "return-type": "json",
     "signal": 11,
-    "on-click": "rm -f /tmp/ai-count && pkill -SIGRTMIN+11 waybar",
+    "on-click": "sys-ai",
+    "on-click-middle": "sys-ai --clear done",
+    "on-click-right": "sys-ai --clear all",
     "tooltip": true
   },
   "custom/screenrecording-indicator": {

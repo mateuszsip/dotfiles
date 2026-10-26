@@ -230,6 +230,18 @@ tooltip * {
   color: #DA702C;
 }
 
+#custom-ai.waiting {
+  color: #DA702C;
+}
+
+#custom-ai.done {
+  color: #66800B;
+}
+
+#custom-ai.working {
+  color: alpha(@foreground, 0.55);
+}
+
 #custom-notifications {
   color: alpha(@foreground, 0.35);
 }

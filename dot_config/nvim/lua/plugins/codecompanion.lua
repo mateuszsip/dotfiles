@@ -36,6 +36,7 @@ return {
       require("utils.cc_chats").setup()
       require("utils.cc_sessions").setup()
       require("utils.cc_acp").setup()
+      require("utils.cc_notify").setup()
     end,
     cmd = {
       "CodeCompanion",
@@ -69,6 +70,7 @@ return {
       {
         "<leader>al",
         function()
+          local notify = require("utils.cc_notify")
           local function chat_entries()
             return vim.tbl_filter(function(e)
               return e.interaction == "chat"
@@ -80,13 +82,33 @@ return {
           Snacks.picker({
             title = "Open chats (<m-d> close)",
             finder = function()
-              return vim.tbl_map(function(e)
+              local items = vim.tbl_map(function(e)
                 local lines = vim.api.nvim_buf_get_lines(e.bufnr, 0, -1, false)
                 -- prefer the chat title (set by <leader>at or the agent's session_info_update)
                 local chat = require("codecompanion").buf_get_chat(e.bufnr)
                 local title = chat and chat.title ~= "" and chat.title or e.name
-                return { text = title, entry = e, preview = { text = table.concat(lines, "\n"), ft = "codecompanion" } }
+                -- same states waybar shows: blocked on you, finished/unread, in flight
+                local status = notify.status(e.bufnr)
+                local mark = status == "waiting" and "●"
+                  or status == "done" and "✓"
+                  or status == "working" and "·"
+                  or " "
+                return {
+                  text = mark .. " " .. title,
+                  entry = e,
+                  status = status,
+                  preview = { text = table.concat(lines, "\n"), ft = "codecompanion" },
+                }
               end, chat_entries())
+              local order = { waiting = 1, done = 2, working = 3 }
+              table.sort(items, function(a, b)
+                local ra, rb = order[a.status] or 4, order[b.status] or 4
+                if ra ~= rb then
+                  return ra < rb
+                end
+                return a.entry.bufnr < b.entry.bufnr
+              end)
+              return items
             end,
             actions = {
               close_chat = function(picker, item)

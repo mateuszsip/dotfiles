@@ -1,0 +1,292 @@
+#!/usr/bin/env bash
+# sys-ai — list, jump to, or clear AI sessions that want attention.
+#
+#   sys-ai                 jump to the only session, menu when several
+#   sys-ai --list          print the sessions (debug)
+#   sys-ai --clear done    forget finished sessions (and Claude/opencode's counter)
+#   sys-ai --clear all     forget everything
+#
+# Sessions are one JSON file per session in ${XDG_RUNTIME_DIR}/ai, written by
+# nvim's utils/cc_notify.lua. Claude Code and opencode still report through
+# ai-notify.sh, which keeps a plain count in /tmp/ai-count; that shows up as
+# one extra "agent" entry until they move to the same store.
+#
+# A CodeCompanion entry carries the nvim server socket and chat buffer, so a
+# jump can focus the right window and switch that server to the chat. A parked
+# (headless) server gets a fresh UI in a terminal instead.
+
+set -uo pipefail
+
+dir="${AI_DIR:-${XDG_RUNTIME_DIR:-/tmp}/ai}"
+legacy_file=/tmp/ai-count
+legacy_ws=/tmp/ai-workspace
+
+usage() {
+  sed -n '/^#   sys-ai/,/^#   sys-ai --clear all/p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+now=$(date +%s)
+
+fmt_age() {
+  local age=$1
+  if ((age < 60)); then
+    echo "${age}s"
+  elif ((age < 3600)); then
+    echo "$((age / 60))m"
+  else
+    echo "$((age / 3600))h"
+  fi
+}
+
+icon() {
+  case $1 in
+  waiting) echo "●" ;;
+  done) echo "✓" ;;
+  *) echo "·" ;;
+  esac
+}
+
+# Hyprland window (workspace id + address) owning a pid, walking up the
+# process tree: the nvim UI is a child of the terminal, which owns the window.
+client_for_pid() {
+  python3 - "$1" <<'PY'
+import json, subprocess, sys
+
+pid = int(sys.argv[1])
+try:
+    clients = json.loads(
+        subprocess.run(["hyprctl", "clients", "-j"], capture_output=True, text=True).stdout or "[]"
+    )
+except Exception:
+    sys.exit(1)
+
+by_pid = {c["pid"]: c for c in clients if c.get("pid")}
+for _ in range(24):
+    client = by_pid.get(pid)
+    if client:
+        print(f'{client["workspace"]["id"]}\t{client["address"]}')
+        break
+    try:
+        with open(f"/proc/{pid}/status") as f:
+            pid = next(int(line.split()[1]) for line in f if line.startswith("PPid:"))
+    except Exception:
+        break
+    if pid <= 1:
+        break
+PY
+}
+
+# window_for_sock <socket> [server-pid] -> "workspace<TAB>address"
+# Prefers the UI on the active workspace when more than one is attached. The
+# server pid covers a plain TUI (the editor process is in the terminal's
+# ancestry); the `--remote-ui` lookup covers `nv`'s detached servers.
+window_for_sock() {
+  local sock=$1 server_pid=${2:-} pid line ws addr active fallback=""
+  [[ -n $sock ]] || return 1
+  if [[ -n $server_pid ]] && line=$(client_for_pid "$server_pid" 2>/dev/null) && [[ -n $line ]]; then
+    printf '%s\n' "$line"
+    return 0
+  fi
+  active=$(hyprctl activeworkspace -j 2>/dev/null | jq -r '.id // empty')
+  while read -r pid; do
+    [[ -n $pid ]] || continue
+    line=$(client_for_pid "$pid" 2>/dev/null) || continue
+    [[ -n $line ]] || continue
+    ws=${line%%$'\t'*}
+    addr=${line#*$'\t'}
+    if [[ -n $active && $ws == "$active" ]]; then
+      printf '%s\t%s\n' "$ws" "$addr"
+      return 0
+    fi
+    [[ -n $fallback ]] || printf -v fallback '%s\t%s' "$ws" "$addr"
+  done < <(pgrep -f -- "nvim --server $sock --remote-ui" 2>/dev/null)
+  [[ -n $fallback ]] && printf '%s\n' "$fallback"
+  return 0
+}
+
+jump_cc() {
+  local sock=$1 buf=$2 server_pid=$3 out addr
+  # never interpolate an unvalidated buffer number into a Vim expression
+  [[ $buf =~ ^[0-9]+$ ]] || return 1
+  out=$(window_for_sock "$sock" "$server_pid") || out=""
+  addr=""
+  if [[ -n $out ]]; then
+    addr=${out#*$'\t'}
+    [[ $addr == "$out" ]] && addr=""
+  fi
+  if [[ -n $addr ]]; then
+    hyprctl dispatch focuswindow "address:$addr" >/dev/null 2>&1
+  fi
+  # Buffer selection is server state, so this works before the UI is attached
+  # (and the UI then opens on the chat).
+  [[ -n $sock && -n $buf ]] &&
+    nvim --server "$sock" --remote-expr \
+      "luaeval('require(\"utils.cc_notify\").focus(_A)', $buf)" >/dev/null 2>&1
+  if [[ -z $addr && -n $sock ]]; then
+    # Parked session: bring a UI to the current workspace.
+    setsid sys-launch tui nvim --server "$sock" --remote-ui >/dev/null 2>&1 &
+  fi
+}
+
+jump_agent() {
+  local ws
+  ws=$(cat "$legacy_ws" 2>/dev/null || true)
+  [[ -n $ws ]] && hyprctl dispatch workspace "$ws" >/dev/null 2>&1
+  rm -f "$legacy_file" "$legacy_ws"
+  pkill -SIGRTMIN+11 waybar 2>/dev/null
+}
+
+jump_file() {
+  local f=$1 tool sock buf pid
+  local -a fields=()
+  if [[ $f == "$legacy_file" ]]; then
+    jump_agent
+    return
+  fi
+  mapfile -t fields < <(jq -r '[
+      (.tool // "ai"),
+      (.sock // ""),
+      ((.buf // 0) | tostring),
+      ((.pid // 0) | tostring)
+    ][]' "$f" 2>/dev/null)
+  ((${#fields[@]} >= 4)) || return
+  tool=${fields[0]}
+  sock=${fields[1]}
+  buf=${fields[2]}
+  pid=${fields[3]}
+  case $tool in
+  codecompanion) jump_cc "$sock" "$buf" "$pid" ;;
+  *) jump_agent ;;
+  esac
+}
+
+# One line per session: rank <TAB> label <TAB> file. Rank orders the menu
+# waiting (0), finished (1), working (2).
+build() {
+  local f pid status tool title detail ts sock buf rank ws age label legacy
+  local -a fields=()
+  for f in "$dir"/*.json; do
+    [[ -e $f ]] || continue
+    mapfile -t fields < <(jq -r '[
+        (.pid // 0),
+        (.status // "done"),
+        (.tool // "ai"),
+        ((.title // "session") | gsub("[\\t\\r\\n]+"; " ")),
+        ((.detail // "") | gsub("[\\t\\r\\n]+"; " ")),
+        (.ts // 0),
+        (.sock // ""),
+        (.buf // 0)
+      ][]' "$f" 2>/dev/null)
+    ((${#fields[@]} >= 8)) || continue
+    pid=${fields[0]}
+    status=${fields[1]}
+    tool=${fields[2]}
+    title=${fields[3]}
+    detail=${fields[4]}
+    ts=${fields[5]}
+    sock=${fields[6]}
+    buf=${fields[7]}
+
+    if ((pid > 0)) && ! kill -0 "$pid" 2>/dev/null; then
+      rm -f "$f"
+      continue
+    fi
+
+    case $status in
+    waiting) rank=0 ;;
+    done) rank=1 ;;
+    *) rank=2 ;;
+    esac
+
+    age=$(fmt_age $((now - ts)))
+    label="$(icon "$status") $title"
+    [[ -n $detail ]] && label+=" — $detail"
+    label+=" · $tool"
+    if [[ $tool == codecompanion && -n $sock ]]; then
+      ws=$(window_for_sock "$sock" "$pid" | cut -f1)
+      [[ -n $ws ]] && label+=" · ws$ws"
+    fi
+    label+=" · $age"
+
+    printf '%s\t%s\t%s\n' "$rank" "$label" "$f"
+  done
+
+  legacy=$(cat "$legacy_file" 2>/dev/null || echo 0)
+  [[ $legacy =~ ^[0-9]+$ ]] || legacy=0
+  if ((legacy > 0)); then
+    printf '1\t✓ agent turn finished · claude/opencode · %s pending\t%s\n' \
+      "$legacy" "$legacy_file"
+  fi
+}
+
+list_sessions() {
+  build | sort -t$'\t' -k1,1n -k2,2 | cut -f2
+}
+
+clear_sessions() {
+  local what=${1:-done} f status
+  for f in "$dir"/*.json; do
+    [[ -e $f ]] || continue
+    if [[ $what == all ]]; then
+      rm -f "$f"
+    else
+      status=$(jq -r '.status // empty' "$f" 2>/dev/null)
+      [[ $status == "done" ]] && rm -f "$f"
+    fi
+  done
+  # The legacy counter only ever means "finished"
+  if [[ $what == "all" || $what == "done" ]]; then
+    rm -f "$legacy_file" "$legacy_ws"
+  fi
+  pkill -SIGRTMIN+11 waybar 2>/dev/null
+}
+
+case ${1:-} in
+--help | -h)
+  usage
+  exit 0
+  ;;
+--list)
+  list_sessions
+  exit 0
+  ;;
+--clear)
+  clear_sessions "${2:-done}"
+  exit 0
+  ;;
+esac
+
+rows=()
+while IFS= read -r line; do
+  rows+=("$line")
+done < <(build | sort -t$'\t' -k1,1n -k2,2)
+
+if ((${#rows[@]} == 0)); then
+  # Refresh anyway: the run above may have pruned dead entries.
+  pkill -SIGRTMIN+11 waybar 2>/dev/null
+  exit 0
+fi
+
+if ((${#rows[@]} == 1)); then
+  jump_file "${rows[0]##*$'\t'}"
+  exit 0
+fi
+
+menu=()
+files=()
+i=0
+for row in "${rows[@]}"; do
+  rest=${row#*$'\t'}
+  label=${rest%%$'\t'*}
+  file=${rest#*$'\t'}
+  i=$((i + 1))
+  menu+=("$i.  $label")
+  files+=("$file")
+done
+
+choice=$(printf '%s\n' "${menu[@]}" |
+  sys-walker --dmenu -p "AI sessions" --width 720 --minheight 1 --maxheight 480) || exit 0
+[[ -n $choice ]] || exit 0
+idx=${choice%%.*}
+[[ $idx =~ ^[0-9]+$ ]] || exit 0
+jump_file "${files[$((idx - 1))]}"
