@@ -15,6 +15,7 @@ for unit in \
   elephant.service \
   nv-restore.service \
   sys-battery-monitor.timer \
+  sys-elephant-watchdog.timer \
   sys-recover-internal-monitor.service \
   voxtype.service \
   swayosd-server.service \
@@ -25,6 +26,7 @@ for unit in \
 done
 
 systemctl --user start sys-battery-monitor.timer 2>/dev/null
+systemctl --user start sys-elephant-watchdog.timer 2>/dev/null
 systemctl --user start sys-recover-internal-monitor.service 2>/dev/null
 systemctl --user start elephant.service 2>/dev/null
 systemctl --user start voxtype.service 2>/dev/null

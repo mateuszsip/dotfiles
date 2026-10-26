@@ -1,0 +1,30 @@
+#!/bin/bash
+# Restart elephant when its clipboard watcher has died.
+#
+# Elephant observes the Wayland clipboard with an unsupervised child,
+# `wl-paste --watch echo clipboard-changed`. When that child exits — wl-paste
+# can do so on a clipboard read error — elephant never respawns it and keeps
+# serving its stale history, so walker's clipboard menu quietly stops
+# collecting new items. Run from sys-elephant-watchdog.timer.
+#
+# Cooldown: if a restart did not bring the watcher back (broken wl-clipboard,
+# no Wayland socket), don't bounce the provider on every timer tick.
+
+set -uo pipefail
+
+systemctl --user is-active --quiet elephant.service || exit 0
+# Watcher alive: nothing to do.
+pgrep -f 'wl-paste --watch' >/dev/null && exit 0
+
+stamp="${XDG_RUNTIME_DIR:-/tmp}/sys-elephant-watchdog.last"
+now=$(date +%s)
+if [[ -f $stamp ]]; then
+  last=$(<"$stamp")
+  if [[ $last =~ ^[0-9]+$ ]] && (( now - last < 900 )); then
+    exit 0
+  fi
+fi
+
+echo "elephant clipboard watcher missing, restarting elephant.service" >&2
+printf '%s\n' "$now" >"$stamp"
+systemctl --user restart elephant.service

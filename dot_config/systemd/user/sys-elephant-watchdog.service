@@ -1,0 +1,7 @@
+[Unit]
+Description=Restart elephant when its clipboard watcher has died
+After=elephant.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/sys-elephant-watchdog
