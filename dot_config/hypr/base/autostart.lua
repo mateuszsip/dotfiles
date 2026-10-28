@@ -7,7 +7,8 @@
 hl.on("hyprland.start", function()
   hl.exec_cmd("uwsm-app -- hypridle")
   hl.exec_cmd("uwsm-app -- mako")
-  hl.exec_cmd("! sys-toggle enabled waybar-off && uwsm-app -- waybar")
+  -- Idempotent + toggle-aware: see the note in autostart.lua about the second call.
+  hl.exec_cmd("sys-waybar-start")
   hl.exec_cmd("uwsm-app -- fcitx5 --disable notificationitem")
 
   -- Wallpaper (path comes from .chezmoidata/palette.toml)

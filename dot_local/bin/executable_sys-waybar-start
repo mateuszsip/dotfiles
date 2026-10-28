@@ -1,0 +1,32 @@
+#!/bin/bash
+# Start Waybar once per session, tolerating a slow first `uwsm-app` call.
+#
+# `uwsm-app` hands the launch to its app daemon, which on a fresh login can take
+# a couple of seconds to come up (it is started on demand). A plain
+# `pgrep`-and-launch guard therefore loses the race: the caller sees "not
+# running" and starts a second bar while the first is still queued. Callers
+# serialise on a lock and hold it until the bar is actually up, so the second
+# caller waits instead of duplicating.
+#
+# Exit 0 when the bar is up (or hidden on purpose), 1 when the launch failed.
+
+set -u
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sys"
+mkdir -p "$state_dir"
+
+exec 9>"$state_dir/waybar-start.lock"
+flock 9
+
+sys-toggle enabled waybar-off && exit 0
+pgrep -x waybar >/dev/null && exit 0
+
+# 9>&- : the bar must not inherit the lock, or it would hold it until it exits.
+setsid uwsm-app -- waybar >/dev/null 2>&1 9>&- &
+
+for ((i = 0; i < 100; i++)); do
+  pgrep -x waybar >/dev/null && exit 0
+  sleep 0.1
+done
+
+exit 1

@@ -2,8 +2,11 @@
 -- Migrated from autostart.conf
 
 hl.on("hyprland.start", function()
-  -- Retry Waybar after the session settles, but do not duplicate its normal launch.
-  hl.exec_cmd("sh -c 'sleep 2; pgrep -x waybar >/dev/null || uwsm-app -- waybar'")
+  -- Second attempt at Waybar (the first is in base/autostart.lua). sys-waybar-start
+  -- serialises on a lock and waits for the bar to appear, so this cannot race the
+  -- first launch — which a fixed `sleep 2; pgrep` did whenever `uwsm-app` was slow
+  -- to cold-start its daemon after login (two bars).
+  hl.exec_cmd("sys-waybar-start")
   hl.exec_cmd("systemd-run --user --no-block bash ~/.config/waybar/ai-workspace-watcher.sh")
   hl.exec_cmd("systemd-run --user --no-block bash ~/.config/waybar/notification-watcher.sh")
   hl.exec_cmd("uwsm-app -- zen-browser")
