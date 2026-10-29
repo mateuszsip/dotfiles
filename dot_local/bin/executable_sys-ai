@@ -129,9 +129,10 @@ jump_cc() {
     hyprctl eval "hl.dispatch(hl.dsp.focus({ window = hl.get_window(\"address:$addr\") }))" >/dev/null 2>&1
   fi
   # Buffer selection is server state, so this works before the UI is attached
-  # (and the UI then opens on the chat).
+  # (and the UI then opens on the chat). --headless keeps this client from
+  # opening a TUI when sys-ai is run from a terminal.
   [[ -n $sock && -n $buf ]] &&
-    nvim --server "$sock" --remote-expr \
+    nvim --headless --server "$sock" --remote-expr \
       "luaeval('require(\"utils.cc_notify\").focus(_A)', $buf)" >/dev/null 2>&1
   if [[ -z $addr && -n $sock ]]; then
     # Parked session: bring a UI to the current workspace.

@@ -99,7 +99,11 @@ nvim_ok() {
 sock_state() {
   local rc
   [[ -S ${1:-} ]] || return 1
-  with_timeout 2 nvim --server "$1" --remote-expr '1' >/dev/null 2>&1
+  # --headless is not optional: without it the client opens a TUI in this
+  # terminal, queries it for capabilities and draws there, so `nv -l` would
+  # capture screen escapes as the UI count and leave the terminal's replies
+  # echoed at the prompt.
+  with_timeout 2 nvim --headless --server "$1" --remote-expr '1' >/dev/null 2>&1
   rc=$?
   ((rc == 124 || rc == 137)) && return 2
   return $rc
@@ -116,7 +120,7 @@ probe() {
 # How many UIs are attached: empty on a dead socket. The exit status is what
 # tells those apart — see sock_state.
 ui_count() {
-  with_timeout 2 nvim --server "$1" --remote-expr 'len(nvim_list_uis())' 2>/dev/null
+  with_timeout 2 nvim --headless --server "$1" --remote-expr 'len(nvim_list_uis())' 2>/dev/null
 }
 
 # Default key is the cwd with / turned into %, so two projects with the same
@@ -326,7 +330,7 @@ cmd_open() { # key, foreground, files...
       return 1
     fi
   fi
-  (($#)) && nvim --server "$sock" --remote "$@" >/dev/null 2>&1
+  (($#)) && nvim --headless --server "$sock" --remote "$@" >/dev/null 2>&1
   attach_ui "$sock" "$key"
 }
 
@@ -409,9 +413,9 @@ cmd_stop() { # key, [force]
     return 1
   fi
   if [[ ${2:-} == force ]]; then
-    nvim --server "$sock" --remote-send $':qa!\r' >/dev/null 2>&1
+    nvim --headless --server "$sock" --remote-send $':qa!\r' >/dev/null 2>&1
   else
-    nvim --server "$sock" --remote-send $':qa\r' >/dev/null 2>&1
+    nvim --headless --server "$sock" --remote-send $':qa\r' >/dev/null 2>&1
   fi
   sleep 0.4
   if probe "$sock"; then
