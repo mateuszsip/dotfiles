@@ -87,7 +87,7 @@
     "on-click": "sys-launch float sys-update",
     "tooltip-format": "Package updates available — click to update",
     "interval": 21600,
-    // sys-update re-runs this module when it finishes: pkill -RTMIN+8 waybar
+    // refreshed by /etc/pacman.d/hooks/90-waybar-updates.hook after any transaction
     "signal": 8
   },
   "group/power": {
