@@ -121,4 +121,26 @@ fi
 if [ "$mkinitcpio_changed" = 1 ] && command -v limine-mkinitcpio >/dev/null; then
   sudo limine-mkinitcpio
 fi
+
+# 7. Re-run the waybar update counter after every package transaction, so the
+#    badge reflects reality instead of waiting out custom/update's 6h interval.
+#    paru goes through libalpm with pacman's hookdirs (configure_alpm), and AUR
+#    builds end in `pacman -U`, so both paths fire this. PostTransaction, so it
+#    only runs once the transaction committed. --require-handler (same trick as
+#    the packaged gvfs hook) skips a waybar process that has no RTMIN+8 handler,
+#    and `|| true` keeps a non-running waybar from failing the transaction.
+printf '%s\n' \
+  '[Trigger]' \
+  'Operation = Install' \
+  'Operation = Upgrade' \
+  'Operation = Remove' \
+  'Type = Package' \
+  'Target = *' \
+  '' \
+  '[Action]' \
+  'Description = Refreshing the waybar package-update counter...' \
+  'Depends = procps-ng' \
+  'When = PostTransaction' \
+  "Exec = /bin/sh -c 'pkill --signal RTMIN+8 --require-handler --exact waybar || true'" \
+  | sudo tee /etc/pacman.d/hooks/90-waybar-updates.hook >/dev/null
 {{- end }}

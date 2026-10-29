@@ -3,20 +3,15 @@
 #
 # Interactive (paru asks for confirmation and sudo), so run it in a terminal —
 # the waybar module opens one with `sys-launch float sys-update`.
+#
+# The update counter in waybar is refreshed by /etc/pacman.d/hooks/
+# 90-waybar-updates.hook (installed by run_onchange_before_setup-system), which
+# fires on every transaction regardless of who started it.
 
 set -uo pipefail
 
 if command -v paru >/dev/null; then
-  paru -Syu --sudoloop
-  status=$?
-else
-  sudo pacman -Syu
-  status=$?
+  exec paru -Syu --sudoloop
 fi
 
-# Refresh the update counter in waybar right away (custom/update listens on
-# SIGRTMIN+8 and re-runs sys-update-available) instead of leaving a stale count
-# up to 6h until the module's interval elapses. Also fires on abort.
-pkill -RTMIN+8 -x waybar 2>/dev/null
-
-exit "$status"
+exec sudo pacman -Syu
