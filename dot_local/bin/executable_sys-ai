@@ -60,9 +60,20 @@ try:
 except Exception:
     sys.exit(1)
 
-by_pid = {c["pid"]: c for c in clients if c.get("pid")}
+by_pid = {}
+for c in clients:
+    if not c.get("pid"):
+        continue
+    # Several toplevels can share a pid (ghostty runs every window in one
+    # process), so pick the most recently focused one; -1 = never focused.
+    hist = c.get("focusHistoryID", -1)
+    rank = hist if isinstance(hist, int) and hist >= 0 else 1 << 30
+    prev = by_pid.get(c["pid"])
+    if prev is None or rank < prev[0]:
+        by_pid[c["pid"]] = (rank, c)
 for _ in range(24):
-    client = by_pid.get(pid)
+    entry = by_pid.get(pid)
+    client = entry[1] if entry else None
     if client:
         print(f'{client["workspace"]["id"]}\t{client["address"]}')
         break
@@ -115,7 +126,7 @@ jump_cc() {
     [[ $addr == "$out" ]] && addr=""
   fi
   if [[ -n $addr ]]; then
-    hyprctl dispatch focuswindow "address:$addr" >/dev/null 2>&1
+    hyprctl eval "hl.dispatch(hl.dsp.focus({ window = hl.get_window(\"address:$addr\") }))" >/dev/null 2>&1
   fi
   # Buffer selection is server state, so this works before the UI is attached
   # (and the UI then opens on the chat).
@@ -131,7 +142,10 @@ jump_cc() {
 jump_agent() {
   local ws
   ws=$(cat "$legacy_ws" 2>/dev/null || true)
-  [[ -n $ws ]] && hyprctl dispatch workspace "$ws" >/dev/null 2>&1
+  # Hyprland 0.57 parses dispatch as Lua (no legacy shim); a workspace id is a
+  # number, so it must not be quoted.
+  [[ $ws =~ ^-?[0-9]+$ ]] &&
+    hyprctl dispatch "hl.dsp.focus({ workspace = $ws })" >/dev/null 2>&1
   rm -f "$legacy_file" "$legacy_ws"
   pkill -SIGRTMIN+11 waybar 2>/dev/null
 }
