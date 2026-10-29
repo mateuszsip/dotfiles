@@ -7,7 +7,7 @@ set -eufo pipefail
 sudo pacman -S --needed --noconfirm \
 {{ include "packages_arch.txt" | trim | splitList "\n" | join " \\\n  " }}
 
-if ! command -v paru &>/dev/null && ! command -v yay &>/dev/null; then
+if ! command -v paru &>/dev/null; then
   sudo pacman -S --needed --noconfirm base-devel git
   tmp=$(mktemp -d)
   git clone https://aur.archlinux.org/paru.git "$tmp/paru"
@@ -15,9 +15,9 @@ if ! command -v paru &>/dev/null && ! command -v yay &>/dev/null; then
   rm -rf "$tmp"
 fi
 
-aur_helper=$(command -v paru || command -v yay)
-
-$aur_helper -S --needed --noconfirm \
+# --nominimumreleaseage: the lists below are curated here, so the publish-delay
+# safeguard from ~/.config/paru/paru.conf must not block a fresh bootstrap.
+paru -S --needed --noconfirm --nominimumreleaseage \
 {{ include "packages_arch_aur.txt" | trim | splitList "\n" | join " \\\n  " }}{{ if eq .chezmoi.hostname "sipBook-p14s" }} \
   ryzen_smu-dkms-git{{ end }}
 {{- else if eq .chezmoi.os "darwin" -}}

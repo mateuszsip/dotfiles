@@ -13,7 +13,7 @@ ORIGIN_KEY = b"_https://feishin\x00\x01feishin-store"
 try:
     import plyvel
 except ImportError:
-    sys.exit("plyvel not installed — run: yay -S python-plyvel")
+    sys.exit("plyvel not installed — run: paru -S python-plyvel")
 
 if not os.path.exists(CSS_FILE):
     sys.exit(f"CSS file not found: {CSS_FILE}")
