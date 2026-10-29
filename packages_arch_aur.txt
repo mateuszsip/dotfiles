@@ -1,7 +1,6 @@
 8bitdo-ultimate-controller-udev
 aether
 bambustudio-bin
-claude-code
 elephant
 elephant-bluetooth
 elephant-calc
