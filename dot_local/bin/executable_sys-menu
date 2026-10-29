@@ -2,7 +2,7 @@
 # Desktop menu, walker based.
 #
 #   sys-menu                       main menu
-#   sys-menu system|toggle|hardware|capture|screenrecord|reminders|setup|keybindings
+#   sys-menu system|toggle|hardware|capture|screenrecord|reminders|setup|powerprofile|keybindings
 #   sys-menu reminder-set
 #   sys-menu background|theme      reload the generated theme (palette.toml)
 
@@ -219,13 +219,28 @@ share_menu() {
 }
 
 powerprofile_menu() {
-  local choice
+  local choice profile
   local -a profiles=()
 
-  mapfile -t profiles < <(powerprofilesctl list | awk '/^[[:space:]]*[a-z0-9-]+:/ { gsub(/:$/, ""); gsub(/^[[:space:]]+/, ""); print }')
+  # powerprofilesctl marks the active profile with "* ". Keep the marker so the
+  # menu shows which one is current (the plain-name pattern alone misses it),
+  # and strip it from the selection below.
+  mapfile -t profiles < <(powerprofilesctl list | awk '
+    /^[[:space:]]*(\*[[:space:]]*)?[a-zA-Z0-9-]+:$/ {
+      line = $0
+      sub(/:$/, "", line)
+      sub(/^[[:space:]]+/, "", line)
+      print line
+    }')
+
+  ((${#profiles[@]})) || {
+    echo "sys-menu: powerprofilesctl listed no profiles" >&2
+    exit 1
+  }
 
   choice=$(menu "Power profile" "${profiles[@]}") || exit 0
-  [[ -n $choice ]] && powerprofilesctl set "$choice"
+  profile=${choice#\* }
+  [[ -n $profile ]] && powerprofilesctl set "$profile"
 }
 
 case ${1:-} in
@@ -239,6 +254,7 @@ reminders) reminder_menu ;;
 reminder-set) reminder_set ;;
 share) share_menu ;;
 setup) setup_menu ;;
+powerprofile) powerprofile_menu ;;
 keybindings) sys-keybindings ;;
 background)
   sys-theme-reload --background
@@ -247,7 +263,7 @@ theme)
   sys-theme-reload
   ;;
 *)
-  echo "Usage: $(basename "$0") [main|system|toggle|hardware|capture|screenrecord|reminders|share|setup|keybindings]" >&2
+  echo "Usage: $(basename "$0") [main|system|toggle|hardware|capture|screenrecord|reminders|share|setup|powerprofile|keybindings]" >&2
   exit 2
   ;;
 esac
