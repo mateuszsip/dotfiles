@@ -7,7 +7,16 @@
 set -uo pipefail
 
 if command -v paru >/dev/null; then
-  exec paru -Syu --sudoloop
+  paru -Syu --sudoloop
+  status=$?
+else
+  sudo pacman -Syu
+  status=$?
 fi
 
-exec sudo pacman -Syu
+# Refresh the update counter in waybar right away (custom/update listens on
+# SIGRTMIN+8 and re-runs sys-update-available) instead of leaving a stale count
+# up to 6h until the module's interval elapses. Also fires on abort.
+pkill -RTMIN+8 -x waybar 2>/dev/null
+
+exit "$status"

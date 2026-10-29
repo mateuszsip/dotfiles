@@ -86,7 +86,9 @@
     "exec": "sys-update-available",
     "on-click": "sys-launch float sys-update",
     "tooltip-format": "Package updates available — click to update",
-    "interval": 21600
+    "interval": 21600,
+    // sys-update re-runs this module when it finishes: pkill -RTMIN+8 waybar
+    "signal": 8
   },
   "group/power": {
     "orientation": "horizontal",
