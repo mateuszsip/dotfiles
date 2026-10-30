@@ -83,6 +83,18 @@ return {
       end,
     })
 
+    -- Agent status badge: waiting / done / working counts from the shared AI
+    -- session store (the one waybar's custom/ai and sys-ai read). Readout only
+    -- — clicking waybar's badge is what focuses a session.
+    local agent_status = require("utils.agent_status")
+    agent_status.setup()
+    opts.sections.lualine_x = opts.sections.lualine_x or {}
+    table.insert(opts.sections.lualine_x, 1, {
+      agent_status.component,
+      cond = agent_status.cond,
+      color = agent_status.color,
+    })
+
     -- Drop LazyVim's clock to leave room for the CodeCompanion readout.
     opts.sections.lualine_z = {}
 
