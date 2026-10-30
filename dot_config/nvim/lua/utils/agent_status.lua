@@ -17,6 +17,9 @@ local M = {}
 
 local icons = { waiting = "●", done = "✓", working = "·" }
 local order = { "waiting", "done", "working" }
+-- Same glyph as waybar's custom/ai module, so the numbers read as "agents"
+-- rather than as the git/diagnostics counts sitting next to them.
+local badge = "󰚩"
 local legacy_file = "/tmp/ai-count"
 
 local watcher -- fs_event on the store directory
@@ -145,7 +148,10 @@ function M.component()
       parts[#parts + 1] = icons[name] .. n[name]
     end
   end
-  return table.concat(parts, " ")
+  if #parts == 0 then
+    return ""
+  end
+  return badge .. " " .. table.concat(parts, " ")
 end
 
 function M.cond()
