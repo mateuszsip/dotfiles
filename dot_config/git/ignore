@@ -4,5 +4,6 @@
 session.vim
 .phpactor.json
 requests/
+.grip/
 
 var/symfony-lsp
