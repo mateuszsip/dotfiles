@@ -1,0 +1,148 @@
+-- Grid-editing database workspace on top of the `vim.g.dbs` list that
+-- utils/dbcreds.lua maintains. Deliberately independent of vim-dadbod: it
+-- reads g:dbs directly and shells out to psql/mysql/sqlite3 itself, so it can
+-- be trialled next to dadbod.lua and either side can be deleted afterwards.
+--
+-- grip ships a Catppuccin *dark* highlight palette: a slate column band and
+-- pale yellow/green text, both of which disappear on a light theme. The
+-- overrides below re-express the grid groups in the palette from
+-- .chezmoidata/palette.toml. The connection accent groups (GripBorder,
+-- GripConnAccent*) are left alone so a per-connection `color` still wins.
+local bg = "{{ .palette.bg }}"
+local selection_bg = "{{ .palette.selection_bg }}"
+local dim = "{{ .palette.dim }}"
+local accent = "{{ .palette.accent }}"
+local red = "{{ .palette.extra.red }}"
+local orange = "{{ .palette.extra.orange }}"
+local yellow = "{{ .palette.extra.yellow }}"
+local green = "{{ .palette.extra.green }}"
+local magenta = "{{ .palette.color5 }}"
+
+---Blend `hex` towards the paper background, keeping `keep` of the colour.
+---Used for the staged-cell washes, which grip draws as a dark block by
+---default.
+---@param hex string "#rrggbb"
+---@param keep number 0..1, weight of `hex` in the result
+---@return string
+local function tint(hex, keep)
+  local function channels(colour)
+    return tonumber(colour:sub(2, 3), 16), tonumber(colour:sub(4, 5), 16), tonumber(colour:sub(6, 7), 16)
+  end
+  local br, bgr, bb = channels(bg)
+  local r, g, b = channels(hex)
+  local function mix(src, dst)
+    return math.floor(src * keep + dst * (1 - keep) + 0.5)
+  end
+  return string.format("#%02x%02x%02x", mix(r, br), mix(g, bgr), mix(b, bb))
+end
+
+return {
+  {
+    "joryeugene/dadbod-grip.nvim",
+    cmd = { "Grip", "GripConnect", "GripHome", "GripQuery", "GripTables", "GripToggle" },
+    keys = {
+      { "<leader>Dg", desc = "Grip: home" },
+      { "<leader>Dc", desc = "Grip: connections" },
+    },
+    opts = {
+      picker = "snacks",
+      completion = true, -- blink.cmp integration (lua/dadbod-grip/completion/blink.lua)
+      open_sidebar = true,
+      highlights = {
+        -- Cursor column and its sticky header: the theme selection washed into
+        -- the background, instead of a slate band.
+        GripColHighlight = { bg = tint(selection_bg, 0.55) },
+        GripHeaderActive = { bold = true, bg = tint(selection_bg, 0.55) },
+
+        -- Muted secondary text: NULL, column types, read-only, past dates.
+        GripNull = { italic = true, fg = dim },
+        GripReadonly = { italic = true, fg = dim },
+        GripDatePast = { italic = true, fg = dim },
+        GripColType = { fg = dim },
+
+        -- Staged mutations keep a wash of their own hue, so a pending cell is
+        -- still a block at a glance, but a pale one that survives light text.
+        GripModified = { bold = true, fg = magenta, bg = tint(magenta, 0.12) },
+        GripInserted = { bold = true, fg = green, bg = tint(green, 0.12) },
+        GripDeleted = { strikethrough = true, fg = red, bg = tint(red, 0.12) },
+        GripNullStaged = { bold = true, fg = orange, bg = tint(orange, 0.12) },
+
+        -- Status text and literals.
+        GripStatusOk = { bold = true, fg = green },
+        GripStatusChg = { bold = true, fg = yellow },
+        GripNegative = { bold = true, fg = red },
+        GripBoolTrue = { bold = true, fg = green },
+        GripBoolFalse = { bold = true, fg = red },
+        GripUrl = { underline = true, fg = accent },
+        GripWatch = { bold = true, fg = accent },
+      },
+    },
+    config = function(_, opts)
+      local dbcreds = require("utils.dbcreds")
+      require("dadbod-grip").setup(opts)
+
+      -- `:GripDiff` and `:GripProfile` create their groups lazily, guarded by
+      -- `if hlID(name) == 0`, with hardcoded dark-theme colours. Defining them
+      -- first therefore wins, and re-defining on ColorScheme keeps them after
+      -- a theme reload (they are outside the `highlights` allowlist).
+      local extra = {
+        GripDiffChanged = { bold = true, fg = yellow },
+        GripDiffAdded = { bold = true, fg = green },
+        GripDiffDeleted = { bold = true, fg = red },
+        GripDiffSep = { bold = true, fg = dim },
+        GripProfileHeader = { bold = true, fg = accent },
+      }
+      local function define_extra_highlights()
+        for name, definition in pairs(extra) do
+          vim.api.nvim_set_hl(0, name, definition)
+        end
+      end
+      define_extra_highlights()
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group = vim.api.nvim_create_augroup("dadbod_grip_extra_highlights", { clear = true }),
+        callback = define_extra_highlights,
+      })
+
+      -- grip mirrors every g:dbs entry into ~/.grip/connections.json verbatim
+      -- (connections.lua, M.list), and those URLs carry live Vault lease
+      -- passwords. Park that one file on tmpfs so a lease never outlives the
+      -- session - a missing registry is read as empty. Consequence: connection
+      -- IDs saved with queries are session-scoped too.
+      local function contain_global_registry()
+        local uv = vim.uv
+        local dir = vim.fn.expand("~/.grip")
+        local registry = dir .. "/connections.json"
+        local runtime = (vim.env.XDG_RUNTIME_DIR or "/tmp") .. "/dadbod-grip"
+
+        vim.fn.mkdir(dir, "p")
+        vim.fn.mkdir(runtime, "p")
+        pcall(uv.fs_chmod, dir, 448) -- 0700
+        pcall(uv.fs_chmod, runtime, 448)
+
+        local stat = uv.fs_lstat(registry)
+        if stat and stat.type == "link" then
+          return
+        end
+        if stat then
+          -- A real registry from before this containment: keep it, then swap.
+          uv.fs_rename(registry, registry .. ".bak")
+        end
+        pcall(uv.fs_symlink, runtime .. "/connections.json", registry)
+      end
+      contain_global_registry()
+
+      -- Populate g:dbs before anything can open a picker, so a bare
+      -- `:GripConnect` works without going through <leader>Dc first.
+      dbcreds.refresh()
+
+      -- g:dbs is read when the picker builds its list, so refresh again or a
+      -- new Vault lease (or a fresh source file) would not be visible.
+      vim.keymap.set("n", "<leader>Dc", function()
+        dbcreds.refresh()
+        vim.cmd("GripConnect")
+      end, { desc = "Grip: connections" })
+
+      vim.keymap.set("n", "<leader>Dg", "<cmd>GripHome<cr>", { desc = "Grip: home" })
+    end,
+  },
+}
