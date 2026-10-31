@@ -6,8 +6,9 @@
 -- grip ships a Catppuccin *dark* highlight palette: a slate column band and
 -- pale yellow/green text, both of which disappear on a light theme. The
 -- overrides below re-express the grid groups in the palette from
--- .chezmoidata/palette.toml. The connection accent groups (GripBorder,
--- GripConnAccent*) are left alone so a per-connection `color` still wins.
+-- .chezmoidata/palette.toml - including the connection accent, whose default
+-- lilac (#cba6f7) is unreadable on paper. Note that overriding the accent
+-- groups means an entry's `color` in connections.json no longer tints them.
 local bg = "{{ .palette.bg }}"
 local selection_bg = "{{ .palette.selection_bg }}"
 local dim = "{{ .palette.dim }}"
@@ -16,6 +17,7 @@ local red = "{{ .palette.extra.red }}"
 local orange = "{{ .palette.extra.orange }}"
 local yellow = "{{ .palette.extra.yellow }}"
 local green = "{{ .palette.extra.green }}"
+local purple = "{{ .palette.extra.purple }}"
 local magenta = "{{ .palette.color5 }}"
 
 ---Blend `hex` towards the paper background, keeping `keep` of the colour.
@@ -75,6 +77,12 @@ return {
         GripBoolFalse = { bold = true, fg = red },
         GripUrl = { underline = true, fg = accent },
         GripWatch = { bold = true, fg = accent },
+
+        -- Grid title row and box borders (GripBorder), and the connection /
+        -- schema title above the table list (GripConnAccentBold).
+        GripBorder = { bold = true, fg = purple },
+        GripConnAccent = { fg = purple },
+        GripConnAccentBold = { bold = true, fg = purple },
       },
     },
     config = function(_, opts)
