@@ -41,7 +41,7 @@ return {
         hl[name] = spec
       end
 
-      return vim.tbl_deep_extend("force", hl, {
+      hl = vim.tbl_deep_extend("force", hl, {
         fill = { fg = "#b7b5ac", bg = paper },
         background = { fg = "#b7b5ac", bg = chip },
         buffer = { fg = "#b7b5ac", bg = chip },
@@ -54,6 +54,16 @@ return {
         modified_visible = { fg = "#24837b", bg = paper },
         modified_selected = { fg = "#24837b", bg = paper },
       })
+
+      -- Diagnostics colour only the indicator (icon + count, the
+      -- *_diagnostic groups); the buffer name keeps its plain state look.
+      for _, level in ipairs({ "error", "warning", "info", "hint" }) do
+        for _, state in ipairs({ "", "_visible", "_selected" }) do
+          hl[level .. state] = vim.deepcopy(hl["buffer" .. state])
+        end
+      end
+
+      return hl
     end,
   },
 }
