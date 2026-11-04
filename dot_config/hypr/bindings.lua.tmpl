@@ -21,6 +21,15 @@ hl.bind("SUPER + SHIFT + A", hl.dsp.exec_cmd("sys-ai"), { description = "AI sess
 -- Launcher + menu live in ~/.config/hypr/base/bindings/utilities.lua
 hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sys-launch clipboard"), { release = true, description = "Clipboard manager (release)" })
 
+-- Scrolling layout (workspace 3, see workspaces.lua): toggle the focused
+-- column between half and full width. Absolute widths, so the first press
+-- always lands on 1.0 no matter what the column was before.
+local wide_column = false
+hl.bind("SUPER + PERIOD", function()
+  wide_column = not wide_column
+  hl.dispatch(hl.dsp.layout("colresize " .. (wide_column and "1" or "0.5")))
+end, { description = "Toggle column width (scrolling)" })
+
 -- Add extra bindings:
 -- hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("alacritty -e ssh your-server"))
 
