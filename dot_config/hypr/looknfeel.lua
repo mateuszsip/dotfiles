@@ -7,6 +7,15 @@ hl.config({
     rounding = 8,
   },
 
+  -- Scrolling layout (workspace 3, see workspaces.lua): hovering a column
+  -- that is only partly on screen must not yank the view. Soft (mouse)
+  -- focus only follows when the column covers the whole monitor, so in
+  -- practice hover never scrolls. Clicks and keyboard navigation are
+  -- hard input and still scroll as before.
+  scrolling = {
+    follow_min_visible = 1.0,
+  },
+
   -- Options kept from the original file, deliberately still commented out:
   --
   -- general = {
