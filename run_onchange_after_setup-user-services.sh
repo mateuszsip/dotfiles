@@ -13,6 +13,7 @@ systemctl --user disable omarchy-battery-monitor.timer 2>/dev/null
 
 for unit in \
   elephant.service \
+  matcha-daemon.service \
   nv-restore.service \
   sys-battery-monitor.timer \
   sys-elephant-watchdog.timer \
@@ -29,6 +30,7 @@ systemctl --user start sys-battery-monitor.timer 2>/dev/null
 systemctl --user start sys-elephant-watchdog.timer 2>/dev/null
 systemctl --user start sys-recover-internal-monitor.service 2>/dev/null
 systemctl --user start elephant.service 2>/dev/null
+systemctl --user start matcha-daemon.service 2>/dev/null
 systemctl --user start voxtype.service 2>/dev/null
 
 # The old omarchy timer/service files are not owned by chezmoi; remove them
