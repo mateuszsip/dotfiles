@@ -27,6 +27,7 @@ libfprint-git
 limine-mkinitcpio-hook
 limine-snapper-sync
 localsend
+matcha-client-bin
 moor-bin
 nextmeeting
 pacsea-bin
