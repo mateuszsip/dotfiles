@@ -38,7 +38,7 @@ require("autostart")
 -- App workspace assignments
 hl.window_rule({ match = { class = "zen" }, workspace = "1 silent" })
 hl.window_rule({ match = { class = "(BambuStudio|bambu-studio)" }, workspace = "5 silent" })
-hl.window_rule({ match = { class = "steam" }, workspace = "7 silent" })
+hl.window_rule({ match = { class = "steam" }, workspace = "8 silent" })
 hl.window_rule({ match = { class = "chrome-web.whatsapp.com__-Profile_1" }, workspace = "4 silent" })
 hl.window_rule({ match = { class = "feishin" }, workspace = "9 silent" })
 hl.window_rule({ match = { class = "Bitwarden" }, workspace = "10 silent" })
@@ -53,18 +53,18 @@ hl.window_rule({ match = { class = "Bitwarden" }, float = false })
 local toggle_dir = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/hypr/toggles/"
 
 for _, name in ipairs({
-  "window-no-gaps",
-  "single-window-aspect-ratio",
-  "internal-monitor-disable",
-  "internal-monitor-mirror",
-  "touchpad-disabled",
+	"window-no-gaps",
+	"single-window-aspect-ratio",
+	"internal-monitor-disable",
+	"internal-monitor-mirror",
+	"touchpad-disabled",
 }) do
-  local handle = io.open(toggle_dir .. name .. ".lua", "r")
-  if handle then
-    handle:close()
-    local ok, err = pcall(dofile, toggle_dir .. name .. ".lua")
-    if not ok then
-      print("hyprland.lua: toggle '" .. name .. "' failed: " .. tostring(err))
-    end
-  end
+	local handle = io.open(toggle_dir .. name .. ".lua", "r")
+	if handle then
+		handle:close()
+		local ok, err = pcall(dofile, toggle_dir .. name .. ".lua")
+		if not ok then
+			print("hyprland.lua: toggle '" .. name .. "' failed: " .. tostring(err))
+		end
+	end
 end
