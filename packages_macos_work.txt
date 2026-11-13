@@ -4,4 +4,3 @@ k9s
 kubectl
 mysql
 openjdk@25
-vault-cli

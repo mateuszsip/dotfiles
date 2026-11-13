@@ -1,1 +1,2 @@
 datadog-labs/pack/pup
+hashicorp/tap/vault
