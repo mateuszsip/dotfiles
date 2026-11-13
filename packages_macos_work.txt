@@ -2,5 +2,5 @@ aws-sso-cli
 awscli
 k9s
 kubectl
-mysql
+mysql-client@8.4
 openjdk@25
