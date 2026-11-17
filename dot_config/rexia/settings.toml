@@ -1,0 +1,118 @@
+host_order = []
+last_host = "local"
+last_session = "session:01a189d4-f69f-7343-88fc-0a70186959c5"
+web_origins = []
+
+[[hosts]]
+id = "local"
+label = "sipBook-p14s"
+endpoint = ""
+
+[interface]
+sidebar = true
+sidebar_width = 218.0
+toolbar_layout = "left"
+toolbar_behavior = "always"
+vertical_side = "left"
+tabs_fill = true
+animation = "natural"
+quick_switcher = true
+sidebar_text_size = "medium"
+sidebar_gesture = "swipe"
+trackpad_gestures = true
+tab_icon_color = "never"
+shell_icon_theme = "default"
+tab_icons = 3
+pane_style = "comfortable"
+pane_headers = "always"
+minimized_corner = "bottom_right"
+active_pane_opacity = 1.0
+inactive_pane_opacity = 1.0
+highlight_active_pane = true
+highlight_color = "text"
+highlight_opacity = 1.0
+highlight_animation = "fade"
+fade_inactive = "off"
+fade_inactive_windows = false
+focus_follows_mouse = false
+autobalance_splits = true
+activity_view = false
+activity_below_sessions = true
+activity_by_priority = true
+
+[terminal]
+line_height = 1.0
+padding_x = 8.0
+padding_y = 6.0
+copy_on_select = false
+key_hints = true
+smooth_scrolling = true
+smooth_resizing = true
+anchor = "top"
+recent_paths = true
+app_links = "ask"
+trusted_links = []
+padding_fill = "off"
+padding_fill_header = true
+cursor_style = "block"
+force_cursor_style = false
+cursor_blink = "normal"
+cursor_blink_ms = 600
+startup_command = ""
+prefer_generated_titles = false
+cursor_shaders = false
+cursor_shader = "frozen"
+character_spacing = 0.0
+ligatures = false
+text_styles = "both"
+fallback_fonts = []
+improve_contrast = false
+theme_palette = false
+
+[terminal.selection]
+foreground = "theme"
+background = "theme"
+rounded = false
+copy_animation = true
+
+[notifications]
+notice_position = "bottom_center"
+activity_in_tabs = true
+include_idle = false
+each_process = false
+system_notifications = true
+badge = true
+sounds = false
+sound_volume = 1.0
+terminal_notifications = true
+tailscale_sign_in = true
+tailscale_approval = true
+tailscale_failures = true
+
+[notifications.working]
+tabs = true
+notify = false
+sound = false
+
+[notifications.blocked]
+tabs = true
+notify = true
+sound = true
+
+[notifications.error]
+tabs = true
+notify = true
+sound = true
+
+[notifications.done]
+tabs = true
+notify = true
+sound = true
+
+[shortcuts]
+
+[recent_paths]
+
+[applied_origins]
+
+[muted_tabs]
