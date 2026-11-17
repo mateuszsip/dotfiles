@@ -1,11 +1,14 @@
 #!/bin/bash
-# Launch rexia, the Rex client built from ~/src/rexia.
+# Launch rexia, the Rex client built from the ~/src/rexia checkout.
 #
 # The binary is not installed system-wide: rexia builds from that checkout
-# with local Zig, and carries a local patch (see ~/.local/share/rexia-patches/).
+# with local Zig and carries a local patch (see ~/.local/share/rexia-patches/).
 # This wrapper gives keybinds and autostart a stable name on PATH, and fails
 # loudly instead of hanging when a clean checkout or failed build leaves no
 # binary behind.
+#
+# exec replaces this shell, so the process Hyprland spawns is rexia itself —
+# that matters for the [workspace N] window tracking in autostart.lua.
 #
 # Rebuild after `git -C ~/src/rexia pull`:
 #   cd ~/src/rexia && PATH="$HOME/.local/opt/zig-0.17.1:$PATH" cargo build --release --locked
