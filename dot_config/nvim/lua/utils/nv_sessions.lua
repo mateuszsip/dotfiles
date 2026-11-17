@@ -64,6 +64,9 @@ function M.restore()
   if not ok then
     vim.notify("nv: could not restore " .. path, vim.log.levels.WARN)
   end
+  -- A snapshot can carry the oil browser back next to real file buffers;
+  -- keep it only when it is the only thing the session has to show.
+  require("utils.oil").prune()
   return ok
 end
 

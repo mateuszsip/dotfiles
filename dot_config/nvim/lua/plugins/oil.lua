@@ -284,6 +284,19 @@ return {
 
     require("oil").setup(opts)
 
+    -- Oil is a filesystem view, not a document: keep it out of the main
+    -- window and buffer list whenever real files are open. Restored `nv`
+    -- sessions are pruned in utils/nv_sessions.lua; this covers plain startup
+    -- (e.g. `nvim . file`). With nothing else to show, oil is left alone.
+    vim.api.nvim_create_autocmd("VimEnter", {
+      group = vim.api.nvim_create_augroup("OilMainWindowOnly", { clear = true }),
+      callback = function()
+        vim.schedule(function()
+          require("utils.oil").prune()
+        end)
+      end,
+    })
+
     -- Highlight groups per digit value 0-7 for the operms column.
     local perm_hls = {
       [0] = "Comment", -- no perms (---)
