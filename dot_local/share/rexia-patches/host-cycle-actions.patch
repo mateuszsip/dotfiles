@@ -1,0 +1,49 @@
+diff --git i/src/ui/actions.rs w/src/ui/actions.rs
+index 10e8923..c668f22 100644
+--- i/src/ui/actions.rs
++++ w/src/ui/actions.rs
+@@ -325,6 +325,20 @@ pub const ACTIONS: &[ActionDef] = &[
+         "port forward forwarding tunnel localhost remote browser",
+         []
+     ),
++    action!(
++        "client.host.next",
++        "Next Host",
++        "Host",
++        "host remote machine server cycle forward switch",
++        []
++    ),
++    action!(
++        "client.host.previous",
++        "Previous Host",
++        "Host",
++        "host remote machine server cycle back switch",
++        []
++    ),
+     // Tabs
+     action!(
+         "client.tab.new",
+diff --git i/src/ui/workspace/actions.rs w/src/ui/workspace/actions.rs
+index 8de2d27..d3c9ff3 100644
+--- i/src/ui/workspace/actions.rs
++++ w/src/ui/workspace/actions.rs
+@@ -570,6 +570,19 @@ impl Workspace {
+                 };
+                 self.switch_host(next, cx);
+             }
++            "client.host.next" | "client.host.previous" => {
++                // Silent with a single host: there is nothing to cycle to, and
++                // the sidebar already shows there is only one.
++                let count = self.hosts.len();
++                if count > 1 {
++                    let step = if name == "client.host.next" {
++                        1
++                    } else {
++                        count - 1
++                    };
++                    self.switch_host((self.active + step) % count, cx);
++                }
++            }
+ 
+             "client.tab.new" => self.new_tab(cx),
+             "client.tab.close" => {
