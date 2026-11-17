@@ -13,7 +13,9 @@
 --   ctrl+shift+s      cycle tab style (above / left / right)
 --   ctrl+shift+p      command palette (searches all actions)
 --
--- Examples — uncomment to override:
+-- Overrides (active): these sit above rexia's defaults, so they win. They
+-- take ctrl+alt+↑/↓ away from pane focus; vertical splits stay reachable
+-- with ctrl+shift+space (Go to Anything) and the mouse.
 rex.bind("ctrl+alt+down", "session.next")
 rex.bind("ctrl+alt+up", "session.previous")
 -- rex.bind("ctrl+shift+w", "client.tab.close")   -- (default closes the window)
