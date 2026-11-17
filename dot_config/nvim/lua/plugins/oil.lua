@@ -37,6 +37,29 @@ return {
   cmd = { "Oil" },
   keys = {
     {
+      "go",
+      function()
+        -- Toggle between oil and the last file buffer shown in this window.
+        -- File -> oil listing it was opened from (or the file's directory
+        -- if no oil buffer exists yet). Oil -> back to the file. <C-^> does
+        -- the same one step back, but `go` always flips between the two.
+        local alt = vim.fn.bufnr("#")
+        if alt > 0 and vim.api.nvim_buf_is_valid(alt) then
+          local in_oil = vim.bo.filetype == "oil"
+          local alt_is_oil = vim.api.nvim_buf_get_name(alt):match("^oil://") ~= nil
+          if in_oil ~= alt_is_oil then
+            vim.cmd("buffer " .. alt)
+            return
+          end
+        end
+        if vim.bo.filetype == "oil" then
+          return
+        end
+        require("oil").open()
+      end,
+      desc = "Oil toggle (file <-> dir listing)",
+    },
+    {
       "<leader>fee",
       function()
         require("oil").open_float(nil, { preview = { vertical = true } })
