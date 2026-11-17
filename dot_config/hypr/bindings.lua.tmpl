@@ -2,7 +2,7 @@
 -- Migrated from bindings.conf.tmpl
 
 hl.bind("SUPER + RETURN", hl.dsp.exec_cmd("uwsm-app -- rexia"), { description = "Rex client" })
-hl.bind("SUPER + ALT + RETURN", hl.dsp.exec_cmd('uwsm-app -- xdg-terminal-exec --dir="$(sys-terminal-cwd)" bash -c "tmux attach || tmux new -s Work"'), { description = "Tmux" })
+hl.bind("SUPER + ALT + RETURN", hl.dsp.exec_cmd('uwsm-app -- xdg-terminal-exec --dir="$(sys-terminal-cwd)"'), { description = "Terminal (Ghostty)" })
 hl.bind("SUPER + SHIFT + RETURN", hl.dsp.exec_cmd("sys-launch browser"), { description = "Browser" })
 hl.bind("SUPER + SHIFT + F", hl.dsp.exec_cmd("uwsm-app -- nautilus --new-window"), { description = "File manager" })
 hl.bind("SUPER + ALT + SHIFT + F", hl.dsp.exec_cmd('uwsm-app -- nautilus --new-window "$(sys-terminal-cwd)"'), { description = "File manager (cwd)" })
