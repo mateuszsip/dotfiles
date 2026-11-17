@@ -157,6 +157,34 @@ local picker_keys = {
   ["d"] = { "delete_bookmark", desc = "Delete bookmark", mode = { "n" } },
 }
 
+-- Drop bookmark locations into a CodeCompanion chat, like sidekick's `send`:
+-- the text lands in the chat buffer and the user still submits it themselves.
+local function send_to_codecompanion(opts, empty_msg)
+  local locs = require("haunt.sidekick").get_locations(opts)
+  if not locs or locs == "" then
+    vim.notify(empty_msg, vim.log.levels.WARN)
+    return
+  end
+
+  local ok, cc = pcall(require, "codecompanion")
+  if not ok then
+    vim.notify("haunt.nvim: CodeCompanion is not available", vim.log.levels.WARN)
+    return
+  end
+
+  local chat = cc.last_chat() or cc.chat({ stop_context_insertion = true })
+  if not chat then
+    vim.notify("haunt.nvim: Could not open a CodeCompanion chat", vim.log.levels.ERROR)
+    return
+  end
+
+  chat:add_buf_message({
+    role = require("codecompanion.config").constants.USER_ROLE,
+    content = "Haunt bookmarks:\n\n" .. locs,
+  })
+  chat.ui:open()
+end
+
 return {
   "TheNoeTrevino/haunt.nvim",
   event = "VeryLazy",
@@ -246,26 +274,19 @@ return {
     {
       "<leader>Bs",
       function()
-        local locs = require("haunt.sidekick").get_locations({ current_buffer = true })
-        if locs and #locs > 0 then
-          require("sidekick.cli").send({ msg = locs })
-        else
-          vim.notify("haunt.nvim: No bookmarks found in current buffer to send to Sidekick", vim.log.levels.WARN)
-        end
+        send_to_codecompanion(
+          { current_buffer = true },
+          "haunt.nvim: No bookmarks in current buffer to send to CodeCompanion"
+        )
       end,
-      desc = "Haunt: Send buffer bookmarks to Sidekick CLI",
+      desc = "Haunt: Send buffer bookmarks to CodeCompanion",
     },
     {
       "<leader>BS",
       function()
-        local locs = require("haunt.sidekick").get_locations()
-        if locs and #locs > 0 then
-          require("sidekick.cli").send({ msg = locs })
-        else
-          vim.notify("haunt.nvim: No bookmarks found to send to Sidekick", vim.log.levels.WARN)
-        end
+        send_to_codecompanion(nil, "haunt.nvim: No bookmarks to send to CodeCompanion")
       end,
-      desc = "Haunt: Send all bookmarks to Sidekick CLI",
+      desc = "Haunt: Send all bookmarks to CodeCompanion",
     },
   },
 }
