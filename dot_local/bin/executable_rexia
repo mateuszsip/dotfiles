@@ -1,0 +1,21 @@
+#!/bin/bash
+# Launch rexia, the Rex client built from ~/src/rexia.
+#
+# The binary is not installed system-wide: rexia builds from that checkout
+# with local Zig, and carries a local patch (see ~/.local/share/rexia-patches/).
+# This wrapper gives keybinds and autostart a stable name on PATH, and fails
+# loudly instead of hanging when a clean checkout or failed build leaves no
+# binary behind.
+#
+# Rebuild after `git -C ~/src/rexia pull`:
+#   cd ~/src/rexia && PATH="$HOME/.local/opt/zig-0.17.1:$PATH" cargo build --release --locked
+
+set -u
+
+bin="$HOME/src/rexia/target/release/rexia"
+if [[ ! -x $bin ]]; then
+  echo "rexia: missing $bin — rebuild from ~/src/rexia" >&2
+  notify-send -u critical rexia "binary missing: $bin — rebuild from ~/src/rexia" 2>/dev/null || true
+  exit 1
+fi
+exec "$bin" "$@"

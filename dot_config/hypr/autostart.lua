@@ -16,8 +16,11 @@ hl.on("hyprland.start", function()
 
   -- `[workspace N silent]` becomes the second argument: window-rule effects
   -- applied to the window this command spawns.
-  hl.exec_cmd("ghostty --working-directory=~/.local/share/chezmoi", { workspace = "2 silent" })
-  hl.exec_cmd("ghostty --working-directory=~/.local/share/chezmoi", { workspace = "3 silent" })
+  -- Rex client instead of a bare terminal on the two workspaces (launched
+  -- directly, not through uwsm-app: the [workspace N silent] rule tracks the
+  -- spawned process, and rexia's wrapper execs so the PID is the client).
+  hl.exec_cmd("rexia", { workspace = "2 silent" })
+  hl.exec_cmd("rexia", { workspace = "3 silent" })
 
   -- Keep Ghostty font size in sync with the monitor setup (12 undocked / 14 docked)
   hl.exec_cmd("systemd-run --user --no-block --unit=ghostty-font-monitor bash ~/.config/hypr/scripts/ghostty-font-monitor.sh")
