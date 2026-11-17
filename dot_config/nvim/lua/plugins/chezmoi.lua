@@ -1,3 +1,47 @@
+-- Chezmoi helpers shared by the auto-add autocmd and the keymaps.
+-- `chezmoi source-path` exits non-zero and prints nothing for unmanaged files.
+local function chezmoi_source_path(file)
+  local out = vim.fn.system({ "chezmoi", "source-path", file })
+  if vim.v.shell_error ~= 0 then
+    return nil
+  end
+  return vim.fn.trim(out)
+end
+
+-- Encrypted entries are stored as `encrypted_*.age`. A plain `chezmoi add`
+-- on them prompts to remove the encrypted attribute (and fails without a TTY),
+-- so such files must be added with `--encrypt`.
+local function chezmoi_is_encrypted(source)
+  return source ~= nil and source ~= "" and (vim.endswith(source, ".age") or source:find("encrypted_", 1, true) ~= nil)
+end
+
+---Add a file to the chezmoi source state.
+---@param file string
+---@param source string|nil Pre-fetched `chezmoi source-path` output (optional)
+---@param encrypt boolean|nil Force encryption; nil auto-detects from the source
+local function chezmoi_add(file, source, encrypt)
+  if source == nil then
+    source = chezmoi_source_path(file)
+  end
+  if encrypt == nil then
+    encrypt = chezmoi_is_encrypted(source)
+  end
+
+  local cmd = { "chezmoi", "add" }
+  if encrypt then
+    table.insert(cmd, "--encrypt")
+  end
+  table.insert(cmd, file)
+
+  local result = vim.fn.system(cmd)
+  local name = encrypt and "chezmoi add --encrypt" or "chezmoi add"
+  if vim.v.shell_error ~= 0 then
+    vim.notify(name .. " failed: " .. result, vim.log.levels.ERROR)
+  else
+    vim.notify(name .. ": " .. file)
+  end
+end
+
 return {
   {
     "xvzc/chezmoi.nvim",
@@ -10,10 +54,21 @@ return {
           desc = "Auto chezmoi add on save for managed files",
           callback = function()
             local file = vim.fn.expand("%:p")
+            if file == "" then
+              return
+            end
+            local file_source
             vim.fn.jobstart({ chezmoi_bin, "source-path", file }, {
+              stdout_buffered = true,
+              on_stdout = function(_, data)
+                file_source = vim.fn.trim(table.concat(data, "\n"))
+              end,
               on_exit = function(_, code)
                 if code == 0 then
-                  vim.fn.jobstart({ chezmoi_bin, "add", file })
+                  -- jobstart callbacks are fast events; vim.fn.system needs the main loop
+                  vim.schedule(function()
+                    chezmoi_add(file, file_source)
+                  end)
                 end
               end,
             })
@@ -23,7 +78,8 @@ return {
     end,
     keys = {
       { "<leader>Ca", desc = "Chezmoi add current file" },
-      { "<leader>Ce", desc = "Chezmoi jump source/target" },
+      { "<leader>Ce", desc = "Chezmoi add current file (encrypted)" },
+      { "<leader>Cj", desc = "Chezmoi jump source/target" },
       { "<leader>Cw", desc = "Chezmoi edit source file (watch)" },
       { "<leader>Cp", desc = "Chezmoi apply current file" },
       { "<leader>CA", desc = "Chezmoi apply all" },
@@ -37,13 +93,20 @@ return {
 
       map("n", "<leader>Ca", function()
         local file = vim.fn.expand("%:p")
-        local result = vim.fn.system("chezmoi add " .. vim.fn.shellescape(file))
-        if vim.v.shell_error ~= 0 then
-          vim.notify("chezmoi add failed: " .. result, vim.log.levels.ERROR)
-        else
-          vim.notify("chezmoi add: " .. file)
+        if file == "" then
+          return
         end
+        -- auto-detects encryption, so re-adding an encrypted file keeps it encrypted
+        chezmoi_add(file)
       end, { desc = "Chezmoi add current file" })
+
+      map("n", "<leader>Ce", function()
+        local file = vim.fn.expand("%:p")
+        if file == "" then
+          return
+        end
+        chezmoi_add(file, nil, true)
+      end, { desc = "Chezmoi add current file (encrypted)" })
 
       local function chezmoi_source_dir()
         return vim.fn.trim(vim.fn.system("chezmoi source-path"))
@@ -53,7 +116,7 @@ return {
         return vim.startswith(file, chezmoi_source_dir() .. "/")
       end
 
-      map("n", "<leader>Ce", function()
+      map("n", "<leader>Cj", function()
         local file = vim.fn.expand("%:p")
         if file == "" then
           return
