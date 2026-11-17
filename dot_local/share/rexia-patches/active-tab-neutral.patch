@@ -1,0 +1,17 @@
+diff --git i/src/ui/workspace/mod.rs w/src/ui/workspace/mod.rs
+index e85e335..74a2831 100644
+--- i/src/ui/workspace/mod.rs
++++ w/src/ui/workspace/mod.rs
+@@ -1152,8 +1152,11 @@ impl Workspace {
+                 let muted = self.tab_muted(self.active, window.id());
+                 // Filling tabs show a background only when there's more than one.
+                 let lone = fill && count < 2;
++                // The active tab uses a raised neutral surface rather than the accent:
++                // it reads like a Neovim buffer chip and leaves the accent for status
++                // and focus. Local patch: ~/.local/share/rexia-patches/active-tab-neutral.patch
+                 let (fg, bg) = if active && !lone {
+-                    (theme.on_primary, theme.primary)
++                    (theme.text, theme.surface_highest)
+                 } else {
+                     (theme.text, theme.background)
+                 };
