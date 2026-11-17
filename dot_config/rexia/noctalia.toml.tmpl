@@ -1,0 +1,48 @@
+# rexia colors — generated from .chezmoidata/palette.toml by chezmoi.
+#
+# rexia reads this as its Noctalia palette (its first-choice source) and
+# watches the directory, so a `chezmoi apply` retints the client live.
+# Terminal colors mirror Ghostty one-for-one; the Material roles rexia
+# builds its chrome from are derived from the same palette.
+mode = "{{ .palette.mode }}"
+
+[colors]
+# Chrome roles. Anything left out is derived by rexia from surface/on_surface.
+primary = "{{ .palette.accent }}"
+on_primary = "{{ .palette.bg }}"
+secondary = "{{ .palette.color5 }}"
+on_secondary = "{{ .palette.bg }}"
+tertiary = "{{ .palette.color6 }}"
+on_tertiary = "{{ .palette.bg }}"
+error = "{{ .palette.color1 }}"
+on_error = "{{ .palette.bg }}"
+surface = "{{ .palette.bg }}"
+on_surface = "{{ .palette.fg }}"
+hover = "{{ .palette.accent }}"
+on_hover = "{{ .palette.bg }}"
+
+# Terminal palette: exactly Ghostty's theme.conf.
+terminal_background = "{{ .palette.bg }}"
+terminal_foreground = "{{ .palette.fg }}"
+terminal_cursor = "{{ .palette.cursor }}"
+terminal_cursor_text = "{{ .palette.bg }}"
+terminal_selection_bg = "{{ .palette.selection_bg }}"
+terminal_selection_fg = "{{ .palette.selection_fg }}"
+
+terminal_normal_black = "{{ .palette.color0 }}"
+terminal_normal_red = "{{ .palette.color1 }}"
+terminal_normal_green = "{{ .palette.color2 }}"
+terminal_normal_yellow = "{{ .palette.color3 }}"
+terminal_normal_blue = "{{ .palette.color4 }}"
+terminal_normal_magenta = "{{ .palette.color5 }}"
+terminal_normal_cyan = "{{ .palette.color6 }}"
+terminal_normal_white = "{{ .palette.color7 }}"
+
+terminal_bright_black = "{{ .palette.color8 }}"
+terminal_bright_red = "{{ .palette.color9 }}"
+terminal_bright_green = "{{ .palette.color10 }}"
+terminal_bright_yellow = "{{ .palette.color11 }}"
+terminal_bright_blue = "{{ .palette.color12 }}"
+terminal_bright_magenta = "{{ .palette.color13 }}"
+terminal_bright_cyan = "{{ .palette.color14 }}"
+terminal_bright_white = "{{ .palette.color15 }}"
