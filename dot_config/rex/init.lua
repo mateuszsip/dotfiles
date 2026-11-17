@@ -14,7 +14,7 @@
 --   ctrl+shift+p      command palette (searches all actions)
 --
 -- Examples — uncomment to override:
--- rex.bind("ctrl+alt+down", "session.next")
--- rex.bind("ctrl+alt+up", "session.previous")
+rex.bind("ctrl+alt+down", "session.next")
+rex.bind("ctrl+alt+up", "session.previous")
 -- rex.bind("ctrl+shift+w", "client.tab.close")   -- (default closes the window)
 -- rex.unbind("ctrl+tab")                          -- free a default key
