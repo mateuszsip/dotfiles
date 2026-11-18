@@ -1,7 +1,7 @@
 From f2d49b6fb4e0b4236d5c67a151bd0c16c2195f4f Mon Sep 17 00:00:00 2001
 From: Mateusz Sip <mateusz.sip@gmail.com>
 Date: Wed, 18 Nov 2026 01:05:24 +0100
-Subject: [PATCH 2/3] actions: client.host.next and client.host.previous cycle
+Subject: [PATCH 2/4] actions: client.host.next and client.host.previous cycle
  hosts
 
 ---
