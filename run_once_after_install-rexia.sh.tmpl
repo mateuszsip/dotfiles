@@ -1,0 +1,60 @@
+#!/bin/bash
+# rexia (https://github.com/mateuszsip/rexia — fork of hackrdotsh/rexia):
+# clone the fork to ~/src/rexia, install the pinned Zig 0.17.1 under
+# ~/.local/opt, and build the release binary that ~/.local/bin/rexia wraps.
+#
+# Idempotent: each step is skipped when its artifact already exists, so
+# re-applying on an existing machine is a no-op. Pushing to the fork from a
+# new machine needs auth: git -C ~/src/rexia remote set-url origin
+# git@github.com:mateuszsip/rexia.git (or gh auth login).
+#
+# Bumping the pinned Zig: update the two sha256s (ziglang.org/download).
+# Pulling upstream changes stays manual:
+#   git -C ~/src/rexia pull --rebase upstream main && PATH=$HOME/.local/opt/zig-0.17.1:$PATH cargo build --release --locked
+set -eufo pipefail
+
+{{- if ne .chezmoi.os "linux" }}
+exit 0
+{{- end }}
+
+repo="$HOME/src/rexia"
+branch="local-tweaks"
+zig_dir="$HOME/.local/opt/zig-0.17.1"
+bin="$repo/target/release/rexia"
+
+# 1. Clone (https: the fork is public, so a fresh machine needs no keys).
+if [[ ! -d $repo ]]; then
+    mkdir -p "$HOME/src"
+    git clone -b "$branch" https://github.com/mateuszsip/rexia.git "$repo"
+fi
+
+# 2. Zig 0.17.1, the version rexia builds libghostty-vt with (no Arch package
+# for the exact pin, hence the official tarball; checksums pinned per arch).
+if [[ ! -x $zig_dir/zig ]]; then
+    case "$(uname -m)" in
+        x86_64)  zig_sha="3581863e3cbcfd0fce0efc682ce7e9e93da96668a977791d356a26d2a7e9b17a" ;;
+        aarch64) zig_sha="a1546d5646eb184437918d6635ca6b762a0e889eac09cef720ee7a1ed3fe7795" ;;
+        *) echo "rexia: no pinned Zig 0.17.1 for $(uname -m); install Zig manually" >&2; exit 0 ;;
+    esac
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    echo "rexia: installing Zig 0.17.1 ($(uname -m))..."
+    curl -fsSL "https://ziglang.org/download/0.17.1/zig-$(uname -m)-linux-0.17.1.tar.xz" -o "$tmp/zig.tar.xz"
+    echo "$zig_sha  $tmp/zig.tar.xz" | sha256sum -c -
+    rm -rf "$zig_dir"   # half-extracted remains of a previous failed run
+    mkdir -p "$HOME/.local/opt" "$zig_dir"
+    tar -xJf "$tmp/zig.tar.xz" -C "$zig_dir" --strip-components=1
+fi
+
+# 3. Build (rustc/cargo come from the rust entry in packages_arch.txt).
+if [[ -x $bin ]]; then
+    echo "rexia: $bin already built — skipping (rebuild by hand after pulling)"
+    exit 0
+fi
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "rexia: cargo is missing — install the rust package, then re-run chezmoi apply" >&2
+    exit 0
+fi
+cd "$repo"
+PATH="$zig_dir:$PATH" cargo build --release --locked
+echo "rexia: built $bin"

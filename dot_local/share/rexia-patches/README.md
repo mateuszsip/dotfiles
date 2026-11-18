@@ -3,6 +3,10 @@
 The checkout at `~/src/rexia` is a fork: **https://github.com/mateuszsip/rexia**,
 branch `local-tweaks`, three commits ahead of `hackrdotsh/rexia` (`upstream`).
 
+A fresh Linux machine sets itself up: `run_once_after_install-rexia.sh.tmpl`
+clones the fork, installs the pinned Zig 0.17.1 and builds the binary on
+first `chezmoi apply` (idempotent — a no-op where those already exist).
+
 The `.patch` files here are generated from those commits (a portable offline
 copy — the fork is canonical). Regenerate after adding a tweak:
 
