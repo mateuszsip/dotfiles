@@ -149,12 +149,25 @@ return {
         commands.edit({ targets = { file }, args = { "--watch" } })
       end, { desc = "Chezmoi edit source file (watch)" })
 
+      -- Framed float with a blank winbar/statuscolumn as top/left padding.
+      local function apply_term_opts(title)
+        return {
+          auto_close = true,
+          win = {
+            border = "rounded",
+            title = title,
+            title_pos = "center",
+            wo = { winbar = " ", statuscolumn = " " },
+          },
+        }
+      end
+
       map("n", "<leader>Cp", function()
-        Snacks.terminal({ "chezmoi", "apply", vim.fn.expand("%:p") }, { auto_close = true })
+        Snacks.terminal({ "chezmoi", "apply", vim.fn.expand("%:p") }, apply_term_opts(" chezmoi apply (file) "))
       end, { desc = "Chezmoi apply current file" })
 
       map("n", "<leader>CA", function()
-        Snacks.terminal({ "chezmoi", "apply" }, { auto_close = true })
+        Snacks.terminal({ "chezmoi", "apply" }, apply_term_opts(" chezmoi apply "))
       end, { desc = "Chezmoi apply all" })
 
       map("n", "<leader>Cf", function()
