@@ -1,8 +1,18 @@
-diff --git i/src/ui/workspace/mod.rs w/src/ui/workspace/mod.rs
-index e85e335..9609451 100644
---- i/src/ui/workspace/mod.rs
-+++ w/src/ui/workspace/mod.rs
-@@ -1500,9 +1503,11 @@ impl Workspace {
+From c6fba86bd652ab162a1371c9e5ab9d3d7e506864 Mon Sep 17 00:00:00 2001
+From: Mateusz Sip <mateusz.sip@gmail.com>
+Date: Wed, 18 Nov 2026 01:05:24 +0100
+Subject: [PATCH 3/3] sidebar: activity marks hug the row's right edge, not the
+ hover actions
+
+---
+ src/ui/workspace/mod.rs | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/src/ui/workspace/mod.rs b/src/ui/workspace/mod.rs
+index 04a1be0..5842bb4 100644
+--- a/src/ui/workspace/mod.rs
++++ b/src/ui/workspace/mod.rs
+@@ -1503,9 +1503,11 @@ impl Workspace {
                              // Row actions, shown while the pointer is on the row.
                              .child(
                                  div()
@@ -17,7 +27,7 @@ index e85e335..9609451 100644
                                      .child(
                                          small_icon_button(
                                              SharedString::from(format!(
-@@ -1676,9 +1681,12 @@ impl Workspace {
+@@ -1679,9 +1681,12 @@ impl Workspace {
                                  .when(selected, |d| {
                                      d.child(
                                          div()
@@ -32,3 +42,6 @@ index e85e335..9609451 100644
                                              })
                                              .child(
                                                  small_icon_button(
+-- 
+2.56.1
+
