@@ -1,7 +1,7 @@
 From c6fba86bd652ab162a1371c9e5ab9d3d7e506864 Mon Sep 17 00:00:00 2001
 From: Mateusz Sip <mateusz.sip@gmail.com>
 Date: Wed, 18 Nov 2026 01:05:24 +0100
-Subject: [PATCH 3/4] sidebar: activity marks hug the row's right edge, not the
+Subject: [PATCH 3/5] sidebar: activity marks hug the row's right edge, not the
  hover actions
 
 ---

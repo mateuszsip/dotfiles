@@ -1,7 +1,7 @@
 From 06e7a573413974898af5956d2111ad6c37fb7563 Mon Sep 17 00:00:00 2001
 From: Mateusz Sip <mateusz.sip@gmail.com>
 Date: Wed, 18 Nov 2026 01:20:13 +0100
-Subject: [PATCH 4/4] sidebar: hover actions overlay the row instead of
+Subject: [PATCH 4/5] sidebar: hover actions overlay the row instead of
  toggling display
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

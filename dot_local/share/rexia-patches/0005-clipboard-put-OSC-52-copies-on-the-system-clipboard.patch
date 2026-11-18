@@ -1,0 +1,79 @@
+From fd5ddeca26effd5cb662adc0e7dc6d201db01724 Mon Sep 17 00:00:00 2001
+From: Mateusz Sip <mateusz.sip@gmail.com>
+Date: Wed, 18 Nov 2026 16:06:46 +0100
+Subject: [PATCH 5/5] clipboard: put OSC 52 copies on the system clipboard
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Programs such as nvim yank through OSC 52 — the only clipboard path in a
+pane (the rex server strips WAYLAND_DISPLAY, so wl-copy never runs, and
+nvim detects the support: the server answers XTGETTCAP Ms with the
+sequence). The stream task already collected each write into
+PaneModel.clipboard, "for the UI to put on the clipboard" per its doc,
+but no code read the field, so every copy died one step short. Take it
+in Workspace::sync and write it with gpui, the way pane.copy already
+does for selections.
+---
+ src/rex/host.rs         |  5 +++++
+ src/rex/stream.rs       | 10 ++++++++++
+ src/ui/workspace/mod.rs |  6 ++++++
+ 3 files changed, 21 insertions(+)
+
+diff --git a/src/rex/host.rs b/src/rex/host.rs
+index c12add3..1271440 100644
+--- a/src/rex/host.rs
++++ b/src/rex/host.rs
+@@ -291,6 +291,11 @@ impl PaneHandle {
+         self.model.lock().expect("pane model").clone()
+     }
+ 
++    /// Take the text a program copied (OSC 52), for the UI to put on the clipboard.
++    pub fn take_clipboard(&self) -> Option<String> {
++        self.model.lock().expect("pane model").clipboard.take()
++    }
++
+     /// Ask the stream something and wait for the answer.
+     pub async fn ask<T>(&self, build: impl FnOnce(oneshot::Sender<T>) -> PaneCommand) -> Option<T> {
+         let (reply, answer) = oneshot::channel();
+diff --git a/src/rex/stream.rs b/src/rex/stream.rs
+index d7dbc16..546de31 100644
+--- a/src/rex/stream.rs
++++ b/src/rex/stream.rs
+@@ -1254,6 +1254,16 @@ mod tests {
+         assert_eq!(state.exit_code, Some(3));
+     }
+ 
++    #[test]
++    fn osc52_copy_is_collected() {
++        let mut state = stream_from(b"", 10, 2);
++        state.feed(b"\x1b]52;c;aGVsbG8gd29ybGQ=\x1b\\").unwrap();
++        assert_eq!(
++            state.take_events(),
++            vec![TermEvent::Clipboard("hello world".into())]
++        );
++    }
++
+     #[test]
+     fn local_theme_overrides_server_theme() {
+         let mut state = stream_from(b"x", 10, 2);
+diff --git a/src/ui/workspace/mod.rs b/src/ui/workspace/mod.rs
+index 8a8b3b1..72b26fa 100644
+--- a/src/ui/workspace/mod.rs
++++ b/src/ui/workspace/mod.rs
+@@ -705,6 +705,12 @@ impl Workspace {
+                 self.panes.insert(key, pane);
+             }
+             let pane = &self.panes[&shown];
++            // A program copied text (OSC 52): put it on the system clipboard.
++            if let Some(text) = pane.read(cx).handle().and_then(|handle| handle.take_clipboard())
++                && !text.is_empty()
++            {
++                cx.write_to_clipboard(gpui::ClipboardItem::new_string(text));
++            }
+             pane.update(cx, |pane, cx| {
+                 if pane.changed() {
+                     cx.notify();
+-- 
+2.56.1
+
