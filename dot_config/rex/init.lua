@@ -13,19 +13,25 @@
 --   ctrl+shift+s      cycle tab style (above / left / right)
 --   ctrl+shift+p      command palette (searches all actions)
 --
--- Overrides: these sit above rexia's defaults, so they win. Two switcher
--- layers: shiftless cycles sessions, Shift cycles hosts; k/l mirror the
--- arrows, paired as chosen: k = down, l = up. Costs:
--- ctrl+alt+↑/↓ and k/l leave pane focus (vertical splits stay reachable
--- via ctrl+shift+space and the mouse); ctrl+alt+shift+↑/↓ and shift+k/l
--- leave session cycling, which keeps its shiftless layer.
+-- Overrides: these sit above rexia's defaults, so they win. Letters carry
+-- three levels — k/j are down (next), l/; are up (previous) — and the
+-- arrows stay as a second way to cycle sessions and hosts:
+--   ctrl+alt+k / l          next / previous tab
+--   ctrl+alt+shift+k / l    next / previous session
+--   ctrl+alt+shift+j / ;    next / previous host
+--   ctrl+alt+down / up      next / previous session
+--   ctrl+alt+shift+down / up  next / previous host
+-- Costs: ctrl+alt+arrows and k/l leave pane focus (vertical splits stay
+-- reachable with ctrl+shift+space and the mouse).
+rex.bind("ctrl+alt+k", "client.tab.next")
+rex.bind("ctrl+alt+l", "client.tab.previous")
+rex.bind("ctrl+alt+shift+k", "session.next")
+rex.bind("ctrl+alt+shift+l", "session.previous")
+rex.bind("ctrl+alt+shift+j", "client.host.next")
+rex.bind("ctrl+alt+shift+;", "client.host.previous")
 rex.bind("ctrl+alt+down", "session.next")
 rex.bind("ctrl+alt+up", "session.previous")
 rex.bind("ctrl+alt+shift+down", "client.host.next")
 rex.bind("ctrl+alt+shift+up", "client.host.previous")
-rex.bind("ctrl+alt+k", "session.next")
-rex.bind("ctrl+alt+l", "session.previous")
-rex.bind("ctrl+alt+shift+k", "client.host.next")
-rex.bind("ctrl+alt+shift+l", "client.host.previous")
 -- rex.bind("ctrl+shift+w", "client.tab.close")   -- (default closes the window)
 -- rex.unbind("ctrl+tab")                          -- free a default key
