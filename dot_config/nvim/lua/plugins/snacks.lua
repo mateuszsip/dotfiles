@@ -155,6 +155,31 @@ return {
       },
     },
     picker = {
+      -- Float geometry. Snacks' stock preset function
+      -- (vim.o.columns >= 120 and "default" or "vertical", picker/config/defaults.lua)
+      -- flips pickers to the narrow vertical preset — preview stacked at the
+      -- bottom — whenever the nvim UI is under 120 columns, which is where
+      -- rexia panes regularly sit. Pin the horizontal, preview-on-the-right
+      -- preset instead, sized in lockstep with oil's float: both cap the
+      -- width at 0.9 (oil.lua max_width), both use 0.85 for height. The one
+      -- deliberate difference: an 80-column floor, since the picker has to
+      -- fit list+preview side by side and oil's content-based width would
+      -- starve the list.
+      -- Sources that pin their own preset (vim.ui.select → "select" in
+      -- picker/config/sources.lua) merge after this config, so their preset
+      -- wins and their small dialogs keep their geometry.
+      layouts = {
+        default = {
+          layout = {
+            width = 0.9,
+            min_width = 80,
+            height = 0.85,
+          },
+        },
+      },
+      layout = {
+        preset = "default",
+      },
       sources = {
         projects = {
           dev = { "~/dev/work", "~/Work/" },

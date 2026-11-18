@@ -136,8 +136,10 @@ return {
     },
     float = {
       padding = 2,
-      max_width = 0.8,
-      max_height = 0.8,
+      -- Width cap matches the snacks picker layout (snacks.lua: width 0.9);
+      -- height stays 0.85 there, and oil sizes to its content below the caps.
+      max_width = 0.9,
+      max_height = 0.85,
       border = "rounded",
       win_options = { winblend = 0 },
     },
