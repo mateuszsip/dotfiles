@@ -1,11 +1,15 @@
 -- Experimental: https://github.com/olimorris/codecompanion.nvim
--- Chat uses an ACP agent picked per machine: opencode2 when it's on PATH
--- (private laptop), otherwise Claude Code (work, subscription; needs
+-- Chat uses an ACP agent picked per machine: opencode on personal machines
+-- (when it's on PATH), Claude Code on work machines (subscription; needs
 -- `npm i -g @agentclientprotocol/claude-agent-acp`). Muse is also selectable
 -- per chat via the `muse` adapter below; Antigravity via `antigravity`
 -- (personal machines only). Inline/cmd interactions only
 -- support HTTP adapters, so they stay on Copilot.
-local chat_adapter = vim.fn.executable("opencode") == 1 and "opencode" or "claude_code"
+-- machine.lua is rendered by chezmoi (work_machine flag); absent until `chezmoi apply`
+local has_machine, machine = pcall(require, "machine")
+local is_work = has_machine and machine.work == true
+-- opencode is installed everywhere, so gate on the flag rather than PATH alone
+local chat_adapter = (not is_work and vim.fn.executable("opencode") == 1) and "opencode" or "claude_code"
 
 -- MCP servers (stdio only). Jira/Datadog are remote HTTP servers reached via the
 -- mcp-remote bridge (browser OAuth on first start) and only enabled on work machines.
@@ -16,9 +20,6 @@ local mcp_servers = {
     -- token is inherited from the shell instead (nushell exports it from `gh auth token`)
   },
 }
--- machine.lua is rendered by chezmoi (work_machine flag); absent until `chezmoi apply`
-local has_machine, machine = pcall(require, "machine")
-local is_work = has_machine and machine.work == true
 if is_work then
   mcp_servers.jira = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v2/mcp" } }
   mcp_servers.datadog = { cmd = { "npx", "-y", "mcp-remote", "https://mcp.datadoghq.com/v1/mcp" } }
