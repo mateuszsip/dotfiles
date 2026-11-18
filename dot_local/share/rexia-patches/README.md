@@ -1,7 +1,7 @@
 # rexia local tweaks
 
 The checkout at `~/src/rexia` is a fork: **https://github.com/mateuszsip/rexia**,
-branch `local-tweaks`, three commits ahead of `hackrdotsh/rexia` (`upstream`).
+branch `local-tweaks`, four commits ahead of `hackrdotsh/rexia` (`upstream`).
 
 A fresh Linux machine sets itself up: `run_once_after_install-rexia.sh.tmpl`
 clones the fork, installs the pinned Zig 0.17.1 and builds the binary on
@@ -27,5 +27,7 @@ pin matches it).
    buffer-chip look) instead of the accent color.
 2. **actions** — `client.host.next` / `client.host.previous` cycle hosts;
    bound in `~/.config/rex/init.lua` to ctrl+alt+shift+j/; (and arrows).
-3. **sidebar** — activity marks hug the row's right edge: the hover action
-   buttons use `hidden` instead of `invisible`, so they reserve no space.
+3. **sidebar** — activity marks hug the row's right edge; the hover +/×
+   buttons overlay the row absolutely and reveal by visibility only (a
+   display toggle panics GPUI between its layout and paint passes —
+   "must call prepaint before paint", fixed after it crashed on hover).
