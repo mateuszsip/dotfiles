@@ -22,7 +22,9 @@ $env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"
 {{- end }}
 {{- end }}
 
-$env.PATH ++= [ $"(npm config --global get prefix)/bin"]
+if (which npm | is-not-empty) {
+    $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
+}
 
 $env.PATH ++= ['~/.local/bin']
 $env.PATH ++= ['/usr/local/bin']
