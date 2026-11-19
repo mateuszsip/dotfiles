@@ -1,7 +1,7 @@
 # rexia local tweaks
 
 The checkout at `~/src/rexia` is a fork: **https://github.com/mateuszsip/rexia**,
-branch `local-tweaks`, five commits ahead of `hackrdotsh/rexia` (`upstream`).
+branch `local-tweaks`, six commits ahead of `hackrdotsh/rexia` (`upstream`).
 
 A fresh Linux machine sets itself up: `run_once_after_install-rexia.sh.tmpl`
 clones the fork, installs the pinned Zig 0.17.1 and builds the binary on
@@ -35,6 +35,10 @@ pin matches it).
    this way in every pane, since the rex server strips `WAYLAND_DISPLAY`
    so wl-copy never runs. The stream task already collected each write
    into `PaneModel.clipboard`, but nothing read it — `Workspace::sync`
-   now puts it on the system clipboard. (Pasting into a program stays
-   ctrl+shift+v: an OSC 52 read query remains unanswered, as in Ghostty
-   with clipboard-read off.)
+   now puts it on the system clipboard. It also answers OSC 52 read
+   queries (the VT reports no event for them, so the stream watches raw
+   output) with the system clipboard through
+   `com.superlogical.terminal.write`, so `p` inside nvim pastes from it,
+   the way wl-paste does in ghostty. As in Kitty and WezTerm, any program
+   in a streamed pane can read the clipboard this way; ghostty gates the
+   same thing behind clipboard-read.

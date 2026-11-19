@@ -1,4 +1,7 @@
-host_order = []
+host_order = [
+    "host:01a1edff-28f2-742d-844c-2cf429d4168c",
+    "local",
+]
 last_host = "local"
 last_session = "session:01a189d4-f69f-7343-88fc-0a70186959c5"
 web_origins = []
@@ -10,7 +13,7 @@ endpoint = ""
 
 [interface]
 sidebar = true
-sidebar_width = 218.0
+sidebar_width = 240.0
 toolbar_layout = "left"
 toolbar_behavior = "always"
 vertical_side = "left"
@@ -96,17 +99,17 @@ sound = false
 
 [notifications.blocked]
 tabs = true
-notify = true
+notify = false
 sound = true
 
 [notifications.error]
 tabs = true
-notify = true
+notify = false
 sound = true
 
 [notifications.done]
 tabs = true
-notify = true
+notify = false
 sound = true
 
 [shortcuts]

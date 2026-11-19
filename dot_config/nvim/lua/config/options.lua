@@ -17,8 +17,8 @@ end
 -- stops nvim from auto-picking the OSC 52 provider (nvim skips auto OSC 52
 -- whenever 'clipboard' is set). Force the provider, so yanks still reach the
 -- system clipboard through the terminal, as they do in ghostty via wl-copy.
--- Paste from the system clipboard stays ctrl+shift+v: the pane never answers
--- an OSC 52 read query, so the paste side returns nothing instead of hanging.
+-- rexia also answers OSC 52 read queries, so `p` pastes from the system
+-- clipboard the same way wl-paste does in ghostty.
 local has_osc52, osc52 = pcall(require, "vim.ui.clipboard.osc52")
 if vim.env.TERM == "xterm-rex" and has_osc52 then
   vim.g.clipboard = {
@@ -28,8 +28,8 @@ if vim.env.TERM == "xterm-rex" and has_osc52 then
       ["*"] = osc52.copy("*"),
     },
     paste = {
-      ["+"] = function() return {} end,
-      ["*"] = function() return {} end,
+      ["+"] = osc52.paste("+"),
+      ["*"] = osc52.paste("*"),
     },
   }
 end
