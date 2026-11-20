@@ -28,3 +28,7 @@ Edit files in their deployed locations (`~/.config/`, `~/`), then sync back to c
 chezmoi add ~/.config/<file>
 cd ~/.local/share/chezmoi && git add -A && git commit -m "message"
 ```
+
+# Datadog
+
+Use the `pup` CLI for Datadog (logs, metrics, APM, events, monitors), not the Datadog MCP plugin. Load the `dd-pup`, `dd-logs` or `dd-apm` skill first. Always pass `--read-only`, and narrow output with `--jq`.

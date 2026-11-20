@@ -2,7 +2,8 @@
   "enabledPlugins": {
     "github@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "atlassian-mcp@anthropic-plugin-directory": true
   },
   "permissions": {
     "allow": [
@@ -15,7 +16,10 @@
       "Read({{ .chezmoi.homeDir }}/.config/**)",
       "Edit({{ .chezmoi.homeDir }}/.config/**)",
       "Read({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)",
-      "Edit({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)"
+      "Edit({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)",
+      "mcp__plugin_atlassian_atlassian__createJiraIssue",
+      "mcp__plugin_atlassian_atlassian__editJiraIssue",
+      "mcp__plugin_atlassian_atlassian__addOrEditJiraIssueComment"
     ],
     "deny": [
       "Read(*.env)"
