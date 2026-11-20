@@ -1,0 +1,19 @@
+{{- $work := false }}
+{{- if hasKey . "work_machine" }}{{ $work = .work_machine }}{{ end }}
+{{- if $work -}}
+#!/bin/bash
+# Datadog's agent skills for the pup CLI -> ~/.claude/skills. Edit the list
+# to add or drop skills (`pup skills list`); chezmoi re-runs on change.
+set -eufo pipefail
+
+skills=(dd-pup dd-logs dd-apm)
+
+if ! command -v pup &>/dev/null; then
+  echo "pup not installed, skipping pup skills."
+  exit 0
+fi
+
+for skill in "${skills[@]}"; do
+  pup skills install claude-code --name="$skill"
+done
+{{- end }}
