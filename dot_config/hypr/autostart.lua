@@ -22,6 +22,10 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("rexia", { workspace = "2 silent" })
   hl.exec_cmd("rexia", { workspace = "3 silent" })
 
+  -- Music client: opens on ws 9 without switching to it (see the matching
+  -- class rule in hyprland.lua, which keeps it there on every later launch).
+  hl.exec_cmd("uwsm-app -- spotifast")
+
   -- Keep Ghostty font size in sync with the monitor setup (12 undocked / 14 docked)
   hl.exec_cmd("systemd-run --user --no-block --unit=ghostty-font-monitor bash ~/.config/hypr/scripts/ghostty-font-monitor.sh")
 end)

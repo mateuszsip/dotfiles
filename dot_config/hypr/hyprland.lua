@@ -41,6 +41,7 @@ hl.window_rule({ match = { class = "(BambuStudio|bambu-studio)" }, workspace = "
 hl.window_rule({ match = { class = "steam" }, workspace = "8 silent" })
 hl.window_rule({ match = { class = "chrome-web.whatsapp.com__-Profile_1" }, workspace = "4 silent" })
 hl.window_rule({ match = { class = "feishin" }, workspace = "9 silent" })
+hl.window_rule({ match = { class = "spotifast" }, workspace = "9 silent" })
 hl.window_rule({ match = { class = "Bitwarden" }, workspace = "10 silent" })
 hl.window_rule({ match = { class = "Bitwarden" }, float = false })
 
