@@ -52,6 +52,17 @@ dim = "#6F6E69"
 # plugins, so this only names the one that matches the palette.
 neovim_colorscheme = "flexoki-light"
 
+# Neutral steps between bg and fg, taken from the flexoki base ramp. Apps that
+# need more than one background (Spotifast panels, cards, hover states) use
+# these instead of inventing their own shades.
+[palette.shades]
+base_50 = "#F2F0E5"
+base_100 = "#E6E4D9"
+base_150 = "#DAD8CE"
+base_200 = "#CECDC3"
+base_300 = "#B7B5AC"
+base_700 = "#575653"
+
 [palette.extra]
 red = "#AF3029"
 orange = "#BC5215"

@@ -35,8 +35,8 @@ paru
 phpactor
 rtk-bin
 ryzenadj-git
+spotifast-bin
 subtui-git
-tidal-hifi-bin
 try
 ttf-ia-writer
 typora

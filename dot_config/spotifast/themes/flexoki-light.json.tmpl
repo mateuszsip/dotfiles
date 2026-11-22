@@ -1,0 +1,29 @@
+{{- /* Spotifast palette generated from .chezmoidata/palette.toml by chezmoi.
+       Deploys to ~/.config/spotifast/themes/flexoki-light.json.
+       Spotifast picks it up on its own (Linux watches the folder); otherwise
+       run `spotifast reload-themes`, then choose it in Settings > Appearance.
+       Edit the palette, not this file.
+       The shades.* values are the flexoki light ramp, so a dark palette needs
+       its own [palette.shades] table. */ -}}
+{
+  "base": "{{ .palette.mode }}",
+  "colors": {
+    "window": "{{ .palette.bg }}",
+    "panel": "{{ .palette.shades.base_50 }}",
+    "surface": "{{ .palette.shades.base_100 }}",
+    "surface_hover": "{{ .palette.shades.base_150 }}",
+    "surface_active": "{{ .palette.shades.base_200 }}",
+    "outline": "{{ .palette.shades.base_200 }}",
+    "text": "{{ .palette.fg }}",
+    "secondary": "{{ .palette.shades.base_700 }}",
+    "dim": "{{ .palette.dim }}",
+    "accent": "{{ .palette.accent }}",
+    "accent_hover": "{{ .palette.color12 }}",
+    "on_accent": "{{ .palette.bg }}",
+    "danger": "{{ .palette.extra.red }}",
+    "warning": "{{ .palette.extra.yellow }}",
+    "overlay": "{{ .palette.fg }}99",
+    "shadow": "{{ .palette.fg }}26",
+    "tint": "{{ .palette.accent }}0C"
+  }
+}
