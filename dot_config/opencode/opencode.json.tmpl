@@ -30,6 +30,10 @@
 {{- else if eq .chezmoi.os "linux" }}
     "./plugins/waybar-notify",
 {{- end }}
-    "@mrhisyammm/opencode-antigravity-auth@latest"
+{{- /* Antigravity auth: pinned to 2.0.0, the first OpenCode V2-compatible build
+     (adds the default export the V2 plugin API requires). Left at @latest this
+     machine kept loading a stale 1.4.0 cache that fails with PluginModule.LoadError.
+     Bump deliberately; models need a one-time `opencode auth login` (Google OAuth). */}}
+    "@mrhisyammm/opencode-antigravity-auth@2.0.0"
   ]
 }
