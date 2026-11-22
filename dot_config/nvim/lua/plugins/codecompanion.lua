@@ -38,6 +38,7 @@ return {
       require("utils.cc_sessions").setup()
       require("utils.cc_acp").setup()
       require("utils.cc_notify").setup()
+      require("utils.cc_tabs").setup()
     end,
     cmd = {
       "CodeCompanion",
@@ -218,6 +219,13 @@ return {
       display = {
         chat = {
           fold_context = true,
+          -- atlas' PR/issue panel is hardcoded to `tabnew` (see atlas.lua), so
+          -- without this the chat stays behind in the tab you opened atlas
+          -- from. Sticky moves it into the new tab; lua/utils/cc_tabs.lua
+          -- reopens it when that tab closes.
+          window = {
+            sticky = true,
+          },
         },
       },
       adapters = {
