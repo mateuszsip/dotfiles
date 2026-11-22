@@ -6,12 +6,18 @@
 #   sys-theme-reload --background    also restart the wallpaper
 #
 # hyprlock reads its colors when it starts, so the next lock already has them.
+# Same for Spotifast's palette cache if the app is closed: it re-reads the
+# theme file at launch. Linux Spotifast also watches its themes folder, so
+# this reload is mostly a fallback for a missed inotify event — and it
+# refreshes the palette copy cached in settings.json.
 
 hyprctl reload >/dev/null 2>&1
 
 pkill -SIGUSR2 -x waybar
 
 pidof mako >/dev/null && makoctl reload
+
+pidof spotifast >/dev/null && spotifast reload-themes
 
 case ${1:-} in
 background | --background)

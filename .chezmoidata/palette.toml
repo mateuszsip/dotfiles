@@ -9,6 +9,7 @@
 #   dot_config/mako/config          notifications
 #   dot_config/swayosd/style.css    osd
 #   dot_config/btop/btop.conf       resource monitor
+#   dot_config/spotifast/themes/    spotifast (sys-theme-reload reloads it)
 #
 # To change colors: edit this file → `chezmoi apply` → `sys-theme-reload`.
 # Seeded from the Omarchy flexoki-2 theme (light variant) on 2026-10-21.
