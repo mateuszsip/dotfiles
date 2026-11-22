@@ -4,7 +4,10 @@
        run `spotifast reload-themes`, then choose it in Settings > Appearance.
        Edit the palette, not this file.
        The shades.* values are the flexoki light ramp, so a dark palette needs
-       its own [palette.shades] table. */ -}}
+       its own [palette.shades] table.
+       overlay and shadow are deliberately omitted: overlay is the popup
+       background (dropdowns, right-click menus), and a dark value there makes
+       menus unreadable on a light palette. Inherited defaults are correct. */ -}}
 {
   "base": "{{ .palette.mode }}",
   "colors": {
@@ -22,8 +25,6 @@
     "on_accent": "{{ .palette.bg }}",
     "danger": "{{ .palette.extra.red }}",
     "warning": "{{ .palette.extra.yellow }}",
-    "overlay": "{{ .palette.fg }}99",
-    "shadow": "{{ .palette.fg }}26",
     "tint": "{{ .palette.accent }}0C"
   }
 }
