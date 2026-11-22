@@ -179,9 +179,9 @@
     },
     "escape": true,
     "tooltip": true,
-    "on-click": "playerctl --ignore-player Feishin,typhoon play-pause",
-    "on-click-right": "playerctl --ignore-player Feishin,typhoon next",
-    "on-click-middle": "playerctl --ignore-player Feishin,typhoon previous",
+    "on-click": "$HOME/.config/waybar/media-control.sh play-pause",
+    "on-click-right": "$HOME/.config/waybar/media-control.sh next",
+    "on-click-middle": "$HOME/.config/waybar/media-control.sh previous",
     "exec": "$HOME/.config/waybar/mediaplayer.py --exclude Feishin,typhoon 2> /dev/null"
   },
   "network": {
