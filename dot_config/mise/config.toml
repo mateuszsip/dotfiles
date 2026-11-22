@@ -1,12 +1,18 @@
 # Global mise tool versions, deployed to ~/.config/mise/config.toml.
 #
 # This is the machine-wide default; per-project .mise.toml files override it.
-# Node is the only runtime here — npm/npx come with it, so there is no need
-# for the distro nodejs/npm packages (Arch's nodejs-lts-jod is only present
-# as a bitwarden-cli dependency).
+# node is the runtime (npm/npx come with it); npm:<pkg> entries are global
+# JS CLIs — mise installs and shims them, so they survive node version bumps
+# (unlike `npm i -g`, which lands inside the node dir and dies with it). The
+# distro nodejs/npm packages stay unneeded (Arch's nodejs-lts-jod is only
+# present as a bitwarden-cli dependency).
 #
 # To bump: `mise use -g node@<version>`, then mirror the version here.
 # run_onchange_after_install-mise-tools.sh.tmpl re-runs `mise install` when
 # this file changes.
 [tools]
 node = "26.1.0"
+# zen-mcp (agent harness for Zen Browser) was <30 days old and under aube's
+# 1000-downloads threshold at pin time; approved explicitly per-package.
+# https://github.com/spaxe-dev/zen-mcp
+"npm:@spaxe-dev/zen-mcp" = { version = "0.6.3", allow_low_downloads = true }

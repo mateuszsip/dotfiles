@@ -1,5 +1,6 @@
 #!/bin/bash
-# Installs the runtimes pinned in dot_config/mise/config.toml (node today).
+# Installs the tools pinned in dot_config/mise/config.toml (node plus any
+# npm:-backed global CLIs).
 # The mise package only ships the CLI; the tools themselves are downloaded per
 # machine. `after` ordering keeps this behind the packages script, and lexical
 # order keeps it ahead of install-node-packages (which needs npx).
