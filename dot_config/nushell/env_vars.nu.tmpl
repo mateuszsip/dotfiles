@@ -40,9 +40,10 @@ if (which npm | is-not-empty) {
     $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
 }
 
-$env.PATH ++= [ $"($nu.home-dir)/.local/bin" ]
+$env.PATH ++= ['~/.local/bin']
 $env.PATH ++= ['/usr/local/bin']
-$env.PATH ++= [ $"($nu.home-dir)/.antigravity/bin" ]
+$env.PATH ++= ['~/.atuin/bin']
+$env.PATH ++= ['~/.antigravity/bin']
 
 
 # GitHub MCP servers (claude-code github plugin, opencode) read this var
