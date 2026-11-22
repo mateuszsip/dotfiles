@@ -16,7 +16,7 @@
       },
       "ripwire": {
         "type": "local",
-        "command": ["ripwire", "--mcp"]
+        "command": ["{{ .chezmoi.homeDir }}/.local/bin/ripwire", "--mcp"]
       },
       "zen-mcp": {
         "type": "local",
