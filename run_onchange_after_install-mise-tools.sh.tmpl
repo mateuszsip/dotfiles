@@ -12,3 +12,10 @@ set -eufo pipefail
 command -v mise &>/dev/null || exit 0
 
 mise install
+
+# zen-mcp: write its per-machine config (~/.config/zen-mcp/config.json) —
+# setup detects the Zen executable, which differs per OS. Machines without
+# Zen installed keep the tool unused; don't fail the apply over it.
+# ZEN_MCP_NO_SKILL_PROMPT guards the skills-CLI offer for interactive shells.
+ZEN_MCP_NO_SKILL_PROMPT=1 mise x -- zen-mcp setup || \
+    echo "zen-mcp setup: no usable Zen install here (non-fatal)" >&2
