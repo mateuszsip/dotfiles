@@ -1,5 +1,13 @@
 #!/bin/bash
-
+# chezmoi scripts run in a non-interactive shell, so mise's shims are not on
+# PATH even though node/npx come from dot_config/mise/config.toml.
 set -eufo pipefail
+
+# mise's data dir differs per platform.
+{{- if eq .chezmoi.os "darwin" }}
+export PATH="$HOME/Library/Application Support/mise/shims:$PATH"
+{{- else }}
+export PATH="$HOME/.local/share/mise/shims:$PATH"
+{{- end }}
 
 npx puppeteer browsers install chrome-headless-shell

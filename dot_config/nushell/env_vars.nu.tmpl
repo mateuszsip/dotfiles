@@ -22,6 +22,20 @@ $env.SSH_AUTH_SOCK = "/home/sip/.bitwarden-ssh-agent.sock"
 {{- end }}
 {{- end }}
 
+# mise-managed runtimes (node + npm/npx). Shims resolve the version from the
+# nearest mise config at call time, so no shell hook is needed; this mirrors
+# `mise activate bash` in ~/.bashrc. Tools come from dot_config/mise/config.toml.
+if (which mise | is-not-empty) {
+    let mise_data = ($env.MISE_DATA_DIR? | default (
+        if $nu.os-info.name == "macos" {
+            $"($nu.home-dir)/Library/Application Support/mise"
+        } else {
+            $"($nu.home-dir)/.local/share/mise"
+        }
+    ))
+    $env.PATH = ($env.PATH | prepend $"($mise_data)/shims")
+}
+
 if (which npm | is-not-empty) {
     $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
 }

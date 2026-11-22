@@ -1,0 +1,13 @@
+#!/bin/bash
+# Installs the runtimes pinned in dot_config/mise/config.toml (node today).
+# The mise package only ships the CLI; the tools themselves are downloaded per
+# machine. `after` ordering keeps this behind the packages script, and lexical
+# order keeps it ahead of install-node-packages (which needs npx).
+# config: {{ include "dot_config/mise/config.toml" | sha256sum }}
+set -eufo pipefail
+
+# mise is installed by the packages script; skip rather than fail the apply if
+# that has not happened yet (e.g. a partial bootstrap).
+command -v mise &>/dev/null || exit 0
+
+mise install
