@@ -47,7 +47,7 @@ control ordering (before < main < after):
 - main `install`: `packages`, `bosto-recovery`, `muse-acp`, `ripwire`
 - main `setup`: `kbd-backlight`, `low-power-tdp`
 - `once_after`: `01-osx`, `antigravity`, `fonts`, `node-packages`, `bosto-touchpad`, `rapl-readable`, `voxtype`
-- `onchange_after`: `ghostty-display-font`, `setup-user-services`
+- `onchange_after`: `ghostty-display-font`, `npm-packages` (globals from `packages_npm.txt`), `pup-skills`, `setup-user-services`
 
 ## Template data
 

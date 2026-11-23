@@ -31,7 +31,7 @@ local function delete_session(conn, session_id)
     return
   end
   pcall(function()
-    conn:send_rpc_request(DELETE, { sessionId = session_id })
+    conn:send_rpc_request({ method = DELETE, params = { sessionId = session_id } })
   end)
 end
 
