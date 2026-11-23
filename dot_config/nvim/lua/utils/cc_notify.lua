@@ -6,12 +6,6 @@
 -- or finished-but-unread gets an entry, so the indicator can name the session
 -- and `sys-ai` can jump straight to it.
 --
--- The same states also reach the Rex terminal this nvim runs in, as OSC 7501
--- reports (the Program Status Protocol): rexia badges the tab, lists the chat
--- in the session's activity and hover card, and can notify when a turn needs
--- you. write() and remove() feed both sinks, so the store and the terminal
--- cannot disagree about a chat.
---
 -- Statuses, by priority:
 --   waiting  the agent is blocked on you (tool approval or a question)
 --   done     the turn finished and has not been acknowledged
@@ -91,112 +85,21 @@ local function title_of(chat, bufnr)
   return entry and entry.name or ("chat " .. bufnr)
 end
 
--- The Rex sink: OSC 7501, the Program Status Protocol. A report is key=value
--- pairs joined with `:`, its free text (title, msg) base64, and each report
--- replaces its record completely, so every one repeats app and title. One
--- record per chat (id=cc-<bufnr>): a tab badges the most urgent of them, and
--- rexia's hover card lists each chat on its own line. Terminals ignore OSC
--- codes they don't know, so there is no feature detection; REX_SESSION
--- (Rex's marker that this shell runs inside one of its terminals) plus a tty
--- on stdout keeps headless and embedded instances quiet.
-local rex_supported
-
-local function rex_enabled()
-  if rex_supported == nil then
-    local session = vim.env.REX_SESSION
-    rex_supported = session ~= nil and session ~= "" and vim.uv.guess_handle(1) == "tty"
-  end
-  return rex_supported
-end
-
--- A report whose decoded text holds a control character is discarded whole,
--- and title and msg are capped at 192 and 2048 decoded bytes. Strip the
--- controls, then cut on a UTF-8 boundary so the base64 still decodes to
--- valid UTF-8.
-local function rex_text(text, limit)
-  if type(text) ~= "string" or text == "" then
-    return nil
-  end
-  text = text:gsub("[%z\1-\31\127]", ""):gsub("\194[\128-\159]", "")
-  if #text > limit then
-    local cut = limit
-    while cut > 0 and (text:byte(cut) or 0) >= 0x80 do
-      cut = cut - 1
-    end
-    text = text:sub(1, cut)
-  end
-  if text == "" then
-    return nil
-  end
-  return vim.base64.encode(text)
-end
-
--- One write, flushed whole: the pty receives the sequence as one chunk, and
--- OSC never touches the screen grid, so the TUI's own output is unaffected.
-local function rex_send(parts)
-  io.stdout:write("\27]7501;" .. table.concat(parts, ":") .. "\27\\")
-  io.stdout:flush()
-end
-
-local function rex_clear(bufnr)
-  if rex_enabled() then
-    rex_send({ "state=clear", "id=cc-" .. bufnr })
-  end
-end
-
-local function rex_report(bufnr, status, detail, kind, title)
-  if not rex_enabled() then
-    return
-  end
-  -- A stopped turn is a cancel, not a result: the store still says done until
-  -- seen, but a "Done" badge for a turn the user called off points at
-  -- nothing. The protocol's advice for a cancel is idle; for one chat among
-  -- several, removing its record says the same thing more precisely.
-  if status == "done" and detail == "stopped" then
-    rex_clear(bufnr)
-    return
-  end
-  local state
-  if status == "working" then
-    state = "working"
-  elseif status == "waiting" then
-    state = "blocked"
-  elseif status == "done" then
-    state = "done"
-  else
-    return
-  end
-  local parts = { "state=" .. state, "id=cc-" .. bufnr, "app=codecompanion" }
-  if state == "blocked" and (kind == "permission" or kind == "question") then
-    parts[#parts + 1] = "kind=" .. kind
-  end
-  local b64 = rex_text(title, 192)
-  if b64 then
-    parts[#parts + 1] = "title=" .. b64
-  end
-  b64 = rex_text(detail, 2048)
-  if b64 then
-    parts[#parts + 1] = "msg=" .. b64
-  end
-  rex_send(parts)
-end
-
-local function write(bufnr, status, detail, kind)
+local function write(bufnr, status, detail)
   local chat = chat_for(bufnr)
   if not chat then
     return
   end
   local previous = owned[bufnr]
-  if previous and previous.status == status and previous.detail == detail and previous.kind == kind then
+  if previous and previous.status == status and previous.detail == detail then
     return
   end
 
-  local title = title_of(chat, bufnr)
   local entry = {
     id = "cc:" .. (vim.env.NV_SESSION_KEY or tostring(vim.fn.getpid())) .. ":" .. bufnr,
     tool = "codecompanion",
     status = status,
-    title = title,
+    title = title_of(chat, bufnr),
     detail = detail,
     cwd = vim.uv.cwd() or vim.fn.getcwd(),
     buf = bufnr,
@@ -220,19 +123,12 @@ local function write(bufnr, status, detail, kind)
     return
   end
 
-  owned[bufnr] = { status = status, detail = detail, kind = kind }
+  owned[bufnr] = { status = status, detail = detail }
   signal_waybar()
-  pcall(rex_report, bufnr, status, detail, kind, title)
 end
 
 local function remove(bufnr)
-  local reported = owned[bufnr] ~= nil
   owned[bufnr] = nil
-  -- BufDelete and BufWipeout fire for every buffer; only a chat we reported
-  -- ever made a Rex record, and clearing one that was never set is noise.
-  if reported then
-    pcall(rex_clear, bufnr)
-  end
   if os.remove(path_for(bufnr)) then
     signal_waybar()
   end
@@ -407,10 +303,9 @@ function M.setup()
       if args.match == "CodeCompanionChatSubmitted" then
         write(bufnr, "working")
       elseif args.match == "CodeCompanionToolApprovalRequested" then
-        -- kind: the Rex report says what a blocked chat waits for
-        write(bufnr, "waiting", data.name, "permission")
+        write(bufnr, "waiting", data.name)
       elseif args.match == "CodeCompanionToolQuestionAsked" then
-        write(bufnr, "waiting", data.header or data.question, "question")
+        write(bufnr, "waiting", data.header or data.question)
       elseif args.match == "CodeCompanionToolApprovalFinished" or args.match == "CodeCompanionToolQuestionAnswered" then
         write(bufnr, "working")
       elseif args.match == "CodeCompanionChatDone" or args.match == "CodeCompanionChatStopped" then
