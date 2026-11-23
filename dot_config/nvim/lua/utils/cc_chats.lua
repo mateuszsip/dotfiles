@@ -184,8 +184,9 @@ local function restore_one(entry, window_opts)
 
       local updates = {}
       local loaded = conn:load_session(entry.session_id, {
-        on_session_update = function(update)
-          table.insert(updates, update)
+        -- same shape as codecompanion's /resume (render.restore_session expects it)
+        on_session_update = function(update, opts)
+          table.insert(updates, { update = update, session_id = opts and opts.session_id })
         end,
       })
       if not loaded then
