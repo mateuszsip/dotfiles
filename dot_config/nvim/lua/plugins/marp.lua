@@ -3,6 +3,11 @@
 -- image.nvim stays lazy and only loads when a preview opens.
 return {
   "3rd/image.nvim",
+  -- Terminal graphics sit above all text, so floats (pickers, hovers,
+  -- which-key) can't cover an image. Hide images while a float overlaps
+  -- their window instead; they come back when it closes. Also applies to
+  -- the diagram preview (opts merge with diagram.lua's image.nvim spec).
+  opts = { window_overlap_clear_enabled = true },
   init = function()
     vim.api.nvim_create_user_command("MarpPreview", function()
       require("utils.marp").toggle()
