@@ -20,6 +20,9 @@ return {
         vim.keymap.set("n", "<leader>mp", function()
           require("utils.marp").toggle(ev.buf)
         end, { buffer = ev.buf, desc = "Marp: toggle slide preview" })
+        vim.keymap.set("n", "<leader>mP", function()
+          require("utils.marp").browser(ev.buf)
+        end, { buffer = ev.buf, desc = "Marp: toggle browser preview" })
         -- ]] / [[ / <leader>ms slide navigation, only in decks (`marp: true`)
         -- so plain markdown keeps LazyVim's ]] / [[ reference jumps.
         local marp = require("utils.marp")

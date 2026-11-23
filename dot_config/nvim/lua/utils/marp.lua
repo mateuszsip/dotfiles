@@ -31,7 +31,24 @@ M.theme_dir = vim.fn.expand("~/.config/marp/themes")
 M.default_theme = "flexoki"
 
 -- `theme:` as a global directive, in the front-matter or an HTML comment.
-local function deck_sets_theme(src)
+local deck_sets_theme
+
+-- Custom themes (flexoki, generated from the chezmoi palette). `--theme`
+-- overrides the deck's own `theme:` directive, so only default to flexoki
+-- when the deck doesn't pick a theme itself. `--theme-set` is variadic: keep
+-- these args after any positional path.
+local function theme_args(src)
+  local args = {}
+  if vim.fn.isdirectory(M.theme_dir) == 1 then
+    vim.list_extend(args, { "--theme-set", M.theme_dir })
+    if M.default_theme and not deck_sets_theme(src) then
+      vim.list_extend(args, { "--theme", M.default_theme })
+    end
+  end
+  return args
+end
+
+function deck_sets_theme(src)
   local lines = vim.api.nvim_buf_get_lines(src, 0, -1, false)
   if lines[1] and lines[1]:match("^%-%-%-%s*$") then
     for i = 2, #lines do
@@ -379,15 +396,7 @@ function M.start(src)
     "--output",
     outdir .. "/slide.png",
   }
-  -- Custom themes (flexoki, generated from the chezmoi palette). `--theme`
-  -- overrides the deck's own `theme:` directive, so only default to flexoki
-  -- when the deck doesn't pick a theme itself.
-  if vim.fn.isdirectory(M.theme_dir) == 1 then
-    vim.list_extend(cmd, { "--theme-set", M.theme_dir })
-    if M.default_theme and not deck_sets_theme(src) then
-      vim.list_extend(cmd, { "--theme", M.default_theme })
-    end
-  end
+  vim.list_extend(cmd, theme_args(src))
 
   s.job = vim.fn.jobstart(cmd, {
     cwd = vim.fn.fnamemodify(file, ":h"),
@@ -501,6 +510,95 @@ function M.toggle(src)
   else
     M.start(src)
   end
+end
+
+-- Browser preview: `marp --server` on the deck's directory (so relative
+-- image paths resolve), opened in the default browser. marp's server
+-- reloads the page whenever a file in the directory is saved.
+
+---@type table<integer, { job: integer, url: string? }>
+local servers = {}
+
+local function free_port()
+  local tcp = vim.uv.new_tcp()
+  tcp:bind("127.0.0.1", 0)
+  local port = tcp:getsockname().port
+  tcp:close()
+  return port
+end
+
+function M.browser_stop(src)
+  src = src or vim.api.nvim_get_current_buf()
+  local srv = servers[src]
+  if srv then
+    servers[src] = nil
+    pcall(vim.fn.jobstop, srv.job)
+  end
+end
+
+--- Open the deck in the browser; a second call stops the server.
+function M.browser(src)
+  src = src or vim.api.nvim_get_current_buf()
+  if servers[src] then
+    M.browser_stop(src)
+    vim.notify("Marp: browser preview stopped", vim.log.levels.INFO)
+    return
+  end
+  local file = vim.api.nvim_buf_get_name(src)
+  if file == "" then
+    vim.notify("Marp: save the buffer to a file first", vim.log.levels.WARN)
+    return
+  end
+  if vim.fn.executable("marp") == 0 then
+    vim.notify("Marp: `marp` not found (npm i -g @marp-team/marp-cli)", vim.log.levels.ERROR)
+    return
+  end
+
+  local dir = vim.fn.fnamemodify(file, ":h")
+  local port = free_port()
+  local url = string.format("http://localhost:%d/%s", port, vim.uri_encode(vim.fn.fnamemodify(file, ":t")))
+  local srv = { url = url }
+  servers[src] = srv
+
+  local cmd = { "marp", "--no-stdin", "--server", "--input-dir", dir }
+  vim.list_extend(cmd, theme_args(src))
+  local opened = false
+  srv.job = vim.fn.jobstart(cmd, {
+    cwd = dir,
+    env = { PORT = tostring(port) },
+    stdin = "null",
+    on_stderr = function(_, data)
+      for _, line in ipairs(data or {}) do
+        if not opened and line:find("Start server listened", 1, true) then
+          opened = true
+          vim.schedule(function()
+            vim.ui.open(url)
+          end)
+        elseif line:find("ERROR", 1, true) then
+          vim.notify("Marp: " .. line:gsub("\27%[[%d;]*m", ""), vim.log.levels.ERROR)
+        end
+      end
+    end,
+    on_exit = function(_, code)
+      if servers[src] == srv then
+        servers[src] = nil
+        vim.notify("Marp: server exited unexpectedly (code " .. code .. ")", vim.log.levels.ERROR)
+      end
+    end,
+  })
+  if srv.job <= 0 then
+    servers[src] = nil
+    vim.notify("Marp: failed to start marp server", vim.log.levels.ERROR)
+    return
+  end
+
+  vim.api.nvim_create_autocmd({ "BufWipeout", "BufDelete" }, {
+    buffer = src,
+    once = true,
+    callback = function()
+      M.browser_stop(src)
+    end,
+  })
 end
 
 M._slide_at = slide_at -- exposed for testing
