@@ -5,7 +5,7 @@ hl.window_rule({ match = { tag = "floating-window" }, size = { 875, 600 } })
 
 hl.window_rule({
   match = {
-    class = "(org.sip.bluetui|org.sip.impala|org.sip.wiremix|org.sip.btop|org.sip.terminal|org.sip.bash|org.sip.float|org.codeberg.dnkl.foot|org.gnome.NautilusPreviewer|org.gnome.Evince|com.gabm.satty|imv|mpv)",
+    class = "(org.sip.bluetui|org.sip.impala|org.sip.wiremix|org.sip.btop|org.sip.terminal|org.sip.bash|org.sip.float|org.gnome.NautilusPreviewer|org.gnome.Evince|com.gabm.satty|imv|mpv)",
   },
   tag = "+floating-window",
 })
