@@ -18,20 +18,24 @@
 -- arrows stay as a second way to cycle sessions and hosts:
 --   ctrl+alt+k / l          next / previous tab
 --   ctrl+alt+shift+k / l    next / previous session
---   ctrl+alt+shift+j / ;    next / previous host
+--   ctrl+alt+shift+j / ;    next / previous host (Linux only, see below)
 --   ctrl+alt+down / up      next / previous session
---   ctrl+alt+shift+down / up  next / previous host
+--   ctrl+alt+shift+down / up  next / previous host (Linux only, see below)
 -- Costs: ctrl+alt+arrows and k/l leave pane focus (vertical splits stay
 -- reachable with ctrl+shift+space and the mouse).
 rex.bind("ctrl+alt+k", "client.tab.next")
 rex.bind("ctrl+alt+l", "client.tab.previous")
 rex.bind("ctrl+alt+shift+k", "session.next")
 rex.bind("ctrl+alt+shift+l", "session.previous")
-rex.bind("ctrl+alt+shift+j", "client.host.next")
-rex.bind("ctrl+alt+shift+;", "client.host.previous")
 rex.bind("ctrl+alt+down", "session.next")
 rex.bind("ctrl+alt+up", "session.previous")
+{{- if eq .chezmoi.os "linux" }}
+-- client.host.next/previous exist only in rexia (fork patch 0002); the macOS
+-- Rex app reports bindings to them as unknown actions.
+rex.bind("ctrl+alt+shift+j", "client.host.next")
+rex.bind("ctrl+alt+shift+;", "client.host.previous")
 rex.bind("ctrl+alt+shift+down", "client.host.next")
 rex.bind("ctrl+alt+shift+up", "client.host.previous")
+{{- end }}
 -- rex.bind("ctrl+shift+w", "client.tab.close")   -- (default closes the window)
 -- rex.unbind("ctrl+tab")                          -- free a default key
