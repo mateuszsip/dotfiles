@@ -25,6 +25,32 @@ local M = {}
 ---@type table<integer, MarpSession>
 local sessions = {}
 
+-- Themes from dot_config/marp/themes; default_theme applies when the deck
+-- has no `theme:` directive of its own.
+M.theme_dir = vim.fn.expand("~/.config/marp/themes")
+M.default_theme = "flexoki"
+
+-- `theme:` as a global directive, in the front-matter or an HTML comment.
+local function deck_sets_theme(src)
+  local lines = vim.api.nvim_buf_get_lines(src, 0, -1, false)
+  if lines[1] and lines[1]:match("^%-%-%-%s*$") then
+    for i = 2, #lines do
+      if lines[i]:match("^%-%-%-%s*$") then
+        break
+      end
+      if lines[i]:match("^theme:") then
+        return true
+      end
+    end
+  end
+  for _, l in ipairs(lines) do
+    if l:match("<!%-%-%s*theme:") then
+      return true
+    end
+  end
+  return false
+end
+
 -- Marpit splits pages on horizontal rules. A `---` right under a text line is
 -- a setext heading, not a rule, so dashes only count after a blank line.
 local function is_hr(line)
@@ -192,7 +218,7 @@ function M.start(src)
   local s = { src = src, win = win, buf = buf, outdir = outdir } --[[@as MarpSession]]
   sessions[src] = s
 
-  s.job = vim.fn.jobstart({
+  local cmd = {
     "marp",
     "--watch",
     "--no-stdin",
@@ -201,8 +227,19 @@ function M.start(src)
     "--allow-local-files",
     "--output",
     outdir .. "/slide.png",
-    file,
-  }, {
+  }
+  -- Custom themes (flexoki, generated from the chezmoi palette). `--theme`
+  -- overrides the deck's own `theme:` directive, so only default to flexoki
+  -- when the deck doesn't pick a theme itself.
+  if vim.fn.isdirectory(M.theme_dir) == 1 then
+    vim.list_extend(cmd, { "--theme-set", M.theme_dir })
+    if M.default_theme and not deck_sets_theme(src) then
+      vim.list_extend(cmd, { "--theme", M.default_theme })
+    end
+  end
+  table.insert(cmd, file)
+
+  s.job = vim.fn.jobstart(cmd, {
     cwd = vim.fn.fnamemodify(file, ":h"),
     stdin = "null", -- marp otherwise waits for markdown on a piped stdin
     stderr_buffered = false,

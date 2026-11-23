@@ -1,0 +1,131 @@
+/* @theme flexoki */
+/* Marp theme — generated from .chezmoidata/palette.toml by chezmoi.
+ * Flexoki light with a black accent (palette fg) instead of the blue one.
+ * Builds on Marp's default theme, so its layout classes still work:
+ *   <!-- _class: lead -->    centered title slide
+ *   <!-- _class: invert -->  dark slide (bg/fg swapped)
+ */
+
+@import 'default';
+
+section {
+  --fx-bg: {{ .palette.bg }};
+  --fx-fg: {{ .palette.fg }};
+  --fx-accent: {{ .palette.fg }};
+  --fx-dim: {{ .palette.dim }};
+  --fx-ui: {{ .palette.shades.base_50 }};
+  --fx-ui-2: {{ .palette.shades.base_100 }};
+  --fx-border: {{ .palette.shades.base_200 }};
+
+  /* Variables Marp's default theme (github-markdown-css) reads */
+  --color-fg-default: var(--fx-fg);
+  --color-fg-muted: var(--fx-dim);
+  --color-canvas-default: var(--fx-bg);
+  --color-canvas-subtle: var(--fx-ui);
+  --color-border-default: var(--fx-border);
+  --color-border-muted: var(--fx-border);
+  --color-accent-fg: var(--fx-accent);
+  --color-prettylights-syntax-comment: var(--fx-dim);
+
+  background: var(--fx-bg);
+  color: var(--fx-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+}
+
+section.invert {
+  --fx-bg: {{ .palette.fg }};
+  --fx-fg: {{ .palette.bg }};
+  --fx-accent: {{ .palette.bg }};
+  --fx-dim: {{ .palette.shades.base_300 }};
+  --fx-ui: #1C1B1A;
+  --fx-ui-2: #282726;
+  --fx-border: {{ .palette.shades.base_700 }};
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--fx-accent);
+}
+
+h1 {
+  border-bottom: 4px solid var(--fx-accent);
+  padding-bottom: 0.2em;
+}
+
+a, a:visited {
+  color: var(--fx-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+strong {
+  color: var(--fx-accent);
+}
+
+blockquote {
+  color: var(--fx-dim);
+  border-left: 4px solid var(--fx-accent);
+}
+
+mark {
+  background: {{ .palette.extra.yellow }}55;
+  color: inherit;
+}
+
+code {
+  background: var(--fx-ui-2);
+  color: var(--fx-fg);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+pre {
+  background: var(--fx-ui);
+  border: 1px solid var(--fx-border);
+  border-radius: 8px;
+}
+
+pre code {
+  background: transparent;
+}
+
+table th {
+  background: var(--fx-ui-2);
+}
+
+table th, table td {
+  border-color: var(--fx-border);
+}
+
+table tr {
+  background: var(--fx-bg);
+  border-color: var(--fx-border);
+}
+
+table tr:nth-child(2n) {
+  background: var(--fx-ui);
+}
+
+section.lead {
+  text-align: center;
+}
+
+section.lead h1 {
+  border-bottom: none;
+}
+
+header, footer, section::after {
+  color: var(--fx-dim);
+}
+
+/* Code highlighting (highlight.js classes), flexoki light accents */
+.hljs-comment, .hljs-quote { color: var(--fx-dim); font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in { color: {{ .palette.extra.green }}; }
+.hljs-string, .hljs-regexp, .hljs-addition { color: {{ .palette.color6 }}; }
+.hljs-number, .hljs-literal { color: {{ .palette.extra.purple }}; }
+.hljs-title, .hljs-section, .hljs-function .hljs-title { color: {{ .palette.extra.orange }}; }
+.hljs-attr, .hljs-attribute, .hljs-variable, .hljs-template-variable { color: {{ .palette.color4 }}; }
+.hljs-type, .hljs-class .hljs-title { color: {{ .palette.extra.yellow }}; }
+.hljs-meta, .hljs-symbol, .hljs-bullet { color: {{ .palette.color5 }}; }
+.hljs-deletion { color: {{ .palette.extra.red }}; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: bold; }
