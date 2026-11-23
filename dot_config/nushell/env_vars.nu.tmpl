@@ -34,10 +34,6 @@ if (which mise | is-not-empty) {
     $env.PATH = ($env.PATH | prepend $"($mise_data)/shims")
 }
 
-if (which npm | is-not-empty) {
-    $env.PATH ++= [ $"(npm config --global get prefix)/bin"]
-}
-
 $env.PATH ++= ['~/.local/bin']
 $env.PATH ++= ['/usr/local/bin']
 $env.PATH ++= ['~/.atuin/bin']

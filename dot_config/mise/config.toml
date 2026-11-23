@@ -16,3 +16,6 @@ node = "26.1.0"
 # 1000-downloads threshold at pin time; approved explicitly per-package.
 # https://github.com/spaxe-dev/zen-mcp
 "npm:@spaxe-dev/zen-mcp" = { version = "0.6.3", allow_low_downloads = true }
+# Absorbed from the retired packages_npm.txt workflow (versions as pinned there).
+"npm:@agentclientprotocol/claude-agent-acp" = { version = "0.110.0" }
+"npm:@marp-team/marp-cli" = { version = "4.5.1" }

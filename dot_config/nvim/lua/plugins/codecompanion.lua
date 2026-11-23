@@ -1,7 +1,7 @@
 -- Experimental: https://github.com/olimorris/codecompanion.nvim
 -- Chat uses an ACP agent picked per machine: opencode on personal machines
 -- (when it's on PATH), Claude Code on work machines (subscription; needs
--- @agentclientprotocol/claude-agent-acp from packages_npm.txt). Muse is also selectable
+-- @agentclientprotocol/claude-agent-acp from mise config.toml). Muse is also selectable
 -- per chat via the `muse` adapter below; Antigravity via `antigravity`
 -- (personal machines only). Inline/cmd interactions only
 -- support HTTP adapters, so they stay on Copilot.
