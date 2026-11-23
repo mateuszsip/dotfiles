@@ -84,7 +84,7 @@ Example (from `dot_config/opencode/opencode.json.tmpl`):
 - **Linux**: `aerospace.toml` excluded.
 - **Linux, Asahi only** (`osRelease.id == "archarm"`): Mac-hardware config inline via
   `{{- if eq .chezmoi.osRelease.id "archarm" }}` in
-  `hypr/input.conf.tmpl`, `hypr/bindings.conf.tmpl`, `waybar/config.jsonc.tmpl`.
+  `hypr/input.lua.tmpl`, `hypr/bindings.lua.tmpl`, `waybar/config.jsonc.tmpl`.
   `environment.d/` and `systemd/` deploy on every Linux host.
 - **Non-work machines**: `lendable.nu`, `nvim/lua/db/lendable` excluded.
 
