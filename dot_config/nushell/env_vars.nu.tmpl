@@ -1,7 +1,5 @@
 $env.PAGER = "bat"
 
-$env.K9S_SKIN = 'solarized-light'
-
 {{- if eq .chezmoi.os "darwin" }}
 $env.PATH ++= ['/opt/homebrew/bin']
 {{- if .work_machine }}
