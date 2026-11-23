@@ -218,8 +218,11 @@ function M.start(src)
   local s = { src = src, win = win, buf = buf, outdir = outdir } --[[@as MarpSession]]
   sessions[src] = s
 
+  -- The deck goes first: `--theme-set` is variadic and would swallow a
+  -- trailing file path as another theme, leaving marp with no input.
   local cmd = {
     "marp",
+    file,
     "--watch",
     "--no-stdin",
     "--images",
@@ -237,7 +240,6 @@ function M.start(src)
       vim.list_extend(cmd, { "--theme", M.default_theme })
     end
   end
-  table.insert(cmd, file)
 
   s.job = vim.fn.jobstart(cmd, {
     cwd = vim.fn.fnamemodify(file, ":h"),
@@ -251,8 +253,14 @@ function M.start(src)
       end
     end,
     on_exit = function(_, code)
-      if sessions[src] == s and code ~= 0 and code ~= 143 then
-        vim.notify("Marp: marp exited with code " .. code, vim.log.levels.ERROR)
+      -- M.stop() clears the session before killing the job, so any exit
+      -- while the session is still live is unexpected (even code 0: e.g.
+      -- marp printing its usage and quitting on bad arguments).
+      if sessions[src] == s then
+        vim.notify("Marp: marp exited unexpectedly (code " .. code .. ")", vim.log.levels.ERROR)
+        if vim.api.nvim_buf_is_valid(s.buf) and not s.slide then
+          vim.api.nvim_buf_set_lines(s.buf, 0, -1, false, { "", "  marp exited (code " .. code .. ")" })
+        end
       end
     end,
   })
