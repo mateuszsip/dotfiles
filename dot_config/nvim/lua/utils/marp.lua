@@ -62,8 +62,9 @@ local function is_hr(line)
   return #s >= 3 and s == c:rep(#s)
 end
 
---- 1-based slide index containing `row`, and total slide count.
-local function slide_at(lines, row)
+--- First line (1-based) of every slide. The front-matter belongs to slide 1;
+--- a separator line belongs to the slide before it.
+local function slide_starts(lines)
   local i = 1
   if lines[1] and lines[1]:match("^%-%-%-%s*$") then
     for j = 2, #lines do
@@ -74,11 +75,8 @@ local function slide_at(lines, row)
     end
   end
 
-  local idx, current, fence = 1, 1, nil
+  local starts, fence = { 1 }, nil
   for n = i, #lines do
-    if n == row then
-      current = idx
-    end
     local l = lines[n]
     local f = l:match("^%s*(```+)") or l:match("^%s*(~~~+)")
     if fence then
@@ -88,13 +86,162 @@ local function slide_at(lines, row)
     elseif f then
       fence = f
     elseif is_hr(l) and (l:match("^%s*[*_]") or n == 1 or lines[n - 1]:match("^%s*$")) then
-      idx = idx + 1
+      table.insert(starts, n + 1)
     end
   end
-  if row > #lines then
-    current = idx
+  return starts
+end
+
+--- 1-based slide index containing `row`, and total slide count.
+local function slide_at(lines, row)
+  local starts = slide_starts(lines)
+  local current = 1
+  for k, start in ipairs(starts) do
+    if start <= row then
+      current = k
+    end
   end
-  return current, idx
+  return current, #starts
+end
+
+--- Title of the slide spanning lines [from, to]: first heading, else first
+--- text line that isn't a comment/directive.
+local function slide_title(lines, from, to)
+  local fallback
+  for n = from, math.min(to, #lines) do
+    local l = lines[n]
+    local h = l:match("^%s*#+%s+(.-)%s*$")
+    if h and h ~= "" then
+      return h
+    end
+    if not fallback and l:match("%S") and not l:match("^%s*<!%-%-") and not is_hr(l) then
+      fallback = vim.trim(l)
+    end
+  end
+  return fallback or "(empty)"
+end
+
+-- Move the cursor to slide `n` (clamped), on its first non-blank line.
+local function goto_slide(lines, starts, n)
+  n = math.max(1, math.min(n, #starts))
+  local row = math.min(starts[n], #lines)
+  local last = (starts[n + 1] or #lines + 1) - 1
+  for r = row, math.min(last, #lines) do
+    if lines[r]:match("%S") and not is_hr(lines[r]) then
+      row = r
+      break
+    end
+  end
+  vim.api.nvim_win_set_cursor(0, { row, 0 })
+  vim.cmd("normal! zv")
+end
+
+--- Jump `delta` slides from the one under the cursor (v:count multiplies).
+function M.jump(delta)
+  local buf = vim.api.nvim_get_current_buf()
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  local starts = slide_starts(lines)
+  local current = slide_at(lines, vim.api.nvim_win_get_cursor(0)[1])
+  goto_slide(lines, starts, current + delta * vim.v.count1)
+end
+
+--- Pick a slide from a list of titles and jump to it.
+function M.pick()
+  local buf = vim.api.nvim_get_current_buf()
+  local file = vim.api.nvim_buf_get_name(buf)
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  local starts = slide_starts(lines)
+  local current = slide_at(lines, vim.api.nvim_win_get_cursor(0)[1])
+
+  local items = {}
+  for k, start in ipairs(starts) do
+    local title = slide_title(lines, start, (starts[k + 1] or #lines + 1) - 1)
+    table.insert(items, {
+      idx = k,
+      text = k .. " " .. title,
+      title = title,
+      file = file,
+      buf = buf,
+      pos = { math.min(start, math.max(#lines, 1)), 0 },
+    })
+  end
+
+  Snacks.picker.pick({
+    title = "Slides",
+    items = items,
+    layout = { preset = "default" },
+    on_show = function(picker)
+      picker.list:view(current)
+    end,
+    format = function(item)
+      return {
+        { string.format("%3d ", item.idx), item.idx == current and "SnacksPickerMatch" or "SnacksPickerIdx" },
+        { item.title },
+      }
+    end,
+    confirm = function(picker, item)
+      picker:close()
+      if item then
+        -- after close() has handed focus back to the deck window
+        vim.schedule(function()
+          if vim.api.nvim_get_current_buf() == buf then
+            goto_slide(lines, starts, item.idx)
+          end
+        end)
+      end
+    end,
+  })
+end
+
+--- A markdown buffer is a Marp deck when its front-matter says `marp: true`.
+function M.is_deck(buf)
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, 50, false)
+  if not (lines[1] and lines[1]:match("^%-%-%-%s*$")) then
+    return false
+  end
+  for i = 2, #lines do
+    if lines[i]:match("^%-%-%-%s*$") then
+      return false
+    end
+    if lines[i]:match("^marp:%s*true") then
+      return true
+    end
+  end
+  return false
+end
+
+--- Slide navigation keys for a deck buffer.
+local function set_keys(buf)
+  local function map(lhs, fn, desc)
+    vim.keymap.set("n", lhs, fn, { buffer = buf, desc = desc })
+  end
+  map("]]", function()
+    M.jump(1)
+  end, "Marp: next slide")
+  map("[[", function()
+    M.jump(-1)
+  end, "Marp: previous slide")
+  map("<leader>ms", M.pick, "Marp: list slides")
+end
+
+function M.attach(buf)
+  if vim.b[buf].marp_attached then
+    return
+  end
+  vim.b[buf].marp_attached = true
+  set_keys(buf)
+  -- LazyVim maps ]] / [[ (LSP reference jumps) buffer-locally on LspAttach,
+  -- which fires after FileType; take them back once it has run.
+  vim.api.nvim_create_autocmd("LspAttach", {
+    buffer = buf,
+    callback = function()
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(buf) then
+          set_keys(buf)
+        end
+      end)
+    end,
+  })
 end
 
 local function slide_path(s, n)
@@ -214,6 +361,7 @@ function M.start(src)
   vim.fn.delete(outdir, "rf")
   vim.fn.mkdir(outdir, "p")
 
+  M.attach(src) -- previewing implies it's a deck, even without `marp: true`
   local win, buf = open_window()
   local s = { src = src, win = win, buf = buf, outdir = outdir } --[[@as MarpSession]]
   sessions[src] = s
