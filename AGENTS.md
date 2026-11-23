@@ -18,7 +18,7 @@ dotfiles. Files here deploy to `$HOME` via `chezmoi apply`.
 | `dot_docker/` | `~/.docker/` | via `modify_` script, not overwrite |
 | `dot_pi/` | `~/.pi/` | |
 | `dot_<file>` | `~/.<file>` | e.g. `dot_aerospace.toml` |
-| `nu_scripts/` | `~/nu_scripts/` | **intentionally deployed** — sourced by nushell (`aliases.nu`, `completions.nu`) |
+| `nu_scripts/` | `~/nu_scripts/` | **intentionally deployed** — but trimmed to exactly the files sourced by nushell (`aliases.nu`, `completions.nu`); do not re-vendor the whole upstream tree |
 | `run_*.sh[.tmpl]` | nowhere | executed by `chezmoi apply`, not deployed |
 | `packages_*.txt` | nowhere | data read by the install script via `include` (see below) |
 | `docs/` | nowhere | local scratch, gitignored |
