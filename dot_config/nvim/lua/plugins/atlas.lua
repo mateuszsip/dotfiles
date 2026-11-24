@@ -157,6 +157,39 @@ local function copy_pr_links(scope)
   end)
 end
 
+-- "My PRs" views match `(author:@me OR assignee:@me)` so PRs opened on my
+-- behalf by agents (e.g. Cosmos cloud sessions, which assign me) show up too.
+-- `-author:app/lendable-workflow-trigger-app` drops the CDP release PRs that
+-- bot opens and assigns to me.
+-- atlas searches with the legacy `type: ISSUE`, which silently returns 0 for
+-- boolean OR between qualifiers; `ISSUE_ADVANCED` supports it and returns the
+-- same results for plain queries. Rewrite every GraphQL search atlas sends.
+-- (atlas' own state filter already relies on `(is:open OR ...)`, which works
+-- on legacy search only because atlas splits it into one query per state.)
+local function use_advanced_search()
+  local ok, client = pcall(require, "atlas.providers.github.client")
+  if not ok or type(client) ~= "table" or type(client.gh) ~= "function" then
+    vim.notify_once("atlas.nvim: advanced search not applied (github client.gh missing)", vim.log.levels.WARN)
+    return
+  end
+  if client.__atlas_advanced_search then
+    return
+  end
+  local upstream = client.gh
+  client.gh = function(args, ...)
+    if type(args) == "table" and args[1] == "api" and args[2] == "graphql" then
+      args = vim.deepcopy(args)
+      for i, arg in ipairs(args) do
+        if type(arg) == "string" and arg:sub(1, 6) == "query=" then
+          args[i] = arg:gsub("type:%s*ISSUE%f[^%w_]", "type: ISSUE_ADVANCED")
+        end
+      end
+    end
+    return upstream(args, ...)
+  end
+  client.__atlas_advanced_search = true
+end
+
 -- ---------------------------------------------------------------------------
 -- Views
 --
@@ -171,7 +204,7 @@ local github_pull_views = {
     name = "My open PRs",
     key = "1",
     layout = "grouped",
-    search = "is:pr is:open author:@me sort:updated-desc archived:false",
+    search = "is:pr is:open (author:@me OR assignee:@me) -author:app/lendable-workflow-trigger-app sort:updated-desc archived:false",
   },
   {
     name = "Review queue",
@@ -189,7 +222,7 @@ local github_pull_views = {
     -- atlas strips state qualifiers into its open/merged/declined filters and
     -- defaults to open-only when there are none, so spell out all three. Must
     -- match atlas' own form exactly (providers/github/query.lua) to be parsed.
-    search = "is:pr author:@me (is:open OR is:merged OR is:closed -is:merged) sort:updated-desc archived:false",
+    search = "is:pr (author:@me OR assignee:@me) -author:app/lendable-workflow-trigger-app (is:open OR is:merged OR is:closed -is:merged) sort:updated-desc archived:false",
   },
   {
     name = "Mentioned",
@@ -202,7 +235,7 @@ local github_pull_views = {
     name = "Recently merged",
     key = "5",
     layout = "grouped",
-    search = "is:pr is:merged author:@me sort:updated-desc archived:false",
+    search = "is:pr is:merged (author:@me OR assignee:@me) -author:app/lendable-workflow-trigger-app sort:updated-desc archived:false",
   },
 }
 
@@ -340,7 +373,7 @@ return {
     {
       "<leader>gm",
       function()
-        atlas_pulls_repo("is:open author:@me")
+        atlas_pulls_repo("is:open (author:@me OR assignee:@me) -author:app/lendable-workflow-trigger-app")
       end,
       desc = "My open PRs (current repo)",
     },
@@ -352,7 +385,7 @@ return {
     {
       "<leader>gn",
       function()
-        atlas_pulls_repo("author:@me")
+        atlas_pulls_repo("(author:@me OR assignee:@me) -author:app/lendable-workflow-trigger-app")
       end,
       desc = "All my PRs (current repo)",
     },
@@ -481,6 +514,7 @@ return {
 
     highlights.apply()
 
+    use_advanced_search()
     sort.wrap_set_issues()
     sort.disable_relationships_for_flat_views()
     sort.wrap_fetch_pullrequests()
