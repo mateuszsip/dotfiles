@@ -231,6 +231,10 @@ end
 --
 -- The views keep their `sort:` qualifiers: those still decide *which* PRs fall
 -- inside the result limit, they just no longer decide the row order.
+--
+-- Views that set `keep_search_order = true` (a custom field, ignored by atlas)
+-- skip this and render in GitHub's order — for views whose `sort:` qualifier
+-- *is* the point, e.g. "Mentioned" by most recently updated.
 
 ---@param pr PullRequest
 ---@return number
@@ -342,7 +346,11 @@ function M.wrap_fetch_pullrequests()
         opts = cap_pagelen(view, opts)
         return upstream(view, opts, function(page, err)
           if type(on_done) == "function" then
-            on_done(sort_pulls(exclude_titles(view, page)), err)
+            page = exclude_titles(view, page)
+            if not (type(view) == "table" and view.keep_search_order) then
+              page = sort_pulls(page)
+            end
+            on_done(page, err)
           end
         end)
       end

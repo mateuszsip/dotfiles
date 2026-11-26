@@ -210,14 +210,26 @@ local github_pull_views = {
     name = "Review queue",
     key = "2",
     layout = "compact",
-    search = "is:pr is:open review-requested:@me archived:false",
+    -- `user-review-requested` = requested by name only; `review-requested`
+    -- also matches team requests (CODEOWNERS groups I'm in).
+    search = "is:pr is:open user-review-requested:@me sort:updated-desc archived:false",
+    keep_search_order = true,
     -- Filtered client-side (utils/atlas_sort.lua): GitHub search can't anchor a
     -- title prefix and drops the punctuation in "chore: [release]".
     exclude_title_prefixes = { "chore: [release]" },
   },
   {
-    name = "All my PRs",
+    name = "Team reviews",
     key = "3",
+    layout = "compact",
+    -- Includes requests to CODEOWNERS teams I'm in, not just me by name.
+    search = "is:pr is:open review-requested:@me sort:updated-desc archived:false",
+    keep_search_order = true,
+    exclude_title_prefixes = { "chore: [release]" },
+  },
+  {
+    name = "All my PRs",
+    key = "4",
     layout = "grouped",
     -- atlas strips state qualifiers into its open/merged/declined filters and
     -- defaults to open-only when there are none, so spell out all three. Must
@@ -226,14 +238,16 @@ local github_pull_views = {
   },
   {
     name = "Mentioned",
-    key = "4",
+    key = "5",
     layout = "compact",
-    search = "is:pr is:open mentions:@me archived:false",
+    -- Most recently updated first; GitHub search can't sort by mention time.
+    search = "is:pr is:open mentions:@me sort:updated-desc archived:false",
+    keep_search_order = true,
     exclude_title_prefixes = { "chore: [release]" },
   },
   {
     name = "Recently merged",
-    key = "5",
+    key = "6",
     layout = "grouped",
     search = "is:pr is:merged (author:@me OR assignee:@me) -author:app/lendable-workflow-trigger-app sort:updated-desc archived:false",
   },
