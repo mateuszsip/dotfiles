@@ -26,16 +26,18 @@ end
 -- Best-effort delete. send_rpc_request waits for the reply, so the row is
 -- durable-gone before Connection:disconnect kills the agent process right
 -- after this returns.
--- NOTE: send_rpc_request(method, params) takes two args since the codecompanion
--- update that shipped with the (method, params) jsonrpc helpers; passing a
--- single request table sends it as the `method` field and the server rejects
--- it with -32600.
+-- NOTE: codecompanion v20 takes a single { method, params, timeout } table.
+-- The old (method, params) form sends `{"params":{},"id":N}` with no method;
+-- claude-agent-acp (which now advertises delete) never answers that, so each
+-- call stalled for the full 20s request timeout -- per restored chat on startup.
+local DELETE_TIMEOUT = 2000
+
 local function delete_session(conn, session_id)
   if not can_delete(conn) then
     return
   end
   pcall(function()
-    conn:send_rpc_request(DELETE, { sessionId = session_id })
+    conn:send_rpc_request({ method = DELETE, params = { sessionId = session_id }, timeout = DELETE_TIMEOUT })
   end)
 end
 

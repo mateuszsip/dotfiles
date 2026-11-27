@@ -182,25 +182,32 @@ local function restore_one(entry, window_opts)
       timer:stop()
       timer:close()
 
-      local updates = {}
-      local loaded = conn:load_session(entry.session_id, {
-        -- same shape as codecompanion's /resume (render.restore_session expects it)
-        on_session_update = function(update, opts)
-          table.insert(updates, { update = update, session_id = opts and opts.session_id })
-        end,
-      })
-      if not loaded then
-        return vim.notify("CodeCompanion: failed to load session " .. entry.session_id, vim.log.levels.ERROR)
-      end
-      require("codecompanion.interactions.chat.acp.commands").link_buffer_to_session(chat.bufnr, conn.session_id)
-      require("codecompanion.interactions.chat.acp.render").restore_session(chat, updates)
-      local title = entry.title
-      if not title or title == "" then
-        title = M.title_for(chat)
-      end
-      if title and title ~= "" then
-        chat:set_title(title)
-      end
+      -- Run inside a coroutine (as codecompanion's create_acp_connection does) so
+      -- send_rpc_request yields instead of taking its blocking vim.wait path.
+      -- Called from this timer it would block, and since vim.wait pumps the loop
+      -- every other chat's timer nests its own blocking load on top: the editor
+      -- froze until the slowest session/load (large Claude transcripts) returned.
+      require("codecompanion.utils.async").sync(function()
+        local updates = {}
+        local loaded = conn:load_session(entry.session_id, {
+          -- same shape as codecompanion's /resume (render.restore_session expects it)
+          on_session_update = function(update, opts)
+            table.insert(updates, { update = update, session_id = opts and opts.session_id })
+          end,
+        })
+        if not loaded then
+          return vim.notify("CodeCompanion: failed to load session " .. entry.session_id, vim.log.levels.ERROR)
+        end
+        require("codecompanion.interactions.chat.acp.commands").link_buffer_to_session(chat.bufnr, conn.session_id)
+        require("codecompanion.interactions.chat.acp.render").restore_session(chat, updates)
+        local title = entry.title
+        if not title or title == "" then
+          title = M.title_for(chat)
+        end
+        if title and title ~= "" then
+          chat:set_title(title)
+        end
+      end)()
     end)
   )
 end
